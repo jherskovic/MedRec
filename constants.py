@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+"""Constants for medication reconciliation."""
+
+known_times_per_day=[
+               ('%FORM% DAILY', 1),
+               ('%FORM%S DAILY', 1),
+               ('%FORM%S A DAY', 1),
+               ('%FORM% TWICE A DAY', 2),
+               ('%FORM% TWICE DAILY', 2),
+               ('%FORM% THREE TIMES DAILY', 3),
+               ('%FORM% THREE TIMES A DAY', 3),
+               (r'(\d+) TIME[S]? PER DAY', -1),
+               (r'(\d+) TIME[S]? DAILY', -1),
+               (r'(\d+) TIME[S]? A DAY', -1),
+               ('QD', 1),
+               ('Q.D.', 1),
+               ('Q.D', 1),
+               ('BID', 2),
+               ('TID', 3),
+               ('QID', 4),
+               ('T.I.D.', 3),
+               ('T.I.D', 3),               
+               ('B.I.D.', 2),
+               ('B.I.D', 2),
+               ('Q.I.D.', 4),
+               ('Q.I.D', 4),
+               ('A DAY', 1),
+               ('AT NIGHT', 1),
+              ]
+               
+known_number_of_doses=[
+               (r'TAKE (\d+) %FORM%[S]?', -1),
+               ('TAKE %FORM%', 1),
+               (r'(\d+) %FORM%[S]?', -1),
+              ]
+
+MEDLIST_SEPARATOR="******"
+UNDESIRABLE_PUNCTUATION=".,;:!?@#$%^&*()"
+
+physical_forms="""Drop - unit of product usage (qualifier value)
+Suppository - unit of product usage (qualifier value)
+Puff - unit of product usage (qualifier value)
+Base - unit of product usage (qualifier value)
+Bottle - unit of product usage (qualifier value)
+Box - unit of product usage (qualifier value)
+Packet - unit of product usage (qualifier value)
+Tube - unit of product usage (qualifier value)
+Glassful - unit of product usage (qualifier value)
+Inhalation - unit of product usage (qualifier value)
+Dropperful - unit of product usage (qualifier value)
+Swab - unit of product usage (qualifier value)
+Pad - unit of product usage (qualifier value)
+Implant - unit of product usage (qualifier value)
+Sponge - unit of product usage (qualifier value)
+Lozenge - unit of product usage (qualifier value)
+Patch - unit of product usage (qualifier value)
+Bar - unit of product usage (qualifier value)
+Kit - unit of product usage (qualifier value)
+Bag - unit of product usage (qualifier value)
+Case - unit of product usage (qualifier value)
+Spray - unit of product usage (qualifier value)
+Blister - unit of product usage (qualifier value)
+Sachet - unit of product usage (qualifier value)
+Can - unit of product usage (qualifier value)
+Pellet - unit of product usage (qualifier value)
+Disc - unit of product usage (qualifier value)
+Insert - unit of product usage (qualifier value)
+Scoop - unit of product usage (qualifier value)
+Tablet - unit of product usage (qualifier value)
+Cup - unit of product usage (qualifier value)
+Application - unit of product usage (qualifier value)
+Vial - unit of product usage (qualifier value)
+Gum - unit of product usage (qualifier value)
+Teaspoonful - unit of product usage (qualifier value)
+Tablespoonful - unit of product usage (qualifier value)
+Capsule - unit of product usage (qualifier value)
+Ampule - unit of product usage (qualifier value)""".split('\n')
+# Extract everything before the hyphen, uppercase it, and strip whitespace
+physical_forms=[x.split('-')[0].upper().strip() for x in physical_forms]
+
+abbreviations={'HCL': 'HYDROCHLORIDE'}
