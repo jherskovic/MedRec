@@ -16,7 +16,6 @@ import copy
 import os.path
 from constants import *
 from medication import Medication, ParsedMedication
-from html_output import output_html
 
 help_message = '''
 The help message goes here.
@@ -77,38 +76,21 @@ def reconcile_by_brand_name(list1, list2, rx, concept_names):
     common=[]
     logging.debug("Length of concepts_1: %d", len(concepts_1))
     for y in range(len(list1)):
+        logging.debug("y=%d", y)
         # Test to see if the concept in c1 is one of the tradenames of c2
         matches=None
         dose_1=list1[y].normalized_dose
-        for c1 in concepts_1[y]:
-            print "Testing", c1, "against", tradenames_of_c2
-            potential_matches=[c1 in t for t in tradenames_of_c2
-                              if t is not None]
-            print "Result:", potential_matches
-            matches=potential_matches.index(True) \
-                    if True in potential_matches \
-                    else None
-            if matches is not None:
-                dose_2=my_list_2_of_objects[matches].normalized_dose
-                if dose_1==dose_2:
-                    common.append(Reconciliation(list1[y], my_list_2_of_objects[matches],
-                                                 1.0, "brand name"))
-                    del my_list_2_of_objects[matches]
-                    del tradenames_of_c2[matches]
-                    del concepts_2[matches]
-                    break
-                else:
-                    matches=None
-        if matches is None:
-            for t1 in tradenames_of_c1[y]:
-                # Test to see if the concepts in c2 match any tradenames of c1
-                print "Testing", t1, "against", concepts_2
-                potential_matches=[t1 in c for c in concepts_2 if c is not None]
+        logging.debug("Testing %r", concepts_1[y])
+        if concepts_1[y] is not None:
+            for c1 in concepts_1[y]:
+                print "Testing", c1, "against", tradenames_of_c2
+                potential_matches=[c1 in t for t in tradenames_of_c2
+                                  if t is not None]
                 print "Result:", potential_matches
                 matches=potential_matches.index(True) \
                         if True in potential_matches \
                         else None
-                if matches:
+                if matches is not None:
                     dose_2=my_list_2_of_objects[matches].normalized_dose
                     if dose_1==dose_2:
                         common.append(Reconciliation(list1[y], my_list_2_of_objects[matches],
@@ -119,6 +101,27 @@ def reconcile_by_brand_name(list1, list2, rx, concept_names):
                         break
                     else:
                         matches=None
+        if matches is None:
+            if tradenames_of_c1[y] is not None:
+                for t1 in tradenames_of_c1[y]:
+                    # Test to see if the concepts in c2 match any tradenames of c1
+                    print "Testing", t1, "against", concepts_2
+                    potential_matches=[t1 in c for c in concepts_2 if c is not None]
+                    print "Result:", potential_matches
+                    matches=potential_matches.index(True) \
+                            if True in potential_matches \
+                            else None
+                    if matches:
+                        dose_2=my_list_2_of_objects[matches].normalized_dose
+                        if dose_1==dose_2:
+                            common.append(Reconciliation(list1[y], my_list_2_of_objects[matches],
+                                                         1.0, "brand name"))
+                            del my_list_2_of_objects[matches]
+                            del tradenames_of_c2[matches]
+                            del concepts_2[matches]
+                            break
+                        else:
+                            matches=None
         if matches is None:
             my_list_1.append(list1[y])
     return (my_list_1, my_list_2_of_objects, common)
@@ -212,7 +215,6 @@ def reconcile_by_treatment(list1,
         treats_2.append(this_treats)
     logging.debug("Treatment list for medication list 2: %r", treats_2)
     
-    # Test for matches I'M UP TO HERE
     for y in range(len(concepts_1)):
         # Compare the "treatment sphere" of each medication in list 1 to the
         # "treatment sphere" of each medication in list 2
@@ -236,12 +238,11 @@ def reconcile_by_treatment(list1,
 
     return (my_list_1, my_list_2_of_objects, common)
     
-
 def separate_parsed_from_unparsed(medication_list):
     """Returns a tuple of two lists. The first one contains the medications with
     the 'parsed' flag set, the second one contains the rest."""
-    return ([x for x in medication_list if x.parsed==True], 
-            [x for x in medication_list if x.parsed==False])
+    return ([x for x in medication_list if x.parsed], 
+            [x for x in medication_list if not x.parsed])
     
 def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
     print "********** BEFORE RECONCILIATION **********"
@@ -287,22 +288,8 @@ def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
         m.normalize_dose()
     #print parsed_meds_2
     #return
-    pm1, pm2, pmrec=reconcile_by_generics(parsed_meds_1, parsed_meds_2)
-    left1=[x for x in pm1] + unparsed_meds_1
-    left2=[x for x in pm2] + unparsed_meds_2
-    print "List 1 after pharma matching=\n", '\n'.join([str(x) for x in left1])
     print
-    print "List 2 after pharma matching=\n", '\n'.join([str(x) for x in left2])
-    print
-    print "Reconciled after pharma matching=\n", '\n'.join([str(x) for x in pmrec])
-    print 
-    already_reconciled=[x for x in pmrec]+rec[2]
-    print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
-    print "**********     END OF STEP 2     **********"
-    print
-    print "********** RECONCILIATION STEP 3 **********"
-    print
-    pb1, pb2, bnrec=reconcile_by_brand_name(pm1, pm2, rx, concept_names)
+    pb1, pb2, bnrec=reconcile_by_brand_name(parsed_meds_1, parsed_meds_2, rx, concept_names)
     left1=[x for x in pb1] + unparsed_meds_1
     left2=[x for x in pb2] + unparsed_meds_2
     print "List 1 after brand name matching=\n", '\n'.join([str(x) for x in left1])
@@ -311,13 +298,27 @@ def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
     print
     print "Reconciled after brand name matching=\n", '\n'.join([str(x) for x in bnrec])
     print 
-    already_reconciled=[x for x in already_reconciled] + bnrec
+    already_reconciled=[x for x in bnrec] + rec[2]
+    print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
+    print "**********     END OF STEP 2     **********"
+    print
+    print "********** RECONCILIATION STEP 3 **********"
+    pm1, pm2, pmrec=reconcile_by_generics(pb1, pb2)
+    left1=[x for x in pm1] + unparsed_meds_1
+    left2=[x for x in pm2] + unparsed_meds_2
+    print "List 1 after pharma matching=\n", '\n'.join([str(x) for x in left1])
+    print
+    print "List 2 after pharma matching=\n", '\n'.join([str(x) for x in left2])
+    print
+    print "Reconciled after pharma matching=\n", '\n'.join([str(x) for x in pmrec])
+    print 
+    already_reconciled=[x for x in already_reconciled]+pmrec
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
     print "**********     END OF STEP 3     **********"
     print
     print "********** RECONCILIATION STEP 4 **********"
     print
-    pt1, pt2, ptrec=reconcile_by_treatment(pb1, pb2, rx, concept_names, treat_sets, 
+    pt1, pt2, ptrec=reconcile_by_treatment(pm1, pm2, rx, concept_names, treat_sets, 
                                            match_acceptance_threshold=0.3)
     left1=[x for x in pt1] + unparsed_meds_1
     left2=[x for x in pt2] + unparsed_meds_2    
@@ -333,22 +334,36 @@ def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
     return (left1, left2, already_reconciled)
 
 ITERATION_TEMPLATE="""
-********************************************************
+########################################################
 
-BEGINNING MEDICATION RECONCILIATION ITERATION %d
+          MEDICATION RECONCILIATION ITERATION %d
 
-********************************************************
+########################################################
 
 """
 
-def main(args):
+from html_output import output_html
+from optparse import OptionParser
+
+def main():
+    options_parser=OptionParser()
+    options_parser.add_option("-v", "--verbose", dest="verbose", default=False,
+                      help="Show debugging information as script runs.",
+                      action="store_true")
+    options_parser.add_option("-r", "--rxnorm", dest="rxnorm", metavar="FILE",
+                      default="rxnorm.pickle.bz2",
+                      help="Read a pickled instance of RXNorm from FILE")
+    options_parser.add_option("-t", "--treatment", dest="treatment", 
+                      metavar="FILE", default='treats.pickle.bz2',
+                      help="Read a pickled instance of treatment sets from FILE")
+    (options, args)=options_parser.parse_args()
     print "Loading RXNorm"
-    logging.basicConfig(level=logging.DEBUG, 
-                        format='%(processName)s %(asctime)s %(levelname)s ' \
+    logging.basicConfig(level=logging.DEBUG if options.verbose else logging.INFO, 
+                        format='%(asctime)s %(levelname)s ' \
                         '%(module)s. %(funcName)s: %(message)s')
-    rx=pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
+    rx=pickle.load(bz2.BZ2File(options.rxnorm, 'r'))
     print "Loading treatment sets"
-    ts=pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
+    ts=pickle.load(bz2.BZ2File(options.treatment, 'r'))
     print "Indexing concepts"
     concept_names={}
     for c in rx.concepts:
@@ -358,7 +373,7 @@ def main(args):
             concept_names[cn].add(c)
         else:
             concept_names[cn]=set([c])
-    if len(args)==1:
+    if len(args)==0:
         # Test run with no parameters
         test_list_1="""Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT
                 Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx
@@ -384,9 +399,9 @@ def main(args):
     current_list=[]
     current_l1=None
     current_l2=None
-    f=open(args[1], "rU")
+    f=open(args[0], "rU")
     try:
-        output_path=args[2]
+        output_path=args[1]
     except IndexError:
         output_path="."
     count=0
@@ -405,6 +420,5 @@ def main(args):
         else:
             current_list.append(l)
 
-
 if __name__ == '__main__':
-    main(sys.argv)
+    main()

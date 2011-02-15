@@ -152,7 +152,7 @@ class ParsedMedication(Medication):
                                        for x in ingredients]
                 return 
             except KeyError:
-                logging.warn("Couldn't find ingredients for %s", concept)
+                logging.debug("Couldn't find ingredients for %s", concept)
         else:
             logging.debug("Couldn't find %s in RXNorm" % self.name)
         self._generic_formula=[self._normalize_drug_name(self.name)]
@@ -205,7 +205,7 @@ class ParsedMedication(Medication):
                     number_of_units=num
                     continue
         if number_of_units is None:
-            logging.info("Failed matching number of units on %r; assuming 1", self)
+            logging.debug("Failed matching number of units on %r; assuming 1", self)
             number_of_units=1
         if form in ParsedMedication.times_regexp_cache:
             regexps=ParsedMedication.times_regexp_cache[form]
@@ -225,7 +225,7 @@ class ParsedMedication(Medication):
                     times_per_day=times
                     continue
         if times_per_day is None:
-            logging.info("Failed matching times per day on %r. Assuming 1.", self)
+            logging.debug("Failed matching times per day on %r. Assuming 1.", self)
             times_per_day=1
         # else:
             #print drug_tuple, "is taken %d times a day" % times_per_day
