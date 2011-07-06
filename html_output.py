@@ -75,9 +75,10 @@ def extend_list_by_repeating(orig_list, desired_length):
     new_list=[orig_list[x % orig_len] for x in xrange(desired_length)]
     return new_list
     
-def output_html(current_l1, current_l2, l1, l2, rec, output_filename):
-    f=open(output_filename, "w")
-    
+def output_html(current_l1, current_l2, l1, l2, rec, output_filename=None):
+    if output_filename is not None:
+        f=open(output_filename, "w")
+        
     reconciled_list=[reconciliation_to_string(x) for x in rec]
     rec_template_to_size=extend_list_by_repeating(REC_TEMPLATE, len(reconciled_list))
     reconciled_list="\n".join([x[0] % x[1] for x in zip(rec_template_to_size, reconciled_list)])
@@ -107,12 +108,16 @@ def output_html(current_l1, current_l2, l1, l2, rec, output_filename):
     #                                      "unreconciled_list_2": unrec_2}
     hoopers=float(len(rec))/float(len(rec)+len(l1)+len(l2))
     #reconciled=RECONCILED_TEMPLATE % {"reconciled": reconciled_list}
-    f.write(HTML_TEMPLATE % {"original_list_1": original_1,
+    final_text=HTML_TEMPLATE % {"original_list_1": original_1,
                              "original_list_2": original_2,
                              "reconciled": reconciled_list,
                              "unreconciled_list_1": unrec_1,
                              "unreconciled_list_2": unrec_2,
-                             "filename": os.path.split(output_filename)[1],
+                             "filename": "None" if output_filename is None else os.path.split(output_filename)[1],
                              "hoopers": hoopers,
-                             })
+                             }
+    if output_filename is None:
+        return final_text
+    
+    f.write(final_text)
     f.close()

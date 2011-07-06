@@ -21,3 +21,16 @@ I apologize in advance, but I can not share the dataset we used to create our
 own copy of the treatment file, nor the treatment file itself. The algorithm 
 will still work without it.
  
+After you have your rxnorm pickled file, please try out:
+python reconcile.py 
+
+to perform a demo reconciliation.
+
+I also included the SMARTApp version of the reconciliation algorithm. You will 
+need Josh Mandel's smart client modules, available from
+https://github.com/chb/smart_client_python and placed in the smart_client 
+subdirectory (and, of course, all its dependencies). Try:
+
+python reconcile_smart.py 8000 
+
+and run it inside the SMART sandbox to play with it.

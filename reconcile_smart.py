@@ -6,7 +6,9 @@ will need to be refilled soon (based on dispense day's supply + date).
 Josh Mandel
 Children's Hospital Boston, 2010
 
-Modified by J Herskovic to create the MedRec SMART App
+Modified by J Herskovic to create the MedRec SMART App. This is badly cobbled 
+together from Josh's smart_rx_reminder demo. Be gentle.
+
 UTHealth SBMI, 2011
 """
 
