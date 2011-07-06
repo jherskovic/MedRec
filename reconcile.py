@@ -3,6 +3,8 @@
 """
 reconcile.py
 
+The main medication reconciliation routines.
+
 Created by Jorge Herskovic on 2011-01-11.
 Copyright (c) 2011 UTHSC School of Health Information Sciences. All rights reserved.
 """
@@ -16,10 +18,6 @@ import copy
 import os.path
 from constants import *
 from medication import Medication, ParsedMedication
-
-help_message = '''
-The help message goes here.
-'''
 
 class Reconciliation(object):
     """Represents a pair of reconciled meds (or potentially-reconciled meds)"""
@@ -346,7 +344,38 @@ from html_output import output_html
 from optparse import OptionParser
 
 def main():
-    options_parser=OptionParser()
+    usage="""Usage: %prog [options] [file_to_process] [output_directory]""" + \
+    """
+    Reconciles two or more successive medication lists (i.e. assumes that all 
+    lists belong to the same patient, and if given many lists L1, L2, L3,..., Ln
+    it will reconcile L1 with L2, then L2 with L3, then L3 with L4, etc.). 
+    
+    Each list of medications contained in the same text file should have one
+    medication per line and should end with a line consisting solely of 
+    %(separator)s, i.e.
+    
+    Penicillin 100 ucg 
+    %(separator)s
+    Penicillin 200 ucg 
+    Aspirin 81 mg po
+    %(separator)s
+    Penicillin 100 ucg 
+    %(separator)s
+    
+    defines three lists: 
+        1. Penicillin 100 ucg, 
+        2. Penicillin 200 ucg and Aspirin 81 mg po,
+        3. Penicillin 100 ucg
+    
+    if no [file_to_process] is given, the program will perform a demo by 
+    reconciling two demonstration lists and quit. 
+    
+    If [file_to_process] is specified, the program will output an HTML table for
+    each reconciliation it performs. If you don't specify [output_directory], 
+    the current directory is assumed.
+    """ % {'separator': MEDLIST_SEPARATOR}
+    
+    options_parser=OptionParser(usage=usage)
     options_parser.add_option("-v", "--verbose", dest="verbose", default=False,
                       help="Show debugging information as script runs.",
                       action="store_true")
@@ -363,7 +392,11 @@ def main():
                         '%(module)s. %(funcName)s: %(message)s')
     rx=pickle.load(bz2.BZ2File(options.rxnorm, 'r'))
     print "Loading treatment sets"
-    ts=pickle.load(bz2.BZ2File(options.treatment, 'r'))
+    try:
+        ts=pickle.load(bz2.BZ2File(options.treatment, 'r'))
+    except:
+        print "No treatment sets available. Fourth reconciliation step will be a null op."
+        ts={}
     print "Indexing concepts"
     concept_names={}
     for c in rx.concepts:

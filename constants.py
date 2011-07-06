@@ -1,6 +1,16 @@
-#!/usr/bin/env python
-"""Constants for medication reconciliation."""
+#!/usr/bin/python
+"""
+constants.py
 
+Defines the strings used to build regular expressions and parse medication 
+strings.
+
+Created by Jorge Herskovic 
+Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
+"""
+
+# %FORM% will get replaced with each of the known physical forms below to obtain
+# the regular expressions that detect administration frequency
 known_times_per_day=[
                ('%FORM% DAILY', 1),
                ('%FORM%S DAILY', 1),
@@ -37,6 +47,7 @@ known_number_of_doses=[
 MEDLIST_SEPARATOR="******"
 UNDESIRABLE_PUNCTUATION=".,;:!?@#$%^&*()"
 
+# Physical forms extracted from SNOMED-CT
 physical_forms="""Drop - unit of product usage (qualifier value)
 Suppository - unit of product usage (qualifier value)
 Puff - unit of product usage (qualifier value)

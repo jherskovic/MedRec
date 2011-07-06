@@ -1,3 +1,16 @@
+#!/usr/bin/python
+"""
+medication.py
+
+Defines the Medication and ParsedMedication classes. Medication represents a 
+single line from the medication lists to reconcile; ParsedMedication is a 
+subclass of Medication that decomposes a line according to regexps (see
+constants.py)
+
+Created by Jorge Herskovic 
+Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
+"""
+
 import re
 from decimal import *
 import copy

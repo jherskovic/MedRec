@@ -1,4 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/python
+"""
+html_output.py
+
+Contains templates and functions to generate HTML-formatted tables for easy review.
+
+Created by Jorge Herskovic 
+Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
+"""
+
 
 from constants import *
 import os.path
