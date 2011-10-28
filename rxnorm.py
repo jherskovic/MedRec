@@ -63,6 +63,15 @@ class Relation(object):
     def get_relation(self):
         return relation_kinds[self._relation] if self._relation is not None else None
     relation=property(get_relation)
+    @property
+    def concept1(self):
+        return self._concept1
+    @property
+    def concept2(self):
+        return self._concept2
+    def __repr__(self):
+        return "<Relation %r %r %r>" % (self._concept1, self.relation,
+                                        self._concept2)
 
 type_kinds={}
 reverse_type_kinds={}

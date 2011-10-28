@@ -47,7 +47,7 @@ known_number_of_doses=[
 MEDLIST_SEPARATOR="******"
 UNDESIRABLE_PUNCTUATION=".,;:!?@#$%^&*()"
 
-# Physical forms extracted from SNOMED-CT
+# Physical forms extracted from SNOMED-CT and augmented by JRH
 physical_forms="""Drop - unit of product usage (qualifier value)
 Suppository - unit of product usage (qualifier value)
 Puff - unit of product usage (qualifier value)
@@ -85,7 +85,10 @@ Gum - unit of product usage (qualifier value)
 Teaspoonful - unit of product usage (qualifier value)
 Tablespoonful - unit of product usage (qualifier value)
 Capsule - unit of product usage (qualifier value)
-Ampule - unit of product usage (qualifier value)""".split('\n')
+Ampule - unit of product usage (qualifier value)
+Tablet delayed release -
+Gelcaps -
+Gel caps -""".split('\n')
 # Extract everything before the hyphen, uppercase it, and strip whitespace
 physical_forms=[x.split('-')[0].upper().strip() for x in physical_forms]
 

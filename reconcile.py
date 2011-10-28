@@ -18,6 +18,7 @@ import copy
 import os.path
 from constants import *
 from medication import Medication, ParsedMedication
+from json_output import *
 
 class Reconciliation(object):
     """Represents a pair of reconciled meds (or potentially-reconciled meds)"""
@@ -27,6 +28,14 @@ class Reconciliation(object):
         self.med2=med2
         self.strength=strength
         self.mechanism=reconciliation_mechanism
+    def as_dictionary(self):
+        my_dict={'med1': self.med1.as_dictionary(),
+                 'score': self.strength,
+                 'mechanism': str(self.mechanism)
+                }
+        if self.med2 is not None:
+           my_dict['med2']=self.med2.as_dictionary()
+        return my_dict 
     def __repr__(self):
         if self.med1.normalized_string==self.med2.normalized_string:
             return "<Identical reconciliation (%s): %r @ %x>" % (self.mechanism,
@@ -241,8 +250,10 @@ def separate_parsed_from_unparsed(medication_list):
     the 'parsed' flag set, the second one contains the rest."""
     return ([x for x in medication_list if x.parsed], 
             [x for x in medication_list if not x.parsed])
-    
-def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
+ 
+# If you pass a dictionary as the "stats" parameter to this function, you'll
+# get statistics in it after it's done
+def reconcile_lists(list1, list2, rx, concept_names, treat_sets, stats=None):
     print "********** BEFORE RECONCILIATION **********"
     print
     print "Original list 1=\n", '\n'.join(list1)
@@ -251,9 +262,15 @@ def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
     print
     meds_list_1=[ParsedMedication(x) for x in list1]
     meds_list_2=[ParsedMedication(x) for x in list2]
+    if stats is not None:
+        stats['size_original_list_1']=len(meds_list_1)
+        stats['size_original_list_2']=len(meds_list_2)
     # Remove empty meds (parsed blank lines)
     meds_list_1=[x for x in meds_list_1 if not x.is_empty()]
     meds_list_2=[x for x in meds_list_2 if not x.is_empty()]
+    if stats is not None:
+        stats['size_parsed_list_1']=len(meds_list_1)
+        stats['size_parsed_list_2']=len(meds_list_2)        
     print
     print "Parsed list 1=\n", '\n'.join(str(x) for x in meds_list_1)
     print
@@ -269,6 +286,8 @@ def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
     print "After reconciling list 2=\n", '\n'.join(str(x) for x in rec_list_2)
     print
     print "Reconciled meds=\n", '\n'.join(str(x) for x in rec[2])
+    if stats is not None:
+        stats['reconciled_strings']=len(rec[2])
     print "**********     END OF STEP 1     **********"
     print
     print "********** RECONCILIATION STEP 2 **********"
@@ -296,6 +315,8 @@ def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
     print
     print "Reconciled after brand name matching=\n", '\n'.join([str(x) for x in bnrec])
     print 
+    if stats is not None:
+        stats['reconciled_brand_name']=len(bnrec)
     already_reconciled=[x for x in bnrec] + rec[2]
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
     print "**********     END OF STEP 2     **********"
@@ -310,6 +331,8 @@ def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
     print
     print "Reconciled after pharma matching=\n", '\n'.join([str(x) for x in pmrec])
     print 
+    if stats is not None:
+        stats['reconciled_generics']=len(pmrec)
     already_reconciled=[x for x in already_reconciled]+pmrec
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
     print "**********     END OF STEP 3     **********"
@@ -327,6 +350,8 @@ def reconcile_lists(list1, list2, rx, concept_names, treat_sets):
     print "Reconciled after therapeutic intent matching=\n", '\n'.join([str(x) for x in ptrec])
     print 
     already_reconciled=[x for x in already_reconciled] + ptrec
+    if stats is not None:
+        stats['reconciled_therapeutic_intent']=len(ptrec)
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
     print "**********     END OF STEP 4     **********"
     return (left1, left2, already_reconciled)
@@ -426,7 +451,8 @@ def main():
         Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx
         Sertraline HCl 50 MG Tablet;TAKE 1 TABLET DAILY.; Rx
         Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx.""".split('\n')
-        reconcile_lists(test_list_1, test_list_2, rx, concept_names, ts)
+        l1, l2, rec=reconcile_lists(test_list_1, test_list_2, rx, concept_names, ts)
+        print output_json(test_list_1, test_list_2, l1, l2, rec)
         return
     # Use the file provided
     current_list=[]

@@ -21,26 +21,35 @@ from constants import *
 medication_parser=re.compile(r"""^\s*(?P<name>.*?)
                                   \s+(?P<dosage>[0-9\.\/]+)
                                   \s+(?P<units>m?c?k?g|m?d?l)
-                                  \s*(?P<formulation>.*?)\s*
-                                  \;?
-                                  \s*(?P<instructions>.*)""",
+                                  \s*(?P<formulation>.*?)
+                                  ;?
+                                  \s*?(?P<instructions>.*)""",
                                   re.IGNORECASE | re.VERBOSE)
+#medication_parser = re.compile(r'''
+#   ^\s*(?P<name>.*?)
+#   \s+(?P<dosage>[0-9\.\/]+)
+#   \s+(?P<units>m?c?k?g|m?d?l)?
+#   \s*(?P<formulation>[^;]+;)?
+#   \s*(?P<instructions>.*)$
+#''', re.IGNORECASE | re.VERBOSE)
 
 class Medication(object):
     """Represents a single medication from a list to be reconciled."""
-    def __init__(self, original_string):
+    def __init__(self, original_string, provenance=""):
         super(Medication, self).__init__()
-        self._original_string=original_string
+        self._original_string=original_string.strip()
         self._normalized_string=self._normalize_string()
+        self._provenance=provenance
     def _normalize_string(self):
-        # Uppercase and remove trailing and leading whitespace
-        my_string=self.original_string.upper().strip()
-        # Remove undesirable trailing punctuation
+        return self._normalize_field(self._original_string)
+    def _normalize_field(self, field):
+        my_field=field.upper().strip()
+        # Remove undesirable trailing and leading punctuation
         for punct in UNDESIRABLE_PUNCTUATION:
-            my_string=my_string.strip(punct)
+            my_field=my_field.strip(punct)
+        my_field=' '.join(my_field.split())
         # Normalize spacing to only one space between components
-        my_string=' '.join(my_string.split())
-        return my_string
+        return my_field
     def original_string():
         doc = "The original_string property."
         def fget(self):
@@ -55,6 +64,11 @@ class Medication(object):
     normalized_string = property(**normalized_string())
     def is_empty(self):
         return self.normalized_string.strip()==""
+    #def provenance():
+    #    doc="The medication's provenance"
+    #    def fget(self):
+    #        return self._provenance
+    #provenance=property(**provenance())
         
 def build_regular_expressions(list_of_tuples, formulation):
     my_regexps=[]
@@ -85,9 +99,9 @@ class ParsedMedication(Medication):
             med=med[0]
             self._name=med[0]
             self._dose=med[1]
-            self._units=med[2]
-            self._formulation=med[3]
-            self._instructions=med[4]
+            self._units=self._normalize_field(med[2])
+            self._formulation=self._normalize_field(med[3])
+            self._instructions=self._normalize_field(med[4])
             self._parsed=True
         else:
             logging.debug("Could not parse %s. _parsed is %r", med_line,
@@ -142,6 +156,15 @@ class ParsedMedication(Medication):
     @property 
     def generic_formula(self):
         return copy.copy(self._generic_formula)
+    def as_dictionary(self):
+        return {'medicationName': str(self.name),
+                'dose': str(self.dose),
+                'units': str(self.units),
+                'formulation': str(self.formulation),
+                'instructions': str(self.instructions),
+                'original_string': self.original_string,
+                'provenance': self.provenance,
+               }
     def _normalize_drug_name(self, drug_name):
         truncated=drug_name.split('@')[0].strip().upper()
         components=truncated.split()
