@@ -34,3 +34,9 @@ subdirectory (and, of course, all its dependencies). Try:
 python reconcile_smart.py 8000 
 
 and run it inside the SMART sandbox to play with it.
+
+Our original evaluation of this algorithm was published in the Proceedings of 
+the AMIA Symposium:
+Bozzo Silva PA, Bernstam EV, Markowitz E, Johnson TR, Zhang J, Herskovic JR. 
+Automated medication reconciliation and complexity of care transitions. 
+Proc AMIA Ann Symp 2011.
