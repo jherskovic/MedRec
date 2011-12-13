@@ -20,8 +20,9 @@ class Drug(object):
     def __hash__(self):
         return hash(self._cui)
     def __repr__(self):
-        return "<Drug %s (%s) [%s] @0x%x>" % (self._name, self._cui,
+        return "<Drug %s (%s) [%s] %s @0x%x>" % (self._name, self._cui,
                                               self.semtypes,
+                                              "(BN)" if self._is_brandname else "",
                                               id(self)) 
     @property
     def name(self):
@@ -29,30 +30,6 @@ class Drug(object):
     @property
     def is_brandname(self):
         return self._is_brandname
-        
-# List obtained via:
-# grep RXNORM MRREL.RRF | awk -F\| '{ print $8 }' | sort | uniq
-
-relation_kinds = """consists_of
-constitutes
-contained_in
-contains
-dose_form_of
-form_of
-has_dose_form
-has_form
-has_ingredient
-has_precise_ingredient
-has_quantified_form
-has_tradename
-ingredient_of
-inverse_isa
-isa
-precise_ingredient_of
-quantified_form_of
-reformulated_to
-reformulation_of
-tradename_of""".split('\n')
 
 class Relation(object):
     __slots__ = ["_concept1", "_concept2", "_relation"]
@@ -61,11 +38,11 @@ class Relation(object):
         if items[7] == "" or items[10] != 'RXNORM': 
             self._relation = None
         else:
-            self._relation = relation_kinds.index(items[7])
+            self._relation = items[7]
         self._concept1 = concepts[items[0]]
         self._concept2 = concepts[items[4]]
     def get_relation(self):
-        return relation_kinds[self._relation] if self._relation is not None else None
+        return self._relation
     relation = property(get_relation)
     @property
     def concept1(self):

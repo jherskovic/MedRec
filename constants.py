@@ -93,3 +93,30 @@ Gel caps -""".split('\n')
 physical_forms=[x.split('-')[0].upper().strip() for x in physical_forms]
 
 abbreviations={'HCL': 'HYDROCHLORIDE'}
+
+# The first three match types imply that *everything* but the drug name matches
+# The last match type is more of a wildcard 
+MATCH_STRING="Identical strings"
+MATCH_BRAND_NAME="Brand name and generic"
+MATCH_INGREDIENTS="Ingredient lists match"
+MATCH_TREATMENT_INTENT="Similar treatment intent"
+
+MEDICATION_FIELDS={"_name":         "DRUG_NAME",
+                   "_dose":         "DOSE",
+                   "_units":        "UNITS",
+                   "_form":         "FORMULATION",
+                   "_instructions": "SIG",
+                   "_norm_dose":    "NORMALIZED_DOSE",
+                   }
+
+# 
+KNOWN_MATCHING_FIELDS={MATCH_STRING:      set([x for x in 
+                                               MEDICATION_FIELDS.itervalues()]
+                                              ),
+                       MATCH_BRAND_NAME:  set([x for x in
+                                               MEDICATION_FIELDS.itervalues() 
+                                               if x != "DRUG_NAME"]),
+                       MATCH_INGREDIENTS: set([x for x in 
+                                               MEDICATION_FIELDS.itervalues()
+                                               if x != "DRUG_NAME"]),
+                       MATCH_TREATMENT_INTENT: None}

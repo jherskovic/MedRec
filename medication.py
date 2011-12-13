@@ -162,6 +162,7 @@ class ParsedMedication(Medication):
                 'instructions': str(self.instructions),
                 'original_string': self.original_string,
                 'provenance': self.provenance,
+                'id': id(self),
                }
     def _normalize_drug_name(self, drug_name):
         truncated = drug_name.split('@')[0].strip().upper()
@@ -286,4 +287,14 @@ class ParsedMedication(Medication):
         if self._norm_dose is None:
             self.normalize_dose()
         return copy.copy(self._norm_dose)
+    def fieldwise_comparison(self, other):
+        """Compares two medication objects field by field, based on the 
+        contents of the MEDICATION_FIELDS constant. Returns a set containing
+        the identical fields."""
+        result=set()
+        for field in MEDICATION_FIELDS.keys():
+            if self.__getattribute__(field)==other.__getattribute__(field):
+                result.add(MEDICATION_FIELDS[field])
+        return result
+    
         

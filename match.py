@@ -6,6 +6,9 @@ Created on Oct 28, 2011
 
 import copy
 import logging
+from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS, 
+                       MATCH_STRING, MATCH_TREATMENT_INTENT,
+                       MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS)
 
 class Match(object):
     """Represents a pair of reconciled meds (or potentially-reconciled meds)"""
@@ -17,9 +20,19 @@ class Match(object):
         self.mechanism = reconciliation_mechanism
     def as_dictionary(self):
         my_dict = {'med1': self.med1.as_dictionary(),
-                 'score': self.strength,
-                 'mechanism': str(self.mechanism)
+                   'score': self.strength,
+                   'mechanism': str(self.mechanism)
                 }
+        if KNOWN_MATCHING_FIELDS.get(self.mechanism, None) is None:
+            try:
+                similarity=self.med1.fieldwise_comparison(self.med2)
+            except:
+                # catchall for not both being ParsedMedications, or one being None
+                similarity=set()
+        else:
+            similarity=KNOWN_MATCHING_FIELDS[self.mechanism]
+        my_dict['similarity']=similarity
+        
         if self.med2 is not None:
             my_dict['med2'] = self.med2.as_dictionary()
         return my_dict 
@@ -71,7 +84,7 @@ def match_by_strings(list1, list2):
     for item in list1:
         if item.normalized_string in my_list_2:
             where_in_2 = my_list_2.index(item.normalized_string)
-            common.append(Match(item, item, 1.0, "string matching"))
+            common.append(Match(item, item, 1.0, MATCH_STRING))
             del my_list_2[where_in_2]
             del my_list_2_of_objects[where_in_2]
         else:
@@ -152,7 +165,7 @@ def match_by_brand_name(list1, list2):
                     dose_2 = my_list_2_of_objects[matches].normalized_dose
                     if dose_1 == dose_2:
                         common.append(Match(list1[y], my_list_2_of_objects[matches],
-                                                     1.0, "brand name"))
+                                                     1.0, MATCH_BRAND_NAME))
                         del my_list_2_of_objects[matches]
                         del tradenames_of_c2[matches]
                         del concepts_2[matches]
@@ -173,7 +186,7 @@ def match_by_brand_name(list1, list2):
                         dose_2 = my_list_2_of_objects[matches].normalized_dose
                         if dose_1 == dose_2:
                             common.append(Match(list1[y], my_list_2_of_objects[matches],
-                                                         1.0, "brand name"))
+                                                         1.0, MATCH_BRAND_NAME))
                             del my_list_2_of_objects[matches]
                             del tradenames_of_c2[matches]
                             del concepts_2[matches]
@@ -219,7 +232,7 @@ def match_by_ingredients(list1, list2, min_match_threshold=0.3):
                           item, my_list_2_of_objects[where_in_2],
                           matched_items[0][0])
             common.append(Match(item, my_list_2_of_objects[where_in_2],
-                                               matched_items[0][0], "ingredients list"))
+                                               matched_items[0][0], MATCH_INGREDIENTS))
             del my_list_2[where_in_2]
             del my_list_2_of_objects[where_in_2]
         else:
@@ -294,7 +307,7 @@ def match_by_treatment(list1, list2, mappings,
             common.append(Match(list1[y],
                                          my_list_2_of_objects[matched_item],
                                          score,
-                                         "therapeutic intent"))
+                                         MATCH_TREATMENT_INTENT))
             del my_list_2_of_objects[matched_item]
             del treats_2[matched_item]
         else:
