@@ -31,7 +31,7 @@ class Match(object):
                 similarity=set()
         else:
             similarity=KNOWN_MATCHING_FIELDS[self.mechanism]
-        my_dict['similarity']=similarity
+        my_dict['identical']=similarity
         
         if self.med2 is not None:
             my_dict['med2'] = self.med2.as_dictionary()

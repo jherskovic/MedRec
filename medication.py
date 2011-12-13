@@ -26,6 +26,13 @@ medication_parser = re.compile(r"""^\s*(?P<name>.*?)
                                   \s*?(?P<instructions>.*)""",
                                   re.IGNORECASE | re.VERBOSE)
 
+def _sequential_id_gen(starting=0):
+    while True:
+        yield starting
+        starting += 1
+
+_sequential_id=_sequential_id_gen()
+
 class Medication(object):
     """Represents a single medication from a list to be reconciled."""
     def __init__(self, original_string, provenance=""):
@@ -33,6 +40,7 @@ class Medication(object):
         self._original_string = original_string.strip()
         self._normalized_string = self._normalize_string()
         self._provenance = provenance
+        self._seq_id=_sequential_id.next()
     def _normalize_string(self):
         return self._normalize_field(self._original_string)
     def _normalize_field(self, field):
@@ -104,7 +112,8 @@ class ParsedMedication(Medication):
                           self._parsed)
     def __repr__(self):
         if self._parsed:
-            return "<Medication 0x%x: %r %s %r %r (%r)>" % (
+            return "<Medication %d @ 0x%x: %r %s %r %r (%r)>" % (
+                self._seq_id,
                 id(self),
                 self.name,
                 self.dose,
@@ -112,7 +121,8 @@ class ParsedMedication(Medication):
                 self.formulation,
                 self.instructions)
         else:
-            return "<Medication (not parsed) 0x%x: %s>" % (
+            return "<Medication (not parsed) %d @ 0x%x: %s>" % (
+                self._seq_id,
                 id(self),
                 self.normalized_string)
     def __str__(self):
@@ -163,7 +173,7 @@ class ParsedMedication(Medication):
                 'original_string': self.original_string,
                 'provenance': self.provenance,
                 'normalized_dose': self._norm_dose,
-                'id': id(self),
+                'id': self._seq_id,
                }
     def _normalize_drug_name(self, drug_name):
         truncated = drug_name.split('@')[0].strip().upper()
