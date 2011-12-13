@@ -162,6 +162,7 @@ class ParsedMedication(Medication):
                 'instructions': str(self.instructions),
                 'original_string': self.original_string,
                 'provenance': self.provenance,
+                'normalized_dose': self._norm_dose,
                 'id': id(self),
                }
     def _normalize_drug_name(self, drug_name):
@@ -295,6 +296,6 @@ class ParsedMedication(Medication):
         for field in MEDICATION_FIELDS.keys():
             if self.__getattribute__(field)==other.__getattribute__(field):
                 result.add(MEDICATION_FIELDS[field])
-        return result
+        return '|'.join(x for x in result)
     
         
