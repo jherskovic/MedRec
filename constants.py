@@ -110,13 +110,12 @@ MEDICATION_FIELDS={"_name":         "DRUG_NAME",
                    }
 
 # 
-KNOWN_MATCHING_FIELDS={MATCH_STRING:      '|'.join([x for x in 
-                                               MEDICATION_FIELDS.itervalues()]
-                                              ),
-                       MATCH_BRAND_NAME:  '|'.join([x for x in
+KNOWN_MATCHING_FIELDS={MATCH_STRING:          [x for x in 
+                                               MEDICATION_FIELDS.itervalues()],    
+                       MATCH_BRAND_NAME:      [x for x in
                                                MEDICATION_FIELDS.itervalues() 
-                                               if x != "DRUG_NAME"]),
-                       MATCH_INGREDIENTS: '|'.join([x for x in 
+                                               if x != "DRUG_NAME"],
+                       MATCH_INGREDIENTS:     [x for x in 
                                                MEDICATION_FIELDS.itervalues()
-                                               if x != "DRUG_NAME"]),
+                                               if x != "DRUG_NAME"],
                        MATCH_TREATMENT_INTENT: None}

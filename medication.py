@@ -296,6 +296,6 @@ class ParsedMedication(Medication):
         for field in MEDICATION_FIELDS.keys():
             if self.__getattribute__(field)==other.__getattribute__(field):
                 result.add(MEDICATION_FIELDS[field])
-        return '|'.join(x for x in result)
+        return list(result)
     
         
