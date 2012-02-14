@@ -172,7 +172,7 @@ def main():
     
     options_parser = OptionParser(usage=usage)
     options_parser.add_option("-v", "--verbose", dest="verbose", default=False,
-                      help="Show debugging information as script runs.",
+                      help="Show debugging information as the script runs.",
                       action="store_true")
     options_parser.add_option("-r", "--rxnorm", dest="rxnorm", metavar="FILE",
                       default="rxnorm.pickle.bz2",
@@ -180,6 +180,9 @@ def main():
     options_parser.add_option("-t", "--treatment", dest="treatment",
                       metavar="FILE", default='treats.pickle.bz2',
                       help="Read a pickled instance of treatment sets from FILE")
+    options_parser.add_option("-j", "--json", dest="json",
+                              default=False, action="store_true",
+                              help="Output JSON instead of HTML.")
     (options, args) = options_parser.parse_args()
     print "Loading RXNorm"
     logging.basicConfig(level=logging.DEBUG if options.verbose else logging.INFO,
@@ -237,9 +240,13 @@ def main():
             if current_l1 is not None:
                 count += 1
                 print ITERATION_TEMPLATE % count
-                output_filename = os.path.join(output_path, "rec_%05d.html" % count)
+                output_extension=".json" if options.json else ".html"
+                output_filename = os.path.join(output_path, ("rec_%05d" + output_extension) % count)
                 l1, l2, rec = reconcile_lists(current_l1, current_l2, mc)
-                output_html(current_l1, current_l2, l1, l2, rec, output_filename)
+                if options.json:
+                    output_json(current_l1, current_l2, l1, l2, rec, output_filename)
+                else:
+                    output_html(current_l1, current_l2, l1, l2, rec, output_filename)
         else:
             current_list.append(l)
 

@@ -111,7 +111,7 @@ MEDICATION_FIELDS={"_name":         "DRUG_NAME",
 
 # 
 KNOWN_MATCHING_FIELDS={MATCH_STRING:          [x for x in 
-                                               MEDICATION_FIELDS.itervalues()],    
+                                               MEDICATION_FIELDS.itervalues()],  
                        MATCH_BRAND_NAME:      [x for x in
                                                MEDICATION_FIELDS.itervalues() 
                                                if x != "DRUG_NAME"],

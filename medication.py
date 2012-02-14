@@ -174,6 +174,7 @@ class ParsedMedication(Medication):
                 'provenance': self.provenance,
                 'normalized_dose': self._norm_dose,
                 'id': self._seq_id,
+                'parsed': self._parsed,
                }
     def _normalize_drug_name(self, drug_name):
         truncated = drug_name.split('@')[0].strip().upper()
