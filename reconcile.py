@@ -199,9 +199,9 @@ def main():
     mc = MappingContext(rx, ts)
     
     if len(args) == 0:
-        # Test run with no parameters
-        l1, l2, rec = reconcile_lists(test_list_1, test_list_2, mc)
-        print output_json(test_list_1, test_list_2, l1, l2, rec)
+        # Demo run with no parameters
+        l1, l2, rec = reconcile_lists(demo_list_1, demo_list_2, mc)
+        print output_json(demo_list_1, demo_list_2, l1, l2, rec)
         return
     # Use the file provided
     current_list = []

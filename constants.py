@@ -121,7 +121,7 @@ KNOWN_MATCHING_FIELDS={MATCH_STRING:          [x for x in
                        MATCH_TREATMENT_INTENT: None}
 
 # Test lists of medications
-test_list_1 = """Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT
+demo_list_1 = """Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT
 Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx
 Lipitor 10 MG Tablet;TAKE 1 TABLET DAILY.; Rx
 Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx
@@ -130,7 +130,7 @@ Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx
 Lisinopril 5 MG Tablet;TAKE  TABLET TWICE DAILY; Rx
 Coreg 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; RPT
 """.split('\n')
-test_list_2 = """Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx
+demo_list_2 = """Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx
 Warfarin Sodium 5 MG Tablet;TAKE 1 TABLET DAILY AS DIRECTED.; Rx
 Carvedilol 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; Rx
 Lipitor 10 MG Tablet;TAKE 1 TABLET DAILY.; Rx
