@@ -200,24 +200,6 @@ def main():
     
     if len(args) == 0:
         # Test run with no parameters
-        test_list_1 = """Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT
-                Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx
-                Lipitor 10 MG Tablet;TAKE 1 TABLET DAILY.; Rx
-                Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx
-                Warfarin Sodium 5 MG Tablet;TAKE 1 TABLET DAILY AS DIRECTED.; Rx
-                Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx
-                Lisinopril 5 MG Tablet;TAKE  TABLET TWICE DAILY; Rx
-                Coreg 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; RPT
-        """.split('\n')
-        test_list_2 = """Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx
-        Warfarin Sodium 5 MG Tablet;TAKE 1 TABLET DAILY AS DIRECTED.; Rx
-        Carvedilol 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; Rx
-        Lipitor 10 MG Tablet;TAKE 1 TABLET DAILY.; Rx
-        Lisinopril 5 MG Tablet;TAKE 1 TABLET TWICE DAILY; Rx
-        Synthroid 100 MCG Tablet;TAKE 1 TABLET DAILY.; Rx
-        Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx
-        Sertraline HCl 50 MG Tablet;TAKE 1 TABLET DAILY.; Rx
-        Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx.""".split('\n')
         l1, l2, rec = reconcile_lists(test_list_1, test_list_2, mc)
         print output_json(test_list_1, test_list_2, l1, l2, rec)
         return

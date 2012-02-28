@@ -119,3 +119,24 @@ KNOWN_MATCHING_FIELDS={MATCH_STRING:          [x for x in
                                                MEDICATION_FIELDS.itervalues()
                                                if x != "DRUG_NAME"],
                        MATCH_TREATMENT_INTENT: None}
+
+# Test lists of medications
+test_list_1 = """Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT
+Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx
+Lipitor 10 MG Tablet;TAKE 1 TABLET DAILY.; Rx
+Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx
+Warfarin Sodium 5 MG Tablet;TAKE 1 TABLET DAILY AS DIRECTED.; Rx
+Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx
+Lisinopril 5 MG Tablet;TAKE  TABLET TWICE DAILY; Rx
+Coreg 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; RPT
+""".split('\n')
+test_list_2 = """Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx
+Warfarin Sodium 5 MG Tablet;TAKE 1 TABLET DAILY AS DIRECTED.; Rx
+Carvedilol 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; Rx
+Lipitor 10 MG Tablet;TAKE 1 TABLET DAILY.; Rx
+Lisinopril 5 MG Tablet;TAKE 1 TABLET TWICE DAILY; Rx
+Synthroid 100 MCG Tablet;TAKE 1 TABLET DAILY.; Rx
+Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx
+Sertraline HCl 50 MG Tablet;TAKE 1 TABLET DAILY.; Rx
+Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx.
+""".split('\n')
