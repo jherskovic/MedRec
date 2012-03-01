@@ -11,6 +11,8 @@ Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserve
 
 # %FORM% will get replaced with each of the known physical forms below to obtain
 # the regular expressions that detect administration frequency
+# Second element of each tuple indicates frequency per day, or, if -1,
+# that the first element is to be treated as a regexp that captures the frequency.
 known_times_per_day=[
                ('%FORM% DAILY', 1),
                ('%FORM%S DAILY', 1),
@@ -37,7 +39,10 @@ known_times_per_day=[
                ('A DAY', 1),
                ('AT NIGHT', 1),
               ]
-               
+
+# Second element of each tuple, if -1, indicates that the first element
+# is a regular expression; otherwise, the first element is a literal
+# string to be matched.                
 known_number_of_doses=[
                (r'TAKE (\d+) %FORM%[S]?', -1),
                ('TAKE %FORM%', 1),
@@ -138,5 +143,4 @@ Lisinopril 5 MG Tablet;TAKE 1 TABLET TWICE DAILY; Rx
 Synthroid 100 MCG Tablet;TAKE 1 TABLET DAILY.; Rx
 Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx
 Sertraline HCl 50 MG Tablet;TAKE 1 TABLET DAILY.; Rx
-Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx.
-""".split('\n')
+Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx.""".split('\n')
