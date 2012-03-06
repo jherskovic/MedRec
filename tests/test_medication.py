@@ -8,7 +8,7 @@ sys.path.append('..')
 #print sys.path
 import unittest
 from constants import demo_list_1, demo_list_2
-from medication import medication_parser
+import medication
 
 parsedDemoMeds = (
   dict(
@@ -107,13 +107,13 @@ class TestMedParsing(unittest.TestCase):
     
     def setUp(self):
         self.medList = demo_list_1 + demo_list_2
-        self.parsedMedList = [medication_parser.match(med) for med in self.medList]
+        self.parsedMedList = [medication.medication_parser.match(med) for med in self.medList]
    
     def testDemoMedParsing(self):
         i = 0
         while i < len(parsedDemoMeds):
             d = parsedDemoMeds[i]
-            m = medication_parser.match(d.get('original'))
+            m = medication.medication_parser.match(d.get('original'))
             self._parseHorse(m,d,i)
             i += 1
         return
@@ -124,6 +124,47 @@ class TestMedParsing(unittest.TestCase):
             parsedVal = m.group(field)
             givenVal = d[field]
             self.assertEqual(parsedVal, givenVal, 'Incorrect parsing of %s in example %d: "%s" vs "%s"' % (field, i+1, parsedVal, givenVal))
+
+
+class TestMedicationClass(unittest.TestCase):
+    
+    def setUp(self):
+        self.original_strings = [
+            'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx.',
+            '(Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx)',
+            ]
+        self.empty_strings = ['', ' ', "\t "]
+        self.normalized_string = 'MIRAPEX 0.5 MG TABLET;TAKE 1 TABLET 3 TIMES DAILY.; RX'
+        self.provenance = 'list1'
+    
+    def test_normalize_string(self):
+        i = 0
+        for original_string in self.original_strings:
+            i += 1
+            medInstance = medication.Medication(original_string)
+            self.assertEqual(self.normalized_string, medInstance.normalized_string, "Failed to normalize example %d" % i)
+    
+    def test_original_string(self):
+        i = 0
+        for original_string in self.original_strings:
+            i += 1
+            medInstance = medication.Medication(original_string)
+            self.assertEqual(medInstance.original_string, original_string, "Failed original string equality in example %d" % i)
+    
+    def test_is_empty(self):
+        i = 0
+        for empty_string in self.empty_strings:
+            i += 1
+            medInstance = medication.Medication(empty_string)
+            self.assertTrue(medInstance.is_empty(), "Failed to detect empty string in example %d" % i)
+        for nonempty_string in self.original_strings:
+            i += 1
+            medInstance = medication.Medication(nonempty_string)
+            self.assertTrue(not medInstance.is_empty(), "Failed to detect non-empty string in example %d" % i)
+    
+    def test_provenance(self):
+        medInstance = medication.Medication(self.original_strings[0], provenance=self.provenance)
+        self.assertEqual(medInstance.provenance, self.provenance)
 
 
 if __name__ == "__main__":
