@@ -137,6 +137,9 @@ class TestMedicationClass(unittest.TestCase):
         self.normalized_string = 'MIRAPEX 0.5 MG TABLET;TAKE 1 TABLET 3 TIMES DAILY.; RX'
         self.provenance = 'list1'
     
+#    def test_construct_no_text(self):
+#        self.assertTrue(medication.Medication())
+
     def test_normalize_string(self):
         i = 0
         for original_string in self.original_strings:
@@ -165,6 +168,43 @@ class TestMedicationClass(unittest.TestCase):
     def test_provenance(self):
         medInstance = medication.Medication(self.original_strings[0], provenance=self.provenance)
         self.assertEqual(medInstance.provenance, self.provenance)
+
+
+class TestParsedMedicationClass(unittest.TestCase):
+
+    def setUp(self):
+        self.original     = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
+        self.name         = 'Protonix'
+        self.dosage       = '40'
+        self.units        = 'MG'
+        self.formulation  = 'Tablet Delayed Release'
+        self.instructions = 'TAKE 1 TABLET DAILY.; Rx'
+        self.constructed  = medication.ParsedMedication(self.original)
+        self.init_from_text    = medication.ParsedMedication()
+        self.init_from_text.from_text(self.original)
+    
+    def test_constructed(self):
+        self.assertEqual(self.constructed.original_string, self.original,"ParsedMedication class wasn't properly initialized from constructor.")
+
+    def test_init_from_text(self):
+        self.assertEqual(self.init_from_text.original_string, self.original, "ParsedMedication class wasn't properly initialized with .from_text().")
+        
+#    def test_name_get(self): pass
+#    def test_name_set(self): pass
+#    def test_dose(self): pass
+#    def test_units(self): pass
+#    def test_formulation(self): pass
+#    def test_instructions(self): pass
+#    def test_original_line(self): pass
+#    def test_parsed(self): pass
+#    def test_generic_formula(self): pass
+#    def test_as_dictionary(self): pass
+#    def test_compute_generics(self): pass
+#    def test_CUIs(self): pass
+#    def test_tradenames(self): pass
+#    def test_normalize_dose(self): pass
+#    def test_normalized_dose(self): pass
+#    def test_fieldwise_comparison(self): pass
 
 
 if __name__ == "__main__":
