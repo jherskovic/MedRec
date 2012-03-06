@@ -22,7 +22,7 @@ medication_parser = re.compile(r"""^\s*(?P<name>.*?)
                                   \s+(?P<dosage>[0-9\.\/]+)
                                   \s+(?P<units>m?c?k?g|m?d?l)
                                   \s*(?P<formulation>.*?)
-                                  ;?
+                                  ;
                                   \s*?(?P<instructions>.*)""",
                                   re.IGNORECASE | re.VERBOSE)
 
