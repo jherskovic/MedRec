@@ -35,12 +35,17 @@ _sequential_id=_sequential_id_gen()
 
 class Medication(object):
     """Represents a single medication from a list to be reconciled."""
-    def __init__(self, original_string, provenance=""):
+    def __init__(self, original_string=None, provenance=""):
         super(Medication, self).__init__()
-        self._original_string = original_string.strip()
-        self._normalized_string = self._normalize_string()
+        self._original_string = None
+        self._normalized_string = None
+        if original_string is not None:
+            self.from_text(original_string)
         self._provenance = provenance
         self._seq_id=_sequential_id.next()
+    def from_text(self, med_line):
+        self._original_string = med_line.strip()
+        self._normalized_string = self._normalize_string()
     def _normalize_string(self):
         return self._normalize_field(self._original_string)
     def _normalize_field(self, field):
@@ -98,6 +103,7 @@ class ParsedMedication(Medication):
     def from_text(self, med_line):
         """Separates a medication string into its components according to the
         medication_parser regular expression."""
+        super(ParsedMedication, self).from_text(med_line)
         med = medication_parser.findall(self.normalized_string)
         if len(med) > 0:
             med = med[0]
