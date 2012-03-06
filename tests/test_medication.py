@@ -99,54 +99,6 @@ parsedDemoMeds = (
     formulation  = '',
     instructions = '1 tablet p.o. twice daily',
   ),
-#  dict(
-#    original     = 'aspirin 325 mg 1 tablet p.o. daily',
-#    name         = '',
-#    dosage       = '',
-#    units        = '',
-#    formulation  = '',
-#    instructions = '',
-#  ),
-#  dict(
-#    original     = 'Hyzaar 100/25 mg 1 tablet p.o. daily',
-#    name         = '',
-#    dosage       = '',
-#    units        = '',
-#    formulation  = '',
-#    instructions = '',
-#  ),
-#  dict(
-#    original     = 'Toprol-XL 25 mg 1 tablet p.o. daily',
-#    name         = '',
-#    dosage       = '',
-#    units        = '',
-#    formulation  = '',
-#    instructions = '',
-#  ),
-#  dict(
-#    original     = 'nitroglycerin 0.4 sublingual p.r.n. for chest pain',
-#    name         = '',
-#    dosage       = '',
-#    units        = '',
-#    formulation  = '',
-#    instructions = '',
-#  ),
-#  dict(
-#    original     = 'Vytorin 10/20 1 tablet p.o. daily.',
-#    name         = '',
-#    dosage       = '',
-#    units        = '',
-#    formulation  = '',
-#    instructions = '',
-#  ),
-#  dict(
-#    original     = 'isosorbide dinitrate 30 mg 1 tablet p.o. 3 times daily',
-#    name         = '',
-#    dosage       = '',
-#    units        = '',
-#    formulation  = '',
-#    instructions = '',
-#  ),
 )
 parsedFields = ('name', 'dosage', 'units', 'formulation', 'instructions',)
 
@@ -168,6 +120,7 @@ class TestMedParsing(unittest.TestCase):
     
     def _parseHorse(self, m, d, i):
         for field in parsedFields:
+            self.assertTrue(m, "No match in example %d" % i)
             parsedVal = m.group(field)
             givenVal = d[field]
             self.assertEqual(parsedVal, givenVal, 'Incorrect parsing of %s in example %d: "%s" vs "%s"' % (field, i+1, parsedVal, givenVal))
