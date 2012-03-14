@@ -14,7 +14,7 @@ parsedDemoMeds = (
   dict(
     original     = 'Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT',
     name         = 'Zoloft',
-    dosage       = '50',
+    dose         = '50',
     units        = 'MG',
     formulation  = 'Tablet',
     instructions = 'TAKE 1 TABLET DAILY.; RPT',
@@ -22,7 +22,7 @@ parsedDemoMeds = (
   dict(
     original     = 'Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx',
     name         = 'Warfarin Sodium',
-    dosage       = '2.5',
+    dose         = '2.5',
     units        = 'MG',
     formulation  = 'Tablet',
     instructions = 'TAKE AS DIRECTED.; Rx',
@@ -30,7 +30,7 @@ parsedDemoMeds = (
   dict(
     original     = 'Lipitor 10 MG Tablet;TAKE 1 TABLET DAILY.; Rx',
     name         = 'Lipitor',
-    dosage       = '10',
+    dose         = '10',
     units        = 'MG',
     formulation  = 'Tablet',
     instructions = 'TAKE 1 TABLET DAILY.; Rx',
@@ -38,7 +38,7 @@ parsedDemoMeds = (
   dict(
     original     = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx',
     name         = 'Protonix',
-    dosage       = '40',
+    dose         = '40',
     units        = 'MG',
     formulation  = 'Tablet Delayed Release',
     instructions = 'TAKE 1 TABLET DAILY.; Rx',
@@ -46,7 +46,7 @@ parsedDemoMeds = (
   dict(
     original     = 'Warfarin Sodium 5 MG Tablet;TAKE 1 TABLET DAILY AS DIRECTED.; Rx',
     name         = 'Warfarin Sodium',
-    dosage       = '5',
+    dose         = '5',
     units        = 'MG',
     formulation  = 'Tablet',
     instructions = 'TAKE 1 TABLET DAILY AS DIRECTED.; Rx',
@@ -54,7 +54,7 @@ parsedDemoMeds = (
   dict(
     original     = 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
     name         = 'Mirapex',
-    dosage       = '0.5',
+    dose         = '0.5',
     units        = 'MG',
     formulation  = 'Tablet',
     instructions = 'TAKE 1 TABLET 3 TIMES DAILY.; Rx',
@@ -62,7 +62,7 @@ parsedDemoMeds = (
   dict(
     original     = 'Lisinopril 5 MG Tablet;TAKE  TABLET TWICE DAILY; Rx',
     name         = 'Lisinopril',
-    dosage       = '5',
+    dose         = '5',
     units        = 'MG',
     formulation  = 'Tablet',
     instructions = 'TAKE  TABLET TWICE DAILY; Rx',
@@ -70,7 +70,7 @@ parsedDemoMeds = (
   dict(
     original     = 'Coreg 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; RPT',
     name         = 'Coreg',
-    dosage       = '25',
+    dose         = '25',
     units        = 'MG',
     formulation  = 'Tablet',
     instructions = 'TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; RPT',
@@ -78,29 +78,29 @@ parsedDemoMeds = (
   dict(
     original     = 'Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx',
     name         = 'Pantoprazole Sodium',
-    dosage       = '40',
+    dose         = '40',
     units        = 'MG',
     formulation  = 'Tablet Delayed Release',
     instructions = 'TAKE 1 TABLET DAILY.; Rx',
   ),
-  dict(
-    original     = 'Amiodarone 200 mg 1 tablet every other day',
-    name         = 'Amiodarone',
-    dosage       = '200',
-    units        = 'mg',
-    formulation  = '',
-    instructions = '1 tablet every other day',
-  ),
-  dict(
-    original     = 'amlodipine 2.5 mg 1 tablet p.o. twice daily',
-    name         = 'amlodipine',
-    dosage       = '2.5',
-    units        = 'mg',
-    formulation  = '',
-    instructions = '1 tablet p.o. twice daily',
-  ),
+#  dict(
+#    original     = 'Amiodarone 200 mg 1 tablet every other day',
+#    name         = 'Amiodarone',
+#    dose         = '200',
+#    units        = 'mg',
+#    formulation  = '',
+#    instructions = '1 tablet every other day',
+#  ),
+#  dict(
+#    original     = 'amlodipine 2.5 mg 1 tablet p.o. twice daily',
+#    name         = 'amlodipine',
+#    dose         = '2.5',
+#    units        = 'mg',
+#    formulation  = '',
+#    instructions = '1 tablet p.o. twice daily',
+#  ),
 )
-parsedFields = ('name', 'dosage', 'units', 'formulation', 'instructions',)
+parsedFields = ('name', 'dose', 'units', 'formulation', 'instructions',)
 
 
 class TestMedParsing(unittest.TestCase):
@@ -137,8 +137,8 @@ class TestMedicationClass(unittest.TestCase):
         self.normalized_string = 'MIRAPEX 0.5 MG TABLET;TAKE 1 TABLET 3 TIMES DAILY.; RX'
         self.provenance = 'list1'
     
-#    def test_construct_no_text(self):
-#        self.assertTrue(medication.Medication())
+    def test_construct_no_text(self):
+        self.assertTrue(medication.Medication(), "Unable to construct Medication without text.")
 
     def test_normalize_string(self):
         i = 0
@@ -175,13 +175,28 @@ class TestParsedMedicationClass(unittest.TestCase):
     def setUp(self):
         self.original     = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
         self.name         = 'Protonix'
-        self.dosage       = '40'
+        self.normalized_name = 'PROTONIX'
+        self.name_new     = 'Mirapex;'
+        self.normalized_name_new = 'MIRAPEX'
+        self.dose         = '40'
+        self.dose_new     = '30'
         self.units        = 'MG'
+        self.units_new    = 'cl'
+        self.normalized_units_new    = 'CL'
         self.formulation  = 'Tablet Delayed Release'
+        self.normalized_formulation  = 'TABLET DELAYED RELEASE'
+        self.formulation_new = 'Elixir'
+        self.normalized_formulation_new = 'ELIXIR'
         self.instructions = 'TAKE 1 TABLET DAILY.; Rx'
+        self.normalized_instructions = 'TAKE 1 TABLET DAILY.; RX'
+        self.instructions_new = 'Take 1 Tablet 3 Times Daily.'
+        self.normalized_instructions_new = 'TAKE 1 TABLET 3 TIMES DAILY'
         self.constructed  = medication.ParsedMedication(self.original)
         self.init_from_text    = medication.ParsedMedication()
         self.init_from_text.from_text(self.original)
+
+    def test_construct_no_text(self):
+        self.assertTrue(medication.ParsedMedication(), "Unable to construct ParsedMedication without text.")
     
     def test_constructed(self):
         self.assertEqual(self.constructed.original_string, self.original,"ParsedMedication class wasn't properly initialized from constructor.")
@@ -189,13 +204,44 @@ class TestParsedMedicationClass(unittest.TestCase):
     def test_init_from_text(self):
         self.assertEqual(self.init_from_text.original_string, self.original, "ParsedMedication class wasn't properly initialized with .from_text().")
         
-#    def test_name_get(self): pass
-#    def test_name_set(self): pass
-#    def test_dose(self): pass
-#    def test_units(self): pass
-#    def test_formulation(self): pass
-#    def test_instructions(self): pass
-#    def test_original_line(self): pass
+    def test_name_get(self):
+        self.assertEqual(self.constructed.name, self.normalized_name)
+
+    def test_name_set(self):
+        self.constructed.name = self.name_new
+        self.assertEqual(self.constructed.name, self.normalized_name_new)
+    
+    def test_dose_get(self):
+        self.assertEqual(self.constructed.dose, self.dose)
+
+    def test_dose_set(self):
+        self.constructed.dose = self.dose_new
+        self.assertEqual(self.constructed.dose, self.dose_new)
+
+    def test_units_get(self):
+        self.assertEqual(self.constructed.units, self.units)
+
+    def test_units_set(self):
+        self.constructed.units = self.units_new
+        self.assertEqual(self.constructed.units, self.normalized_units_new)
+
+    def test_formulation_get(self):
+        self.assertEqual(self.constructed.formulation, self.normalized_formulation)
+
+    def test_formulation_set(self):
+        self.constructed.formulation = self.formulation_new
+        self.assertEqual(self.constructed.formulation, self.normalized_formulation_new)
+
+    def test_instructions_get(self):
+        self.assertEqual(self.constructed.instructions, self.normalized_instructions)
+
+    def test_instructions_set(self):
+        self.constructed.instructions = self.instructions_new
+        self.assertEqual(self.constructed.instructions, self.normalized_instructions_new)
+
+    def test_original_line(self):
+        self.assertEqual(self.init_from_text.original_line, self.original)
+
 #    def test_parsed(self): pass
 #    def test_generic_formula(self): pass
 #    def test_as_dictionary(self): pass
