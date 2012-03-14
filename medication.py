@@ -19,7 +19,7 @@ import operator
 from constants import *
 
 medication_parser = re.compile(r"""^\s*(?P<name>.*?)
-                                  \s+(?P<dosage>[0-9\.\/]+)
+                                  \s+(?P<dose>[0-9\.\/]+)
                                   \s+(?P<units>m?c?k?g|m?d?l)
                                   \s*(?P<formulation>.*?)
                                   ;
@@ -107,8 +107,8 @@ class ParsedMedication(Medication):
         med = medication_parser.findall(self.normalized_string)
         if len(med) > 0:
             med = med[0]
-            self._name = med[0]
-            self._dose = med[1]
+            self._name = self._normalize_field(med[0])
+            self._dose = self._normalize_field(med[1])
             self._units = self._normalize_field(med[2])
             self._formulation = self._normalize_field(med[3])
             self._instructions = self._normalize_field(med[4])
@@ -146,22 +146,34 @@ class ParsedMedication(Medication):
         return self._name
     @name.setter
     def name(self, value):
-        self._name = copy.copy(value)
+        self._name = self._normalize_field(value)
     @property
     def dose(self):
         return self._dose
+    @dose.setter
+    def dose(self, value):
+        self._dose = self._normalize_field(value)
     @property
     def units(self):
         return self._units
+    @units.setter
+    def units(self, value):
+        self._units = self._normalize_field(value)
     @property
     def formulation(self):
         return copy.copy(self._formulation)
+    @formulation.setter
+    def formulation(self, value):
+        self._formulation = self._normalize_field(value)
     @property
     def instructions(self):
         return copy.copy(self._instructions)
+    @instructions.setter
+    def instructions(self, value):
+        self._instructions = self._normalize_field(value)
     @property
     def original_line(self):
-        return self._original_line
+        return self._original_string
     @property
     def parsed(self):
         return self._parsed
