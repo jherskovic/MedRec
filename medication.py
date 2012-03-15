@@ -33,6 +33,8 @@ def _sequential_id_gen(starting=0):
 
 _sequential_id=_sequential_id_gen()
 
+class MappingContextError(Exception): pass
+
 class Medication(object):
     """Represents a single medication from a list to be reconciled."""
     def __init__(self, original_string=None, provenance=""):
@@ -180,6 +182,8 @@ class ParsedMedication(Medication):
     @property 
     def generic_formula(self):
         if self._generic_formula is None:
+            if self._context is None:
+                raise MappingContextError, "Can't compute generic formula without a MappingContext object."
             self.compute_generics()
         return copy.copy(self._generic_formula)
     def as_dictionary(self):
@@ -205,10 +209,18 @@ class ParsedMedication(Medication):
             else:
                 final_version.append(x)
         return ' '.join(final_version)
+    @property
+    def mappings(self):
+        return self._context
+    @mappings.setter
+    def mappings(self, mappings):
+        self._context = mappings
     def compute_generics(self, mappings=None):
+        """Computes the generic equivalent of a drug according to RXNorm."""
         if mappings is None:
             mappings=self._context
-        """Computes the generic equivalent of a drug according to RXNorm."""
+        if mappings is None:
+            raise MappingContextError, "Method requires a MappingContext object."
         concepts = self.CUIs(mappings)
         if concepts is not None:
             logging.debug("Concepts for %s=%r", self.name, concepts)
@@ -227,6 +239,8 @@ class ParsedMedication(Medication):
     def CUIs(self, mappings=None):
         if mappings is None:
             mappings=self._context
+        if mappings is None:
+            raise MappingContextError, "Method requires a MappingContext object."
         if self._cuis is None:
             if self.name is not None:
                 name_of_medication = self.name.lower()
