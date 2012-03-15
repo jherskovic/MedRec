@@ -251,6 +251,8 @@ class ParsedMedication(Medication):
     def tradenames(self, mappings=None):
         if mappings is None:
             mappings=self._context
+        if mappings is None:
+            raise MappingContextError, "Method requires a MappingContext object."
         my_cuis = self.CUIs(mappings)
         if my_cuis is None:
             return []
