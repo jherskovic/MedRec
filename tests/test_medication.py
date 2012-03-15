@@ -5,10 +5,14 @@ Created on Feb 28, 2012
 '''
 import sys
 sys.path.append('..')
+import os
 #print sys.path
+import cPickle as pickle
+import bz2
 import unittest
 from constants import demo_list_1, demo_list_2
 import medication
+from mapping_context import MappingContext
 
 parsedDemoMeds = (
   dict(
@@ -169,9 +173,22 @@ class TestMedicationClass(unittest.TestCase):
         medInstance = medication.Medication(self.original_strings[0], provenance=self.provenance)
         self.assertEqual(medInstance.provenance, self.provenance)
 
+if os.path.isfile('rxnorm.pickle.bz2'):
+    rxnorm = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
+else:
+    rxnorm = None
+if os.path.isfile('treats.pickle.bz2'):
+    treats = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
+else:
+    treats = None
+if rxnorm is not None:
+    mappings = MappingContext(rxnorm, treats)
+else:
+    mappings = None
+
 
 class TestParsedMedicationClass(unittest.TestCase):
-
+    
     def setUp(self):
         self.original     = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
         self.name         = 'Protonix'
@@ -191,9 +208,27 @@ class TestParsedMedicationClass(unittest.TestCase):
         self.normalized_instructions = 'TAKE 1 TABLET DAILY.; RX'
         self.instructions_new = 'Take 1 Tablet 3 Times Daily.'
         self.normalized_instructions_new = 'TAKE 1 TABLET 3 TIMES DAILY'
+        self.generic_formula = ['PANTOPRAZOLE (AS PANTOPRAZOLE SODIUM SESQUIHYDRATE)', 'PANTOPRAZOLE SODIUM']
+        self.generic_formula.sort()
+        self.mapped_cuis  = set(['C0876139'])
+        self.provenance   = 'List 42'
+        self.normalized_dose = '40 MG*1*1'
+        self.original_dict = {
+          'medicationName' : self.normalized_name,
+          'dose'           : self.dose,
+          'units'          : self.units,
+          'formulation'    : self.normalized_formulation,
+          'instructions'   : self.normalized_instructions,
+          'original_string': self.original,
+          'provenance'     : self.provenance,
+          'normalized_dose': self.normalized_dose,
+          'parsed'         : True,
+        }
         self.constructed  = medication.ParsedMedication(self.original)
+        self.constructed_mappings  = medication.ParsedMedication(self.original, mappings, self.provenance)
         self.init_from_text    = medication.ParsedMedication()
         self.init_from_text.from_text(self.original)
+        self.init_no_text = medication.ParsedMedication()
 
     def test_construct_no_text(self):
         self.assertTrue(medication.ParsedMedication(), "Unable to construct ParsedMedication without text.")
@@ -242,14 +277,55 @@ class TestParsedMedicationClass(unittest.TestCase):
     def test_original_line(self):
         self.assertEqual(self.init_from_text.original_line, self.original)
 
-#    def test_parsed(self): pass
-#    def test_generic_formula(self): pass
-#    def test_as_dictionary(self): pass
-#    def test_compute_generics(self): pass
-#    def test_CUIs(self): pass
+    def test_parsed_constructed(self):
+        self.assertTrue(self.constructed.parsed)
+        
+    def test_parsed_from_text(self):
+        self.assertTrue(self.init_from_text.parsed)
+        
+    def test_parsed_no_text(self):
+        self.assertTrue(not self.init_no_text.parsed)
+        
+    def test_generic_formula_none(self):
+        self.assertRaises(medication.MappingContextError, self.constructed.CUIs, None)
+
+    def test_generic_formula_setter(self):
+        self.constructed.mappings = mappings
+        generic_formula = self.constructed.generic_formula
+        generic_formula.sort()
+        self.assertEquals(self.generic_formula, generic_formula)
+
+    def test_generic_formula_constructed(self):
+        generic_formula = self.constructed_mappings.generic_formula
+        generic_formula.sort()
+        self.assertEquals(self.generic_formula, generic_formula)
+
+    def test_compute_generics_nomapping(self):
+        self.assertRaises(medication.MappingContextError, self.constructed.__getattribute__, 'generic_formula')
+
+    def test_compute_generics(self):
+        self.constructed.compute_generics(mappings)
+        generic_formula = self.constructed_mappings.generic_formula
+        generic_formula.sort()
+        self.assertEquals(self.generic_formula, generic_formula)
+        
+    def test_CUIs_none(self):
+        self.assertRaises(medication.MappingContextError, self.constructed.CUIs, None)
+
+    def test_CUIs_mapping_arg(self):
+        self.assertEqual(self.constructed.CUIs(mappings), self.mapped_cuis)
+
+    def test_CUIs_mapping_set(self):
+        self.constructed.mappings = mappings
+        self.assertEqual(self.constructed.CUIs(), self.mapped_cuis)
+
 #    def test_tradenames(self): pass
 #    def test_normalize_dose(self): pass
 #    def test_normalized_dose(self): pass
+#    def test_as_dictionary(self):
+#        original_dict = self.constructed_mappings.as_dictionary()
+#        for key, val in self.original_dict.items():
+#            self.assertEquals(original_dict[key], val)
 #    def test_fieldwise_comparison(self): pass
 
 
