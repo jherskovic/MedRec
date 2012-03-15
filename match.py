@@ -84,7 +84,7 @@ def match_by_strings(list1, list2):
     for item in list1:
         if item.normalized_string in my_list_2:
             where_in_2 = my_list_2.index(item.normalized_string)
-            common.append(Match(item, item, 1.0, MATCH_STRING))
+            common.append(Match(item, my_list_2[where_in_2], 1.0, MATCH_STRING))
             del my_list_2[where_in_2]
             del my_list_2_of_objects[where_in_2]
         else:
