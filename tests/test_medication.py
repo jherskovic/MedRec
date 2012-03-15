@@ -191,6 +191,7 @@ class TestParsedMedicationClass(unittest.TestCase):
     
     def setUp(self):
         self.original     = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
+        self.original_generic = 'Sertraline 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT'
         self.name         = 'Protonix'
         self.normalized_name = 'PROTONIX'
         self.name_new     = 'Mirapex;'
