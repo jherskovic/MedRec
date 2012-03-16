@@ -140,17 +140,26 @@ class TestMedicationClass(unittest.TestCase):
         self.empty_strings = ['', ' ', "\t "]
         self.normalized_string = 'MIRAPEX 0.5 MG TABLET;TAKE 1 TABLET 3 TIMES DAILY.; RX'
         self.provenance = 'list1'
+        self.instance = medication.Medication(self.original_strings[0])
     
     def test_construct_no_text(self):
-        self.assertTrue(medication.Medication(), "Unable to construct Medication without text.")
+        """Medication class is read-only & must be initialized with a string;
+        if it isn't, a TypeError should be thrown with the message 
+        '__init__() takes at least 2 arguments (1 given)'"""
+        self.assertRaises(TypeError, medication.Medication)
 
     def test_normalize_string(self):
+        """.normalize_string() should normalize both test strings to the same test output."""
         i = 0
         for original_string in self.original_strings:
             i += 1
             medInstance = medication.Medication(original_string)
             self.assertEqual(self.normalized_string, medInstance.normalized_string, "Failed to normalize example %d" % i)
-    
+
+    def test_normalized_string_readonly(self):
+        self.assertRaises(AttributeError, self.instance.__setattr__,
+          'normalized_string', self.original_strings[1])
+
     def test_original_string(self):
         i = 0
         for original_string in self.original_strings:
@@ -158,6 +167,10 @@ class TestMedicationClass(unittest.TestCase):
             medInstance = medication.Medication(original_string)
             self.assertEqual(medInstance.original_string, original_string, "Failed original string equality in example %d" % i)
     
+    def test_original_string_readonly(self):
+        self.assertRaises(AttributeError, self.instance.__setattr__,
+          'original_string', self.original_strings[1])
+
     def test_is_empty(self):
         i = 0
         for empty_string in self.empty_strings:
@@ -172,6 +185,11 @@ class TestMedicationClass(unittest.TestCase):
     def test_provenance(self):
         medInstance = medication.Medication(self.original_strings[0], provenance=self.provenance)
         self.assertEqual(medInstance.provenance, self.provenance)
+
+    def test_provenance_readonly(self):
+        self.assertRaises(AttributeError, self.instance.__setattr__,
+          'provenance', self.original_strings[1])
+
 
 if os.path.isfile('rxnorm.pickle.bz2'):
     rxnorm = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
