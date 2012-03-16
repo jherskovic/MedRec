@@ -210,6 +210,7 @@ class TestParsedMedicationClass(unittest.TestCase):
     def setUp(self):
         self.original     = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
         self.normalized   = 'PROTONIX 40 MG TABLET DELAYED RELEASE;TAKE 1 TABLET DAILY.; RX'
+        self.multi_tradenames = 'Naproxen 500 MG Tablet;TAKE 1 TABLET EVERY 12 HOURS AS NEEDED.; Rx'
         self.original_generic = 'Sertraline 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT'
         self.name         = 'Protonix'
         self.normalized_name = 'PROTONIX'
@@ -235,6 +236,13 @@ class TestParsedMedicationClass(unittest.TestCase):
         self.generic_formula = ['PANTOPRAZOLE (AS PANTOPRAZOLE SODIUM SESQUIHYDRATE)', 'PANTOPRAZOLE SODIUM']
         self.generic_formula.sort()
         self.CUIs         = set(['C0876139'])
+        self.tradenames = ['C0002800', 'C0591117', 'C0591706', 'C0591843', 
+            'C0591844', 'C0591891', 'C0592014', 'C0592068', 'C0592182',
+            'C0593835', 'C0594335', 'C0699095', 'C0700017', 'C0718343',
+            'C0721957', 'C0731332', 'C0731333', 'C0875956', 'C1170025',
+            'C1186767', 'C1186768', 'C1186779', 'C1631235', 'C1724066',
+            'C2343621', 'C2684675', 'C2725144', 'C2911866', 'C2911868', 'C3194766']
+        self.tradenames.sort()
         self.original_dict = {
           'medication_name' : self.normalized_name,
           'dose'            : self.dose,
@@ -247,6 +255,7 @@ class TestParsedMedicationClass(unittest.TestCase):
         }
         self.constructed  = medication.ParsedMedication(self.original)
         self.constructed_mappings  = medication.ParsedMedication(self.original, mappings, self.provenance)
+		self.constructed_multitradenames  = medication.ParsedMedication(self.multi_tradenames, mappings)
         #self.init_from_text    = medication.ParsedMedication()
         #self.init_from_text.from_text(self.original)
         #self.init_no_text = medication.ParsedMedication()
@@ -330,7 +339,7 @@ class TestParsedMedicationClass(unittest.TestCase):
           'provenance', 'Lot 49')
 
     def test_dictionary_get(self):
-        test_dict_set = set(test.original_dict.items())
+        test_dict_set = set(self.original_dict.items())
         obj_dict_set  = set(self.constructed.dictionary.items())
         self.assertTrue(test_dict_set <= obj_dict_set)
 
