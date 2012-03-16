@@ -38,7 +38,6 @@ class MappingContextError(Exception): pass
 class Medication(object):
     """Represents a single medication from a list to be reconciled."""
     def __init__(self, original_string, provenance=""):
-        super(Medication, self).__init__()
         self._original_string = original_string
         self._normalized_string = self._normalize_string(original_string)
         self._provenance = provenance
@@ -78,12 +77,12 @@ def build_regular_expressions(list_of_tuples, formulation):
 class ParsedMedication(Medication):
     formulation_regexp_cache = {}
     times_regexp_cache = {}
-    def __init__(self, med_line=None, context=None, provenance=""):
-        """ParsedMedication constructor. If passed a line of text in the 
-        med_line parameter, it will attempt parsing it using the from_text() 
-        method. Otherwise, it will create an empty ParsedMedication. Pass
+    def __init__(self, med_line, context=None, provenance=""):
+        """ParsedMedication constructor. It attempts to parse the med_line 
+        arg into its components using the from_text() method. Pass
         a MappingContext as part of the context parameter to provide 
-        a version of rxnorm to perform computations.""" 
+        a version of rxnorm to perform computations. Pass a provenance
+        to assist in reconciling several lists of medications.""" 
         super(ParsedMedication, self).__init__(med_line, provenance)
         self._name = None
         self._dose = None
@@ -95,12 +94,11 @@ class ParsedMedication(Medication):
         self._norm_dose = None
         self._cuis = None
         self._context = context
-        if med_line is not None:
-            self.from_text(med_line)
-    def from_text(self, med_line):
+        self._from_text(med_line)
+    def _from_text(self, med_line):
         """Separates a medication string into its components according to the
         medication_parser regular expression."""
-        super(ParsedMedication, self).from_text(med_line)
+        #super(ParsedMedication, self).from_text(med_line)
         med = medication_parser.findall(self.normalized_string)
         if len(med) > 0:
             med = med[0]
