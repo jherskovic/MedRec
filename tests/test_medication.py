@@ -235,7 +235,7 @@ class TestParsedMedicationClass(unittest.TestCase):
         # self.normalized_instructions_new = 'TAKE 1 TABLET 3 TIMES DAILY'
         self.generic_formula = ['PANTOPRAZOLE (AS PANTOPRAZOLE SODIUM SESQUIHYDRATE)', 'PANTOPRAZOLE SODIUM']
         self.generic_formula.sort()
-        self.CUIs         = set(['C0876139'])
+        self.CUIs         = ['C0876139']
         self.tradenames = ['C0002800', 'C0591117', 'C0591706', 'C0591843', 
             'C0591844', 'C0591891', 'C0592014', 'C0592068', 'C0592182',
             'C0593835', 'C0594335', 'C0699095', 'C0700017', 'C0718343',
@@ -382,33 +382,33 @@ class TestParsedMedicationClass(unittest.TestCase):
 ##        generic_formula = self.constructed_mappings.generic_formula
 ##        generic_formula.sort()
 ##        self.assertEquals(self.generic_formula, generic_formula)
-#        
-#    def test_CUIs_get(self):
-#        CUIs = list(self.constructed_mappings.CUIs)
-#        CUIs.sort()
-#        self.assertEqual(CUIs, self.CUIs)
-#
-#    def test_CUIs_readonly(self):
-#        self.assertRaises(TypeError, self.constructed_mappings.__setattr__,
-#          'CUIs', set(['C02','C01']))
-#
-#    def test_CUIs_nomappings(self):
-#        self.assertRaises(medication.MappingContextError,
-#          self.context.__getattr__, 'CUIs')
-#
-#    def test_tradenames_get(self):
-#        tradenames = list(self.constructed_mappings.tradenames)
-#        tradenames.sort()
-#        self.assertEqual(tradenames, self.tradenames)
-#
-#    def test_tradenames_readonly(self):
-#        self.assertRaises(TypeError, self.constructed_mappings.__setattr__,
-#          'tradenames', set(['C02','C01']))
-#
-#    def test_tradenames_nomappings(self):
-#        self.assertRaises(medication.MappingContextError,
-#          self.context.__getattr__, 'tradenames')
-#
+        
+    def test_CUIs_get(self):
+        CUIs = list(self.constructed_mappings.CUIs)
+        CUIs.sort()
+        self.assertEqual(CUIs, self.CUIs)
+
+    def test_CUIs_readonly(self):
+        self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
+          'CUIs', set(['C02','C01']))
+
+    def test_CUIs_nomappings(self):
+        self.assertRaises(medication.MappingContextError,
+          self.constructed.__getattribute__, 'CUIs')
+
+    def test_tradenames_get(self):
+        tradenames = list(self.constructed_multitradenames.tradenames)
+        tradenames.sort()
+        self.assertEqual(tradenames, self.tradenames)
+
+    def test_tradenames_readonly(self):
+        self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
+          'tradenames', set(['C02','C01']))
+
+    def test_tradenames_nomappings(self):
+        self.assertRaises(medication.MappingContextError,
+          self.constructed.__getattribute__, 'tradenames')
+
 ##    def test__normalize_drug_name(self): pass
 ##    def test__compute_generics(self): pass
 ##    def test__compute_cuis(self): pass
