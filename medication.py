@@ -107,6 +107,7 @@ class ParsedMedication(Medication):
             self._units = self._normalize_field(med[2])
             self._formulation = self._normalize_field(med[3])
             self._instructions = self._normalize_field(med[4])
+            self._norm_dose = self._normalize_dose()
             self._parsed = True
         else:
             logging.debug("Could not parse %s. _parsed is %r", med_line,
@@ -139,33 +140,18 @@ class ParsedMedication(Medication):
     @property
     def name(self):
         return self._name
-    @name.setter
-    def name(self, value):
-        self._name = self._normalize_field(value)
     @property
     def dose(self):
         return self._dose
-    @dose.setter
-    def dose(self, value):
-        self._dose = self._normalize_field(value)
     @property
     def units(self):
         return self._units
-    @units.setter
-    def units(self, value):
-        self._units = self._normalize_field(value)
     @property
     def formulation(self):
         return copy.copy(self._formulation)
-    @formulation.setter
-    def formulation(self, value):
-        self._formulation = self._normalize_field(value)
     @property
     def instructions(self):
         return copy.copy(self._instructions)
-    @instructions.setter
-    def instructions(self, value):
-        self._instructions = self._normalize_field(value)
     @property
     def original_line(self):
         return self._original_string
@@ -177,10 +163,11 @@ class ParsedMedication(Medication):
         if self._generic_formula is None:
             if self._context is None:
                 raise MappingContextError, "Can't compute generic formula without a MappingContext object."
-            self.compute_generics()
+            self._compute_generics()
         return copy.copy(self._generic_formula)
-    def as_dictionary(self):
-        return {'medicationName': str(self.name),
+    @property
+    def dictionary(self):
+        return {'medication_name': str(self.name),
                 'dose': str(self.dose),
                 'units': str(self.units),
                 'formulation': str(self.formulation),
@@ -208,7 +195,7 @@ class ParsedMedication(Medication):
     @mappings.setter
     def mappings(self, mappings):
         self._context = mappings
-    def compute_generics(self, mappings=None):
+    def _compute_generics(self, mappings=None):
         """Computes the generic equivalent of a drug according to RXNorm."""
         if mappings is None:
             mappings=self._context
@@ -254,7 +241,7 @@ class ParsedMedication(Medication):
                                        if x.relation == 'tradename_of'
                                           and x._concept1.CUI == y] 
                                       for y in my_cuis])
-    def normalize_dose(self):
+    def _normalize_dose(self):
         """Takes a drug tuple (i.e. the output of the regular expression listed 
         above) and returns the total number of units a day the patient is 
         receiving"""
@@ -315,7 +302,7 @@ class ParsedMedication(Medication):
         #logging.debug("The total quantity of %r is %1.2f %s a day", 
         #    self.name, self.dose*times_per_day*number_of_units, self.units)
         try:
-            self._norm_dose = '%s %s*%d*%d' % (
+            return '%s %s*%d*%d' % (
                 str(self.dose), self.units, times_per_day, number_of_units)
         except ValueError:
             return
