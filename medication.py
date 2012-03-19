@@ -195,13 +195,12 @@ class ParsedMedication(Medication):
     @mappings.setter
     def mappings(self, mappings):
         self._context = mappings
-    def _compute_generics(self, mappings=None):
+    def _compute_generics(self):
         """Computes the generic equivalent of a drug according to RXNorm."""
-        if mappings is None:
-            mappings=self._context
+        mappings=self._context
         if mappings is None:
             raise MappingContextError, "Method requires a MappingContext object."
-        concepts = self.CUIs(mappings)
+        concepts = self.CUIs
         if concepts is not None:
             logging.debug("Concepts for %s=%r", self.name, concepts)
             try:
@@ -216,24 +215,23 @@ class ParsedMedication(Medication):
             logging.debug("Couldn't find %s in RXNorm" % self.name)
         self._generic_formula = [self._normalize_drug_name(self.name)]
         return 
-    def CUIs(self, mappings=None):
+    @property
+    def CUIs(self):
+        mappings = self._context
         if mappings is None:
-            mappings=self._context
-        if mappings is None:
-            raise MappingContextError, "Method requires a MappingContext object."
+            raise MappingContextError, "Instance initialized without a MappingContext."
         if self._cuis is None:
-            if self.name is not None:
-                name_of_medication = self.name.lower()
-                if name_of_medication in mappings.concept_names:
-                    concepts = copy.copy(mappings.concept_names[name_of_medication])
-                    self._cuis = concepts
+            name_of_medication = self.name.lower()
+            if name_of_medication in mappings.concept_names:
+                concepts = copy.copy(mappings.concept_names[name_of_medication])
+                self._cuis = concepts
         return copy.copy(self._cuis)
-    def tradenames(self, mappings=None):
-        if mappings is None:
-            mappings=self._context
+    @property
+    def tradenames(self):
+        mappings=self._context
         if mappings is None:
             raise MappingContextError, "Method requires a MappingContext object."
-        my_cuis = self.CUIs(mappings)
+        my_cuis = self.CUIs
         if my_cuis is None:
             return []
         return  reduce(operator.add, [[x._concept2.CUI 
