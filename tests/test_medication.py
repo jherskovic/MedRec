@@ -214,25 +214,16 @@ class TestParsedMedicationClass(unittest.TestCase):
         self.original_generic = 'Sertraline 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT'
         self.name         = 'Protonix'
         self.normalized_name = 'PROTONIX'
-        # self.name_new     = 'Mirapex;'
-        # self.normalized_name_new = 'MIRAPEX'
         self.dose         = '40'
         self.normalized_dose = '40'
-        # self.dose_new     = '30'
         self.units        = 'MG'
         self.normalized_units = 'MG'
-        # self.units_new    = 'cl'
-        # self.normalized_units_new    = 'CL'
         self.formulation  = 'Tablet Delayed Release'
         self.normalized_formulation  = 'TABLET DELAYED RELEASE'
-        # self.formulation_new = 'Elixir'
-        # self.normalized_formulation_new = 'ELIXIR'
         self.instructions = 'TAKE 1 TABLET DAILY.; Rx'
         self.normalized_instructions = 'TAKE 1 TABLET DAILY.; RX'
         self.normalized_dose = '40 MG*1*1'
         self.provenance   = 'List 42'
-        # self.instructions_new = 'Take 1 Tablet 3 Times Daily.'
-        # self.normalized_instructions_new = 'TAKE 1 TABLET 3 TIMES DAILY'
         self.generic_formula = ['PANTOPRAZOLE (AS PANTOPRAZOLE SODIUM SESQUIHYDRATE)', 'PANTOPRAZOLE SODIUM']
         self.generic_formula.sort()
         self.CUIs         = ['C0876139']
@@ -258,9 +249,6 @@ class TestParsedMedicationClass(unittest.TestCase):
         self.constructed  = medication.ParsedMedication(self.original, provenance=self.provenance)
         self.constructed_mappings  = medication.ParsedMedication(self.original, mappings, self.provenance)
         self.constructed_multitradenames = medication.ParsedMedication(self.multi_tradenames, mappings)
-        #self.init_from_text    = medication.ParsedMedication()
-        #self.init_from_text.from_text(self.original)
-        #self.init_no_text = medication.ParsedMedication()
 
     def test_construct_no_text(self):
         """Must pass a string to the constructor."""
@@ -288,9 +276,6 @@ class TestParsedMedicationClass(unittest.TestCase):
     def test_c_normalized_string_readonly(self):
         self.assertRaises(AttributeError, self.constructed.__setattr__, 'normalized_string', 'foo')
 
-##    def test_init_from_text(self):        
-##        self.assertEqual(self.init_from_text.original_string, self.original, "ParsedMedication class wasn't properly initialized with .from_text().")
-        
     def test_name_get(self):
         self.assertEqual(self.constructed.name, self.normalized_name)
 
@@ -350,18 +335,6 @@ class TestParsedMedicationClass(unittest.TestCase):
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
           'dictionary', {'foo':'bar'})
 
-##    def test_original_line(self):
-##        self.assertEqual(self.init_from_text.original_line, self.original)
-
-##    def test_parsed_constructed(self):
-##        self.assertTrue(self.constructed.parsed)
-        
-##    def test_parsed_from_text(self):
-##        self.assertTrue(self.init_from_text.parsed)
-        
-##    def test_parsed_no_text(self):
-##        self.assertTrue(not self.init_no_text.parsed)
-        
     def test_generic_formula_get(self):
         generic_formula = self.constructed_mappings.generic_formula
         self.assertEqual(set(generic_formula), set(self.generic_formula))
@@ -373,16 +346,6 @@ class TestParsedMedicationClass(unittest.TestCase):
     def test_generic_formula_nomappings(self):
         self.assertRaises(medication.MappingContextError, self.constructed.__getattribute__, 'generic_formula')
 
-##    def test_compute_generics_nomapping(self):
-##        self.assertRaises(medication.MappingContextError, self.constructed.__getattribute__,
-##          'generic_formula')
-##
-##    def test_compute_generics(self):
-##        self.constructed.compute_generics(mappings)
-##        generic_formula = self.constructed_mappings.generic_formula
-##        generic_formula.sort()
-##        self.assertEquals(self.generic_formula, generic_formula)
-        
     def test_CUIs_get(self):
         CUIs = list(self.constructed_mappings.CUIs)
         self.assertEqual(set(CUIs), set(self.CUIs))
@@ -415,11 +378,11 @@ class TestParsedMedicationClass(unittest.TestCase):
             normalized_drug_names.append(normalized_drug_name)
         self.assertEqual(set(normalized_drug_names), set(self.drug_names_normalized))
 
-##    def test__compute_cuis(self): pass
-##    def test__compute_tradenames(self): pass
-##    def test__normalize_dose(self): pass
-##    def test_fieldwise_comparison(self): pass
-
+    def test_fieldwise_comparison(self):
+        desired_results = ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION']
+        pm1 = medication.ParsedMedication('Sertraline 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT', mappings)
+        pm2 = medication.ParsedMedication('Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT', mappings)
+        self.assertEqual(set(pm1.fieldwise_comparison(pm2)), set(desired_results))
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

@@ -109,7 +109,7 @@ MATCH_TREATMENT_INTENT="Similar treatment intent"
 MEDICATION_FIELDS={"_name":         "DRUG_NAME",
                    "_dose":         "DOSE",
                    "_units":        "UNITS",
-                   "_form":         "FORMULATION",
+                   "_formulation":  "FORMULATION",
                    "_instructions": "SIG",
                    "_norm_dose":    "NORMALIZED_DOSE",
                    }
