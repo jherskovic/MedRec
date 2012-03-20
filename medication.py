@@ -94,7 +94,7 @@ class ParsedMedication(Medication):
         self._norm_dose = None
         self._cuis = None
         self._tradenames = None
-        self._context = context
+        self._mappings = context
         self._from_text(med_line)
     def _from_text(self, med_line):
         """Separates a medication string into its components according to the
@@ -162,8 +162,8 @@ class ParsedMedication(Medication):
     @property 
     def generic_formula(self):
         if self._generic_formula is None:
-            if self._context is None:
-                raise MappingContextError, "Can't compute generic formula without a MappingContext object."
+            if self._mappings is None:
+                raise MappingContextError, "Requires an instance initialized with a MappingContext object."
             self._compute_generics()
         return copy.copy(self._generic_formula)
     @property
@@ -192,12 +192,12 @@ class ParsedMedication(Medication):
         return ' '.join(final_version)
     @property
     def mappings(self):
-        return self._context
+        return self._mappings
     def _compute_generics(self):
         """Computes the generic equivalent of a drug according to RXNorm."""
-        mappings=self._context
+        mappings=self._mappings
         if mappings is None:
-            raise MappingContextError, "Method requires a MappingContext object."
+            raise MappingContextError, "Requires an instance initialized with a MappingContext object."
         concepts = self.CUIs
         if concepts is not None:
             logging.debug("Concepts for %s=%r", self.name, concepts)
@@ -215,9 +215,9 @@ class ParsedMedication(Medication):
         return 
     @property
     def CUIs(self):
-        mappings = self._context
+        mappings = self._mappings
         if mappings is None:
-            raise MappingContextError, "Instance initialized without a MappingContext."
+            raise MappingContextError, "Requires an instance initialized with a MappingContext object."
         if self._cuis is None:
             name_of_medication = self.name.lower()
             if name_of_medication in mappings.concept_names:
@@ -226,9 +226,9 @@ class ParsedMedication(Medication):
         return copy.copy(self._cuis)
     @property
     def tradenames(self):
-        mappings=self._context
+        mappings=self._mappings
         if mappings is None:
-            raise MappingContextError, "Method requires a MappingContext object."
+            raise MappingContextError, "Requires an instance initialized with a MappingContext object."
         if self._tradenames is None:
             self._tradenames = []
             my_cuis = self.CUIs
