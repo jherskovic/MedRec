@@ -242,7 +242,6 @@ class TestParsedMedicationClass(unittest.TestCase):
             'C0721957', 'C0731332', 'C0731333', 'C0875956', 'C1170025',
             'C1186767', 'C1186768', 'C1186779', 'C1631235', 'C1724066',
             'C2343621', 'C2684675', 'C2725144', 'C2911866', 'C2911868', 'C3194766']
-        self.tradenames.sort()
         self.original_dict = {
           'medication_name' : self.normalized_name,
           'dose'            : self.dose,
@@ -254,6 +253,8 @@ class TestParsedMedicationClass(unittest.TestCase):
           'normalized_dose' : self.normalized_dose,
           'parsed'          : True,
         }
+        self.drug_names_tobe_normalized = ['MetFORMIN HCl', 'Dextromethorphan Hydrobromide']
+        self.drug_names_normalized = ['METFORMIN HYDROCHLORIDE', 'DEXTROMETHORPHAN HYDROBROMIDE']
         self.constructed  = medication.ParsedMedication(self.original, provenance=self.provenance)
         self.constructed_mappings  = medication.ParsedMedication(self.original, mappings, self.provenance)
         self.constructed_multitradenames = medication.ParsedMedication(self.multi_tradenames, mappings)
@@ -363,8 +364,7 @@ class TestParsedMedicationClass(unittest.TestCase):
         
     def test_generic_formula_get(self):
         generic_formula = self.constructed_mappings.generic_formula
-        generic_formula.sort()
-        self.assertEqual(generic_formula, self.generic_formula)
+        self.assertEqual(set(generic_formula), set(self.generic_formula))
 
     def test_generic_formula_readonly(self):
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
@@ -385,8 +385,7 @@ class TestParsedMedicationClass(unittest.TestCase):
         
     def test_CUIs_get(self):
         CUIs = list(self.constructed_mappings.CUIs)
-        CUIs.sort()
-        self.assertEqual(CUIs, self.CUIs)
+        self.assertEqual(set(CUIs), set(self.CUIs))
 
     def test_CUIs_readonly(self):
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
@@ -409,8 +408,13 @@ class TestParsedMedicationClass(unittest.TestCase):
         self.assertRaises(medication.MappingContextError,
           self.constructed.__getattribute__, 'tradenames')
 
-##    def test__normalize_drug_name(self): pass
-##    def test__compute_generics(self): pass
+    def test__normalize_drug_name(self):
+        normalized_drug_names = []
+        for drug_name in self.drug_names_tobe_normalized:
+            normalized_drug_name = self.constructed._normalize_drug_name(drug_name)
+            normalized_drug_names.append(normalized_drug_name)
+        self.assertEqual(set(normalized_drug_names), set(self.drug_names_normalized))
+
 ##    def test__compute_cuis(self): pass
 ##    def test__compute_tradenames(self): pass
 ##    def test__normalize_dose(self): pass
