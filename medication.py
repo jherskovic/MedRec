@@ -93,6 +93,7 @@ class ParsedMedication(Medication):
         self._generic_formula = None
         self._norm_dose = None
         self._cuis = None
+        self._tradenames = None
         self._context = context
         self._from_text(med_line)
     def _from_text(self, med_line):
@@ -192,9 +193,6 @@ class ParsedMedication(Medication):
     @property
     def mappings(self):
         return self._context
-    @mappings.setter
-    def mappings(self, mappings):
-        self._context = mappings
     def _compute_generics(self):
         """Computes the generic equivalent of a drug according to RXNorm."""
         mappings=self._context
@@ -231,14 +229,16 @@ class ParsedMedication(Medication):
         mappings=self._context
         if mappings is None:
             raise MappingContextError, "Method requires a MappingContext object."
-        my_cuis = self.CUIs
-        if my_cuis is None:
-            return []
-        return  reduce(operator.add, [[x._concept2.CUI 
-                                       for x in mappings.rxnorm.relations 
-                                       if x.relation == 'tradename_of'
-                                          and x._concept1.CUI == y] 
-                                      for y in my_cuis])
+        if self._tradenames is None:
+            self._tradenames = []
+            my_cuis = self.CUIs
+            if self.CUIs is not None:
+                self._tradenames = reduce(operator.add, [[x._concept2.CUI 
+                                          for x in mappings.rxnorm.relations 
+                                          if x.relation == 'tradename_of'
+                                              and x._concept1.CUI == y] 
+                                          for y in my_cuis])
+        return copy.copy(self._tradenames)
     def _normalize_dose(self):
         """Takes a drug tuple (i.e. the output of the regular expression listed 
         above) and returns the total number of units a day the patient is 
@@ -309,7 +309,7 @@ class ParsedMedication(Medication):
     @property
     def normalized_dose(self):
         if self._norm_dose is None:
-            self.normalize_dose()
+            self._normalize_dose()
         return copy.copy(self._norm_dose)
     def fieldwise_comparison(self, other):
         """Compares two medication objects field by field, based on the 
