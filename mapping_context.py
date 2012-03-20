@@ -3,6 +3,9 @@ Created on Oct 29, 2011
 
 @author: jherskovic
 '''
+
+class MappingContextError(Exception): pass
+
 class MappingContext(object):
     """Packages the information needed to map medications to each other and the
     UMLS."""

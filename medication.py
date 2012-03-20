@@ -17,6 +17,7 @@ import copy
 import logging
 import operator
 from constants import *
+from mapping_context import MappingContextError
 
 medication_parser = re.compile(r"""^\s*(?P<name>.*?)
                                   \s+(?P<dose>[0-9\.\/]+)
@@ -32,8 +33,6 @@ def _sequential_id_gen(starting=0):
         starting += 1
 
 _sequential_id=_sequential_id_gen()
-
-class MappingContextError(Exception): pass
 
 class Medication(object):
     """Represents a single medication from a list to be reconciled."""
