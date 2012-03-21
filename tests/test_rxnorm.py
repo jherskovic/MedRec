@@ -110,27 +110,31 @@ C0000004|ENG|P|L0000004|PF|S0000004|N|A00000004|395370|2302||RXNORM|IN|20352|car
             self.drugObjects.append(d)
 
     def test_constructor(self):
+        """Test that all drug objects got built."""
         for drugObject in self.drugObjects:
             self.assertTrue(drugObject)
 
     def test_cui_get(self):
+        """Test that CUIs are correctly read from their Drug objects."""
         i = 0
         while i < len(self.drugObjects):
             self.assertEqual(self.drugObjects[i].CUI, self.cuisByLine[i])
             i += 1
 
     def test_cui_readonly(self):
+        """Test that we cannot modify the CUI property."""
         d = random.sample(self.drugObjects, 1)[0]
         self.assertRaises(AttributeError, d.__setattr__, 'CUI', 'Foo')
 
     def make_semtypesDict(self):
+        """Helper method to make a dictionary of semantic types:
+            CUI -> [<semantic type name>, ...]"""
         semtypesDict = {}
         semtypesFile.seek(0)
         for line in semtypesFile:
             elems = line.split('|')
             cui = elems[0]
             semtype = elems[3]
-            #name = elems[3]
             if semtypesDict.get(cui):
                 semtypesDict[cui].append(semtype)
             else:
@@ -138,14 +142,16 @@ C0000004|ENG|P|L0000004|PF|S0000004|N|A00000004|395370|2302||RXNORM|IN|20352|car
         return semtypesDict
 
     def semtypes_set(self):
+        """Helper method to set semantic types on Drug objects."""
         i = 0
         semtypesDict = self.make_semtypesDict()
         while i < len(self.drugObjects):
             myDrug = self.drugObjects[i]
-            myDrug.set_semtypes(semtypesDict[myDrug.CUI])
+            myDrug.semtypes = semtypesDict[myDrug.CUI]
             i += 1
 
     def test_semtypes_get(self):
+        """Test that semantic types are correctly read from their Drug objects."""
         self.semtypes_set()
         i = 0
         while i < len(self.drugObjects):
@@ -156,12 +162,19 @@ C0000004|ENG|P|L0000004|PF|S0000004|N|A00000004|395370|2302||RXNORM|IN|20352|car
             i += 1
             
     def test_name_get(self):
+        """Test that drug names are correctly read from their Drug objects."""
         i = 0
         while i < len(self.drugObjects):
             self.assertEqual(self.drugObjects[i].name, self.namesByLine[i])
             i += 1
 
+    def test_name_readonly(self):
+        """Test that we cannot modify the name property."""
+        d = random.sample(self.drugObjects, 1)[0]
+        self.assertRaises(AttributeError, d.__setattr__, 'name', 'Foo')
+
     def test_is_brandname(self):
+        """Test that is_brandname property is correctly read from Drug objects."""
         i = 0
         while i < len(self.drugObjects):
             self.assertEqual(self.drugObjects[i].is_brandname, self.brandNamesByLine[i])

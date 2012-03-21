@@ -11,12 +11,18 @@ class Drug(object):
         self._is_brandname = items[12] == "BN"
     @property
     def CUI(self):
+        """Property: the CUI of the drug represented by an instance of this class."""
         return self._cui
-    def get_semtypes(self):
+    @property
+    def semtypes(self):
+        """Property: a set of semantic type abbreviations for the drug 
+            represented by an instance of this class."""
         return set([type_kinds[x] for x in self._st])
-    def set_semtypes(self, st):
+    @semtypes.setter
+    def semtypes(self, st):
+        """Setter: given a sequence of semantic type names, set their 
+            abbreviations on this Drug object."""
         self._st = set([reverse_type_kinds[x] for x in st])
-    semtypes = property(get_semtypes, set_semtypes)
     def __hash__(self):
         return hash(self._cui)
     def __repr__(self):
@@ -26,9 +32,11 @@ class Drug(object):
                                               id(self)) 
     @property
     def name(self):
+        """Property: the RXNORM name of this drug."""
         return self._name
     @property
     def is_brandname(self):
+        """Property: True if the name property of this Drug object is a brand name, False otherwise."""
         return self._is_brandname
 
 class Relation(object):
@@ -60,7 +68,11 @@ reverse_type_kinds = {}
 class SemanticTypeLine(object):
     __slots__ = ['_cui', '_type']
     def __init__(self, MRSTY_LINE):
+        # These two dictionaries exist at the module level, to be available
+        # to Drug and RXNORM objects, but must be modified within instances
+        # of this class
         global type_kinds
+        global reverse_type_kinds
         items = MRSTY_LINE.split('|')
         tk = items[1]
         self._cui = items[0]
@@ -72,9 +84,12 @@ class SemanticTypeLine(object):
             self._type = tk
     @property
     def semtype(self):
+        """Property: the name of the sementic type for this MRSTY line;
+            depends on the global type_kinds dictionary."""
         return type_kinds[self._type]
     @property
     def CUI(self):
+        """Property: the CUI of the drug associated with this MRSTY line."""
         return self._cui
         
 class RXNORM(object):
