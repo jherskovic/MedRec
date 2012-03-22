@@ -58,9 +58,9 @@ class Relation(object):
             self._relation = items[7]
         self._concept1 = concepts[items[0]]
         self._concept2 = concepts[items[4]]
-    def get_relation(self):
+    @property
+    def relation(self):
         return self._relation
-    relation = property(get_relation)
     @property
     def concept1(self):
         return self._concept1
