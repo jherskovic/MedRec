@@ -224,6 +224,16 @@ C0000008|T200|A1.3.3|Clinical Drug|AT116288740|256|
 C0000009|T121|A1.4.1.1.1|Pharmacologic Substance|AT128872031||
 C0000010|T200|A1.3.3|Clinical Drug|AT37405600||
 """
+
+    testRels = set([
+      ('C0000002', 'C0000006', 'tradename_of',),
+      ('C0000002', 'C0000009', 'has_part',),
+      ('C0000002', 'C0000005', 'form_of',),
+      ('C0000001', 'C0000005', 'precise_ingredient_of',),
+      ('C0000001', 'C0000002', 'has_tradename',),
+      ('C0000001', 'C0000010', 'has_ingredient',),
+      ('C0000008', 'C0000003', 'ingredient_of',),
+      ('C0000007', 'C0000004', 'has_form',)])
     semtypesFile = StringIO(semtypesData + semtypesPenumbra)
 
     def setUp(self):
@@ -243,8 +253,17 @@ C0000010|T200|A1.3.3|Clinical Drug|AT37405600||
             relObjects.append(r)
         return relObjects
     
-    def test_true(self):
-        self.assertTrue(True)
+    def test_relObjects(self):
+        for relObject in self.relObjects:
+            self.assertTrue(relObject)
+
+    def test_relations(self):
+        actualRels = set()
+        for relObject in self.relObjects:
+            relTuple = (relObject.concept1.CUI, relObject.concept2.CUI, relObject.relation)
+            actualRels.add(relTuple)
+        self.assertTrue(actualRels == self.testRels)
+
 
 if __name__ == "__main__":
     unittest.main()
