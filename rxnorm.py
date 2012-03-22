@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
+import pdb
+
 class Drug(object):
+    """Class to represent a drug from an MRCONSO line. Assumes that
+    appropriate selection of MRCONSO lines is done prior to instantiation."""
     __slots__ = ["_cui", "_name", "_st", "_is_brandname"]
     # Extract from MRCONSO by CUI - grep RXNORM MRCONSO.RRF | head
     def __init__(self, MRCONSO_LINE):
@@ -40,8 +44,13 @@ class Drug(object):
         return self._is_brandname
 
 class Relation(object):
+    """Class to represent a line from MRREL as to its CUIs and the relation
+    (rela) between the CUIs."""
     __slots__ = ["_concept1", "_concept2", "_relation"]
     def __init__(self, MRREL_LINE, concepts):
+        """'MRREL_LINE' is as the name suggests a line from MRREL;
+        'concepts' is a sequence of rxnorm.Drug objects (or objects
+        with a like interface)."""
         items = MRREL_LINE.split('|')
         if items[7] == "" or items[10] != 'RXNORM': 
             self._relation = None
@@ -66,6 +75,7 @@ type_kinds = {}
 reverse_type_kinds = {}
 
 class SemanticTypeLine(object):
+    """Class to represent an MRSTY line as to its CUI and semantic type."""
     __slots__ = ['_cui', '_type']
     def __init__(self, MRSTY_LINE):
         # These two dictionaries exist at the module level, to be available
