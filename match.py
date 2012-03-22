@@ -19,7 +19,7 @@ class Match(object):
         self.strength = strength
         self.mechanism = reconciliation_mechanism
     def as_dictionary(self):
-        my_dict = {'med1': self.med1.as_dictionary(),
+        my_dict = {'med1': self.med1.dictionary,
                    'score': self.strength,
                    'mechanism': str(self.mechanism)
                 }
@@ -34,7 +34,7 @@ class Match(object):
         my_dict['identical']=similarity
         
         if self.med2 is not None:
-            my_dict['med2'] = self.med2.as_dictionary()
+            my_dict['med2'] = self.med2.dictionary
         return my_dict 
     def __repr__(self):
         if self.med1.normalized_string == self.med2.normalized_string:
@@ -84,7 +84,7 @@ def match_by_strings(list1, list2):
     for item in list1:
         if item.normalized_string in my_list_2:
             where_in_2 = my_list_2.index(item.normalized_string)
-            common.append(Match(item, my_list_2[where_in_2], 1.0, MATCH_STRING))
+            common.append(Match(item, my_list_2_of_objects[where_in_2], 1.0, MATCH_STRING))
             del my_list_2[where_in_2]
             del my_list_2_of_objects[where_in_2]
         else:
@@ -94,13 +94,13 @@ def match_by_strings(list1, list2):
 def medication_list_CUIs(medication_list):
     """Given a medication list, returns a list of the matching CUIs for each
     medication."""
-    return [x.CUIs() for x in medication_list]
+    return [x.CUIs for x in medication_list]
 
 def medication_list_tradenames(medication_list):
     """Given a medication list, returns a list of the tradenames for each
     element (respecting the original order, so both the original and the
     new lists have the same indices)."""
-    return [x.tradenames() for x in medication_list]
+    return [x.tradenames for x in medication_list]
 
 def match_by_brand_name(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by checking whether
