@@ -263,6 +263,22 @@ C0000010|T200|A1.3.3|Clinical Drug|AT37405600||
             relTuple = (relObject.concept1.CUI, relObject.concept2.CUI, relObject.relation)
             actualRels.add(relTuple)
         self.assertTrue(actualRels == self.testRels)
+    
+    def test_concept1_readonly(self):
+        relObj = random.sample(self.relObjects, 1)
+        drugsFile.seek(0)
+        drugObj = rxnorm.Drug(drugsFile.readline())
+        self.assertRaises(AttributeError, relObj.__setattr__, 'concept1', drugObj)
+
+    def test_concept2_readonly(self):
+        relObj = random.sample(self.relObjects, 1)
+        drugsFile.seek(0)
+        drugObj = rxnorm.Drug(drugsFile.readline())
+        self.assertRaises(AttributeError, relObj.__setattr__, 'concept2', drugObj)
+
+    def test_relation_readonly(self):
+        relObj = random.sample(self.relObjects, 1)
+        self.assertRaises(AttributeError, relObj.__setattr__, 'relation', 'is_caffeinated')
 
 
 if __name__ == "__main__":
