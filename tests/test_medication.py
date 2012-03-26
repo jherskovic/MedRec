@@ -325,15 +325,11 @@ class TestParsedMedicationClass(unittest.TestCase):
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
           'provenance', 'Lot 49')
 
-    def test_dictionary_get(self):
+    def test_as_dictionary(self):
         test_dict_set = set(self.original_dict.items())
-        obj_dict_set  = set(self.constructed.dictionary.items())
-        test_dict_set.add(('id', self.constructed.dictionary['id']))
+        obj_dict_set  = set(self.constructed.as_dictionary().items())
+        test_dict_set.add(('id', self.constructed.as_dictionary()['id']))
         self.assertTrue(test_dict_set <= obj_dict_set)
-
-    def test_dictionary_readonly(self):
-        self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
-          'dictionary', {'foo':'bar'})
 
     def test_generic_formula_get(self):
         generic_formula = self.constructed_mappings.generic_formula

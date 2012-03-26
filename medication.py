@@ -165,8 +165,7 @@ class ParsedMedication(Medication):
                 raise MappingContextError, "Requires an instance initialized with a MappingContext object."
             self._compute_generics()
         return copy.copy(self._generic_formula)
-    @property
-    def dictionary(self):
+    def as_dictionary(self):
         return {'medication_name': str(self.name),
                 'dose': str(self.dose),
                 'units': str(self.units),

@@ -11,7 +11,8 @@ from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS,
                        MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS)
 
 class Match(object):
-    """Represents a pair of reconciled meds (or potentially-reconciled meds)"""
+    """Represents a pair of reconciled meds (or potentially-reconciled 
+    meds); 'med1' and 'med2' are medication.ParsedMedication objects."""
     def __init__(self, med1, med2, strength=1.0, reconciliation_mechanism="unspecified"):
         super(Match, self).__init__()
         self.med1 = med1
@@ -19,7 +20,7 @@ class Match(object):
         self.strength = strength
         self.mechanism = reconciliation_mechanism
     def as_dictionary(self):
-        my_dict = {'med1': self.med1.dictionary,
+        my_dict = {'med1': self.med1.as_dictionary(),
                    'score': self.strength,
                    'mechanism': str(self.mechanism)
                 }
@@ -34,7 +35,7 @@ class Match(object):
         my_dict['identical']=similarity
         
         if self.med2 is not None:
-            my_dict['med2'] = self.med2.dictionary
+            my_dict['med2'] = self.med2.as_dictionary()
         return my_dict 
     def __repr__(self):
         if self.med1.normalized_string == self.med2.normalized_string:
