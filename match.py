@@ -39,10 +39,10 @@ class Match(object):
         return my_dict 
     def __repr__(self):
         if self.med1.normalized_string == self.med2.normalized_string:
-            return "<Identical reconciliation (%s): %r @ %x>" % (self.mechanism,
+            return "<Identical reconciliation (%s): %r @ 0x%x>" % (self.mechanism,
                                                                      self.med1,
                                                                      id(self))
-        return "<Potential reconciliation (%1.2f%% certainty; %s) %r <-> %r @ %x>" % \
+        return "<Potential reconciliation (%1.2f%% certainty; %s) %r <-> %r @ 0x%x>" % \
                (self.strength * 100.0, self.mechanism,
                 self.med1, self.med2, id(self))
     
