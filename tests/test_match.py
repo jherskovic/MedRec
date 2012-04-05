@@ -318,7 +318,8 @@ class TestFunctions(unittest.TestCase):
     matched_by_string_reconciled_repr = "[<Identical reconciliation (Identical strings): <Medication 22 @ 0x6c307d0: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x45748d0>]"
     matched_by_tradenames_list1_repr = "[<Medication 18 @ 0x3ffa090: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
     matched_by_tradenames_list2_repr = "[<Medication 22 @ 0x3ffa210: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
-    matched_by_tradenames_reconciled_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 19 @ 0x42e2110: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 21 @ 0x42e21d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x3aad150>]"
+    matched_by_tradenames_reconciled1_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 19 @ 0x42e2110: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 21 @ 0x42e21d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x3aad150>]"
+    matched_by_tradenames_reconciled2_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 21 @ 0x3347250: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 19 @ 0x3347190: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x2ca2190>]"
 
     def test_match_by_strings(self):
         myMatchResult = match.match_by_strings(self.list1, self.list2)
@@ -334,12 +335,17 @@ class TestFunctions(unittest.TestCase):
         tradenames = match.medication_list_tradenames(self.list1 + self.list2 + self.list3)
         self.assertEqual(tradenames, [self.pMed1Tradenames, self.pMed2Tradenames, self.pMed2aTradenames, self.pMed3Tradenames, self.pMed2bTradenames, self.pMed3Tradenames])
 
-    def test_match_by_brand_name(self):
+    def test_match_by_brand_name1(self):
         myMatchResult = match.match_by_brand_name(self.list1, self.list3)
-        pdb.set_trace()
         self.assertEqual(rmAllIds(repr(myMatchResult.list1)), rmAllIds(self.matched_by_tradenames_list1_repr))
         self.assertEqual(rmAllIds(repr(myMatchResult.list2)), rmAllIds(self.matched_by_tradenames_list2_repr))
-        self.assertEqual(rmAllIds(repr(myMatchResult.reconciled)), rmAllIds(self.matched_by_tradenames_reconciled_repr))
+        self.assertEqual(rmAllIds(repr(myMatchResult.reconciled)), rmAllIds(self.matched_by_tradenames_reconciled1_repr))
+
+    def test_match_by_brand_name2(self):
+        myMatchResult = match.match_by_brand_name(self.list3, self.list1)
+        self.assertEqual(rmAllIds(repr(myMatchResult.list1)), rmAllIds(self.matched_by_tradenames_list2_repr))
+        self.assertEqual(rmAllIds(repr(myMatchResult.list2)), rmAllIds(self.matched_by_tradenames_list1_repr))
+        self.assertEqual(rmAllIds(repr(myMatchResult.reconciled)), rmAllIds(self.matched_by_tradenames_reconciled2_repr))
 
 #    def test_match_by_ingredients(self):
 #        myMatchResult = match.match_by_brand_name(self.list1, self.list2)
