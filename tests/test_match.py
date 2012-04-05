@@ -36,187 +36,187 @@ def rmMedIds(repr_string):
 def rmAllIds(repr_string):
     return(rmMedIds(rmObjIds(repr_string)))
 
-#class TestMatch(unittest.TestCase):
-#
-#    medString1 = 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx'
-#    medString2 = 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx'
-#    medString2a = 'PRAMIPEXOLE 0.5 MG TABLET;take 1 tablet 3 times daily.; rx'
-#    med1 = ParsedMedication(medString1, mappings)
-#    med2 = ParsedMedication(medString2, mappings)
-#    med2a = ParsedMedication(medString2a, mappings)
-#    matched_by_string_dictionary = {
-#      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-#      'med2': {
-#        'medication_name': 'PRAMIPEXOLE',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 1,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'med1': {
-#        'medication_name': 'MIRAPEX',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 0,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'score': 0.5, 'mechanism': 'MATCH_STRING'
-#    }
-#    matched_by_brand_name_dictionary = {
-#      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-#      'med2': {
-#        'medication_name': 'PRAMIPEXOLE',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 1,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'med1': {
-#        'medication_name': 'MIRAPEX',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 0,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'score': 0.8, 'mechanism': 'MATCH_BRAND_NAME'
-#    }
-#    matched_by_ingredients_dictionary = {
-#      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-#      'med2': {
-#        'medication_name': 'PRAMIPEXOLE',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 1,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'med1': {
-#        'medication_name': 'MIRAPEX',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 0,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'score': 0.9, 'mechanism': 'MATCH_INGREDIENTS'
-#    }
-#    matched_by_treatment_dictionary = {
-#      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-#      'med2': {
-#        'medication_name': 'PRAMIPEXOLE',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 1,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'med1': {
-#        'medication_name': 'MIRAPEX',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 0,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'score': 0.5,
-#      'mechanism': 'MATCH_TREATMENT_INTENT'
-#    }
-#    matched_unspecified_dictionary = {
-#      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-#      'med2': {
-#        'medication_name': 'PRAMIPEXOLE',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 1,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'med1': {
-#        'medication_name': 'MIRAPEX',
-#        'provenance': '',
-#        'formulation': 'TABLET',
-#        'units': 'MG',
-#        'id': 0,
-#        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-#        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-#        'normalized_dose': '0.5 MG*3*1',
-#        'parsed': True,
-#        'dose': '0.5'
-#      },
-#      'score': 0.1, 'mechanism': 'unspecified'
-#    }
-#    matched_by_string = match.Match(med1, med2, 0.5, "MATCH_STRING")
-#    #matched_by_brand_name = match.Match(med1, med2, 0.8, "MATCH_BRAND_NAME")
-#    matched_by_ingredients = match.Match(med1, med2, 0.9, "MATCH_INGREDIENTS")
-#    matched_by_treatment = match.Match(med1, med2, 0.5, "MATCH_TREATMENT_INTENT")
-#    matched_unspecified = match.Match(med1, med2, 0.1)
-#    matched_potential = match.Match(med1, med2, 0.5)
-#    matched_identical = match.Match(med2a, med2, 0.5)
-#    potential_match_repr = "<Potential reconciliation (50.00% certainty; unspecified) <Medication 12 @ 0x499b190: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 13 @ 0x499b1d0: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x499b250>"
-#    identical_match_repr = "<Identical reconciliation (unspecified): <Medication 14 @ 0x499b210: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x499b290>"
-#       
-#    def test_by_string_dictionary(self):
-#        self.assertEqual(self.matched_by_string.as_dictionary(), self.matched_by_string_dictionary)
-#    
-##    def test_by_brand_name_dictionary(self):
-##        self.assertEqual(self.matched_by_brand_name.as_dictionary(), self.matched_by_brand_name_dictionary)
-#    
-#    def test_by_ingredients_dictionary(self):
-#        self.assertEqual(self.matched_by_ingredients.as_dictionary(), self.matched_by_ingredients_dictionary)
-#    
-#    def test_by_treatment_dictionary(self):
-#        self.assertEqual(self.matched_by_treatment.as_dictionary(), self.matched_by_treatment_dictionary)
-#    
-#    def test_unspecified_dictionary(self):
-#        self.assertEqual(self.matched_unspecified.as_dictionary(), self.matched_unspecified_dictionary)
-#
-#    def test_potential_match_repr(self):
-#        self.assertEqual(rmAllIds(repr(self.matched_potential)), rmAllIds(self.potential_match_repr))
-#    
-#    def test_identical_match_repr(self):
-#        self.assertEqual(rmAllIds(repr(self.matched_identical)), rmAllIds(self.identical_match_repr))
-#
-#    
+class TestMatch(unittest.TestCase):
+
+    medString1 = 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx'
+    medString2 = 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx'
+    medString2a = 'PRAMIPEXOLE 0.5 MG TABLET;take 1 tablet 3 times daily.; rx'
+    med1 = ParsedMedication(medString1, mappings)
+    med2 = ParsedMedication(medString2, mappings)
+    med2a = ParsedMedication(medString2a, mappings)
+    matched_by_string_dictionary = {
+      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
+      'med2': {
+        'medication_name': 'PRAMIPEXOLE',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 1,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'med1': {
+        'medication_name': 'MIRAPEX',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 0,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'score': 0.5, 'mechanism': 'MATCH_STRING'
+    }
+    matched_by_brand_name_dictionary = {
+      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
+      'med2': {
+        'medication_name': 'PRAMIPEXOLE',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 1,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'med1': {
+        'medication_name': 'MIRAPEX',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 0,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'score': 0.8, 'mechanism': 'MATCH_BRAND_NAME'
+    }
+    matched_by_ingredients_dictionary = {
+      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
+      'med2': {
+        'medication_name': 'PRAMIPEXOLE',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 1,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'med1': {
+        'medication_name': 'MIRAPEX',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 0,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'score': 0.9, 'mechanism': 'MATCH_INGREDIENTS'
+    }
+    matched_by_treatment_dictionary = {
+      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
+      'med2': {
+        'medication_name': 'PRAMIPEXOLE',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 1,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'med1': {
+        'medication_name': 'MIRAPEX',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 0,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'score': 0.5,
+      'mechanism': 'MATCH_TREATMENT_INTENT'
+    }
+    matched_unspecified_dictionary = {
+      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
+      'med2': {
+        'medication_name': 'PRAMIPEXOLE',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 1,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'med1': {
+        'medication_name': 'MIRAPEX',
+        'provenance': '',
+        'formulation': 'TABLET',
+        'units': 'MG',
+        'id': 0,
+        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
+        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
+        'normalized_dose': '0.5 MG*3*1',
+        'parsed': True,
+        'dose': '0.5'
+      },
+      'score': 0.1, 'mechanism': 'unspecified'
+    }
+    matched_by_string = match.Match(med1, med2, 0.5, "MATCH_STRING")
+    matched_by_brand_name = match.Match(med1, med2, 0.8, "MATCH_BRAND_NAME")
+    matched_by_ingredients = match.Match(med1, med2, 0.9, "MATCH_INGREDIENTS")
+    matched_by_treatment = match.Match(med1, med2, 0.5, "MATCH_TREATMENT_INTENT")
+    matched_unspecified = match.Match(med1, med2, 0.1)
+    matched_potential = match.Match(med1, med2, 0.5)
+    matched_identical = match.Match(med2a, med2, 0.5)
+    potential_match_repr = "<Potential reconciliation (50.00% certainty; unspecified) <Medication 12 @ 0x499b190: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 13 @ 0x499b1d0: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x499b250>"
+    identical_match_repr = "<Identical reconciliation (unspecified): <Medication 14 @ 0x499b210: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x499b290>"
+       
+    def test_by_string_dictionary(self):
+        self.assertEqual(self.matched_by_string.as_dictionary(), self.matched_by_string_dictionary)
+    
+    def test_by_brand_name_dictionary(self):
+        self.assertEqual(self.matched_by_brand_name.as_dictionary(), self.matched_by_brand_name_dictionary)
+    
+    def test_by_ingredients_dictionary(self):
+        self.assertEqual(self.matched_by_ingredients.as_dictionary(), self.matched_by_ingredients_dictionary)
+    
+    def test_by_treatment_dictionary(self):
+        self.assertEqual(self.matched_by_treatment.as_dictionary(), self.matched_by_treatment_dictionary)
+    
+    def test_unspecified_dictionary(self):
+        self.assertEqual(self.matched_unspecified.as_dictionary(), self.matched_unspecified_dictionary)
+
+    def test_potential_match_repr(self):
+        self.assertEqual(rmAllIds(repr(self.matched_potential)), rmAllIds(self.potential_match_repr))
+    
+    def test_identical_match_repr(self):
+        self.assertEqual(rmAllIds(repr(self.matched_identical)), rmAllIds(self.identical_match_repr))
+
+    
 class TestMatchResult(unittest.TestCase):
     
     meds_list_1 = [pm for pm in
