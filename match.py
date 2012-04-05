@@ -47,6 +47,11 @@ class Match(object):
                 self.med1, self.med2, id(self))
     
 class MatchResult(object):
+    """Represents the results of medication reconciliation: the two
+    lists of medications to be reconciled minus the medications they 
+    have in common removed, along with a list of medications common 
+    to both lists.
+    """
     def __init__(self, new_list_1, new_list_2, reconciled_list):
         self._list1 = new_list_1
         self._list2 = new_list_2
@@ -183,7 +188,7 @@ def match_by_brand_name(list1, list2):
                     matches = potential_matches.index(True) \
                             if True in potential_matches \
                             else None
-                    if matches:
+                    if matches is not None:
                         dose_2 = my_list_2_of_objects[matches].normalized_dose
                         if dose_1 == dose_2:
                             common.append(Match(list1[y], my_list_2_of_objects[matches],
