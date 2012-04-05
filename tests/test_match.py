@@ -311,8 +311,11 @@ class TestFunctions(unittest.TestCase):
     pMed3CUIs = set(['C0376218'])
     pMed3Tradenames = []
     list1 = [pMed1, pMed2]
+    list1rev = [pMed2, pMed1]
     list2 = [pMed2a, pMed3]
+    list2rev = [pMed3, pMed2a]
     list3 = [pMed2b, pMed3]
+    list3rev = [pMed3, pMed2b]
     matched_by_string_list1_repr = "[<Medication 18 @ 0x36ac090: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
     matched_by_string_list2_repr = "[<Medication 24 @ 0x6c30850: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
     matched_by_string_reconciled_repr = "[<Identical reconciliation (Identical strings): <Medication 22 @ 0x6c307d0: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x45748d0>]"
@@ -327,6 +330,12 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(rmAllIds(repr(myMatchResult.list2)), rmAllIds(self.matched_by_string_list2_repr))
         self.assertEqual(rmAllIds(repr(myMatchResult.reconciled)), rmAllIds(self.matched_by_string_reconciled_repr))
 
+    def test_match_by_strings_rev(self):
+        myMatchResult = match.match_by_strings(self.list1rev, self.list2rev)
+        self.assertEqual(rmAllIds(repr(myMatchResult.list1)), rmAllIds(self.matched_by_string_list1_repr))
+        self.assertEqual(rmAllIds(repr(myMatchResult.list2)), rmAllIds(self.matched_by_string_list2_repr))
+        self.assertEqual(rmAllIds(repr(myMatchResult.reconciled)), rmAllIds(self.matched_by_string_reconciled_repr))
+
     def test_medication_list_CUIs(self):
         cuis = match.medication_list_CUIs(self.list1 + self.list2 + self.list3)
         self.assertEqual(cuis, [self.pMed1CUIs, self.pMed2CUIs, self.pMed2aCUIs, self.pMed3CUIs, self.pMed2bCUIs, self.pMed3CUIs])
@@ -337,6 +346,12 @@ class TestFunctions(unittest.TestCase):
 
     def test_match_by_brand_name1(self):
         myMatchResult = match.match_by_brand_name(self.list1, self.list3)
+        self.assertEqual(rmAllIds(repr(myMatchResult.list1)), rmAllIds(self.matched_by_tradenames_list1_repr))
+        self.assertEqual(rmAllIds(repr(myMatchResult.list2)), rmAllIds(self.matched_by_tradenames_list2_repr))
+        self.assertEqual(rmAllIds(repr(myMatchResult.reconciled)), rmAllIds(self.matched_by_tradenames_reconciled1_repr))
+
+    def test_match_by_brand_name1_rev(self):
+        myMatchResult = match.match_by_brand_name(self.list1rev, self.list3rev)
         self.assertEqual(rmAllIds(repr(myMatchResult.list1)), rmAllIds(self.matched_by_tradenames_list1_repr))
         self.assertEqual(rmAllIds(repr(myMatchResult.list2)), rmAllIds(self.matched_by_tradenames_list2_repr))
         self.assertEqual(rmAllIds(repr(myMatchResult.reconciled)), rmAllIds(self.matched_by_tradenames_reconciled1_repr))
