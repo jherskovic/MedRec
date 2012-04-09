@@ -197,7 +197,7 @@ class ParsedMedication(Medication):
         if mappings is None:
             raise MappingContextError, "Requires an instance initialized with a MappingContext object."
         concepts = self.CUIs
-        if concepts is not None:
+        if concepts is not None and len(concepts) > 0:
             logging.debug("Concepts for %s=%r", self.name, concepts)
             try:
                 concept = concepts.pop()
@@ -221,6 +221,8 @@ class ParsedMedication(Medication):
             if name_of_medication in mappings.concept_names:
                 concepts = copy.copy(mappings.concept_names[name_of_medication])
                 self._cuis = concepts
+            else:
+                self._cuis = set()
         return copy.copy(self._cuis)
     @property
     def tradenames(self):
@@ -230,7 +232,7 @@ class ParsedMedication(Medication):
         if self._tradenames is None:
             self._tradenames = []
             my_cuis = self.CUIs
-            if self.CUIs is not None:
+            if self.CUIs is not None and len(self.CUIs) > 0:
                 self._tradenames = reduce(operator.add, [[x._concept2.CUI 
                                           for x in mappings.rxnorm.relations 
                                           if x.relation == 'tradename_of'
