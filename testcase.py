@@ -20,8 +20,8 @@ def rmMedIds(repr_string):
 def rmAllIds(repr_string):
     return(rmMedIds(rmObjIds(repr_string)))
 
-#rx = pickle.load(bz2.BZ2File('../MedRec/tests/rxnorm.pickle.bz2', 'r'))
-rx = pickle.load(bz2.BZ2File('../MedRec/rxnorm.pickle.bz2', 'r'))
+rx = pickle.load(bz2.BZ2File('../MedRec/tests/rxnorm.pickle.bz2', 'r'))
+#rx = pickle.load(bz2.BZ2File('../MedRec/rxnorm.pickle.bz2', 'r'))
 ts = pickle.load(bz2.BZ2File('../MedRec/treats.pickle.bz2', 'r'))
 mappings = MappingContext(rx, ts)
 
@@ -32,11 +32,19 @@ meds_list_2 = [pm for pm in
   [ParsedMedication(x, mappings, "List 2") for x in demo_list_2]
     if pm.parsed]
 
+#med_1 = 'Coreg 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; RPT'
+#med_2 = 'Carvedilol 25 MG Tablet;TAKE 1 TABLET TWICE DAILY,  WITH MORNING AND EVENING MEAL; Rx'
+#meds_list_1 = [ParsedMedication(med_1, mappings, "List 1")]
+#meds_list_2 = [ParsedMedication(med_2, mappings, "List 2")]
+
 matched_by_brand_name = match.match_by_brand_name(meds_list_1, meds_list_2)
 matched_by_brand_name_rev = match.match_by_brand_name(meds_list_2, meds_list_1)
 
 mfor = matched_by_brand_name
 mrev = matched_by_brand_name_rev
+
+#import pdb
+#pdb.set_trace()
 
 print "List1 forward"
 mfor_list1 = [repr(x) for x in mfor.list1]
