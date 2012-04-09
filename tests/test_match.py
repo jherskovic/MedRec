@@ -231,6 +231,7 @@ class TestMatchResult(unittest.TestCase):
     matched_by_strings_list1_repr = "[<Medication 2 @ 0xb86130c: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')>, <Medication 5 @ 0xb85fa6c: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 8 @ 0xb85e70c: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>, <Medication 9 @ 0xb85e58c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')>]"
     matched_by_strings_list2_repr = "[<Medication 13 @ 0xb85c46c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')>, <Medication 15 @ 0xb85b1ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')>, <Medication 16 @ 0xb85ac8c: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 17 @ 0xb8588ac: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 18 @ 0xb85840c: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>]" 
     matched_by_strings_reconciled_repr = "[<Identical reconciliation (Identical strings): <Medication 3 @ 0xb8610ac: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ 0xb7faa2c>, <Identical reconciliation (Identical strings): <Medication 4 @ 0xb85ffec: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xb7fa06c>, <Identical reconciliation (Identical strings): <Medication 6 @ 0xb85f68c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ 0xb7f9b6c>, <Identical reconciliation (Identical strings): <Medication 7 @ 0xb85e8cc: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0xb7f9aec>]" 
+    matched_by_strings_reconciled_rev_repr = "[<Identical reconciliation (Identical strings): <Medication  @ : 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ >]" 
     matched_by_brand_name_list1_repr = "[<Medication 2 @ 0xcbdb2ac: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')>, <Medication 3 @ 0xcbdb04c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>, <Medication 4 @ 0xcbdaf8c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 5 @ 0xcbdaa0c: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 6 @ 0xcbda62c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')>, <Medication 7 @ 0xcbd886c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')>, <Medication 8 @ 0xcbd86ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
     matched_by_brand_name_list2_repr = "[<Medication 11 @ 0xcbd6e4c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>, <Medication 12 @ 0xcbd6aec: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')>, <Medication 14 @ 0xcbd524c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 15 @ 0xcbd514c: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')>, <Medication 16 @ 0xcbd4c2c: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 17 @ 0xcbd284c: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 18 @ 0xcbd23ac: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 19 @ 0xcbd232c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')>]"
     matched_by_brand_name_reconciled_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 9 @ 0xcbd852c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')> <-> <Medication 13 @ 0xcbd640c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')> @ 0xcb73a8c>]"
@@ -238,8 +239,11 @@ class TestMatchResult(unittest.TestCase):
     matched_by_ingredients_list2_repr = "[<Medication 13 @ 0xca9de6c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')>, <Medication 16 @ 0xca9c3ac: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>]"
     matched_by_ingredients_reconciled_repr = "[<Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 2 @ 0xcaa262c: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')> <-> <Medication 18 @ 0xca9992c: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4314c>, <Identical reconciliation (Ingredient lists match): <Medication 3 @ 0xcaa258c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ 0xca42b6c>, <Identical reconciliation (Ingredient lists match): <Medication 4 @ 0xcaa252c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4296c>, <Potential reconciliation (66.67% certainty; Ingredient lists match) <Medication 5 @ 0xcaa0eec: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> <-> <Medication 17 @ 0xca9b26c: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4290c>, <Identical reconciliation (Ingredient lists match): <Medication 6 @ 0xcaa0e4c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ 0xca4262c>, <Identical reconciliation (Ingredient lists match): <Medication 7 @ 0xcaa042c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0xca426ac>, <Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 8 @ 0xca9fbec: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')> <-> <Medication 15 @ 0xca9d3ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')> @ 0xca4234c>]"
     matched_by_strings = match.match_by_strings(meds_list_1, meds_list_2)
+    matched_by_strings_rev = match.match_by_strings(meds_list_2, meds_list_1)
     matched_by_brand_name = match.match_by_brand_name(meds_list_1, meds_list_2)
+    matched_by_brand_name_rev = match.match_by_brand_name(meds_list_2, meds_list_1)
     matched_by_ingredients = match.match_by_ingredients(meds_list_1, meds_list_2)
+    matched_by_ingredients_rev = match.match_by_ingredients(meds_list_2, meds_list_1)
 
     def rmObjIds(self, repr_string):
         #return repr_string
@@ -251,42 +255,59 @@ class TestMatchResult(unittest.TestCase):
         mbi = self.matched_by_ingredients
         #matched_by_treatment = match.match_by_treatment(self.meds_list_1, self.meds_list_2)
         #pdb.set_trace()
+
+    def matchTest(self, myMatchObj, list1, list2, reconciled):
+        pdb.set_trace()
+        self.assertEqual(rmAllIds(repr(myMatchObj.list1)),
+                         rmAllIds(list1))
+        self.assertEqual(rmAllIds(repr(myMatchObj.list2)),
+                         rmAllIds(list2))
+        self.assertEqual(rmAllIds(repr(myMatchObj.reconciled)),
+                         rmAllIds(reconciled))
         
-    def test_match_by_strings_list1(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_strings.list1)),
-                         rmAllIds(self.matched_by_strings_list1_repr))
+    def test_match_by_strings(self):
+        myMatchObj = self.matched_by_strings
+        list1 = self.matched_by_strings_list1_repr
+        list2 = self.matched_by_strings_list2_repr
+        reconciled = self.matched_by_strings_reconciled_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
 
-    def test_match_by_strings_list2(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_strings.list2)),
-                         rmAllIds(self.matched_by_strings_list2_repr))
+    def test_match_by_strings_rev(self):
+        myMatchObj = self.matched_by_strings_rev
+        list1 = self.matched_by_strings_list2_repr
+        list2 = self.matched_by_strings_list1_repr
+        reconciled = self.matched_by_strings_reconciled_rev_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
 
-    def test_match_by_strings_reconciled(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_strings.reconciled)),
-                         rmAllIds(self.matched_by_strings_reconciled_repr))
+    def test_match_by_brand_name(self):
+        myMatchObj = self.matched_by_brand_name
+        list1 = self.matched_by_brand_name_list1_repr
+        list2 = self.matched_by_brand_name_list2_repr
+        reconciled = self.matched_by_brand_name_reconciled_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
 
-    def test_match_by_brand_name_list1(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_brand_name.list1)),
-                         rmAllIds(self.matched_by_brand_name_list1_repr))
+    def test_match_by_brand_name_rev(self):
+        myMatchObj = self.matched_by_brand_name_rev
+        list1 = self.matched_by_brand_name_list2_repr
+        list2 = self.matched_by_brand_name_list1_repr
+        reconciled = self.matched_by_brand_name_reconciled_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
+        # FIXME: asymmetrical behavior; perhaps a problem in the RXNORM subset
+        #pdb.set_trace()
+        #self.assertEqual(rmAllIds(repr(self.matched_by_brand_name_rev.list1)),
+        #                 rmAllIds(self.matched_by_brand_name_list2_repr))
+        #self.assertEqual(rmAllIds(repr(self.matched_by_brand_name_rev.list2)),
+        #                 rmAllIds(self.matched_by_brand_name_list1_repr))
+        #self.assertEqual(rmAllIds(repr(self.matched_by_brand_name_rev.reconciled)),
+        #                 rmAllIds(self.matched_by_brand_name_reconciled_repr))
 
-    def test_match_by_brand_name_list2(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_brand_name.list2)),
-                         rmAllIds(self.matched_by_brand_name_list2_repr))
+    def test_match_by_ingredients_list(self):
+        myMatchObj = self.matched_by_ingredients
+        list1 = self.matched_by_ingredients_list1_repr
+        list2 = self.matched_by_ingredients_list2_repr
+        reconciled = self.matched_by_ingredients_reconciled_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
 
-    def test_match_by_brand_name_reconciled(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_brand_name.reconciled)),
-                         rmAllIds(self.matched_by_brand_name_reconciled_repr))
-
-    def test_match_by_ingredients_list1(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_ingredients.list1)),
-                         rmAllIds(self.matched_by_ingredients_list1_repr))
-
-    def test_match_by_ingredients_list2(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_ingredients.list2)),
-                         rmAllIds(self.matched_by_ingredients_list2_repr))
-
-    def test_match_by_ingredients_reconciled(self):
-        self.assertEqual(rmAllIds(repr(self.matched_by_ingredients.reconciled)),
-                         rmAllIds(self.matched_by_ingredients_reconciled_repr))
 
 class TestFunctions(unittest.TestCase):
 
