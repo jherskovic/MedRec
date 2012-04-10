@@ -217,90 +217,6 @@ class TestMatch(unittest.TestCase):
         self.assertEqual(rmAllIds(repr(self.matched_identical)), rmAllIds(self.identical_match_repr))
 
     
-class TestMatchResult(unittest.TestCase):
-    
-    meds_list_1 = [pm for pm in
-      [ParsedMedication(x, mappings, "List 1") for x in demo_list_1]
-        if pm.parsed]
-    meds_list_2 = [pm for pm in
-      [ParsedMedication(x, mappings, "List 2") for x in demo_list_2]
-        if pm.parsed]
-
-    id_regex = re.compile(r'(?:0x[0-9a-f]{7,})')
-
-    matched_by_strings_list1_repr = "[<Medication 2 @ 0xb86130c: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')>, <Medication 5 @ 0xb85fa6c: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 8 @ 0xb85e70c: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>, <Medication 9 @ 0xb85e58c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')>]"
-    matched_by_strings_list2_repr = "[<Medication 13 @ 0xb85c46c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')>, <Medication 15 @ 0xb85b1ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')>, <Medication 16 @ 0xb85ac8c: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 17 @ 0xb8588ac: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 18 @ 0xb85840c: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>]" 
-    matched_by_strings_reconciled_repr = "[<Identical reconciliation (Identical strings): <Medication 3 @ 0xb8610ac: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ 0xb7faa2c>, <Identical reconciliation (Identical strings): <Medication 4 @ 0xb85ffec: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xb7fa06c>, <Identical reconciliation (Identical strings): <Medication 6 @ 0xb85f68c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ 0xb7f9b6c>, <Identical reconciliation (Identical strings): <Medication 7 @ 0xb85e8cc: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0xb7f9aec>]" 
-    matched_by_strings_reconciled_rev_repr = "[<Identical reconciliation (Identical strings): <Medication  @ : 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ >]" 
-    matched_by_brand_name_list1_repr = "[<Medication 2 @ 0xcbdb2ac: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')>, <Medication 3 @ 0xcbdb04c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>, <Medication 4 @ 0xcbdaf8c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 5 @ 0xcbdaa0c: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 6 @ 0xcbda62c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')>, <Medication 7 @ 0xcbd886c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')>, <Medication 8 @ 0xcbd86ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
-    matched_by_brand_name_list2_repr = "[<Medication 11 @ 0xcbd6e4c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>, <Medication 12 @ 0xcbd6aec: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')>, <Medication 14 @ 0xcbd524c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 15 @ 0xcbd514c: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')>, <Medication 16 @ 0xcbd4c2c: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 17 @ 0xcbd284c: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 18 @ 0xcbd23ac: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 19 @ 0xcbd232c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')>]"
-    matched_by_brand_name_reconciled_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 9 @ 0xcbd852c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')> <-> <Medication 13 @ 0xcbd640c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')> @ 0xcb73a8c>]"
-    matched_by_brand_name_reconciled_rev_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 14 @ 0x60d4050: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')> <-> <Medication 10 @ 0x711aed0: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')> @ 0x60d4650>]"
-    matched_by_ingredients_list1_repr = "[<Medication 9 @ 0xca9fb2c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')>]"
-    matched_by_ingredients_list2_repr = "[<Medication 13 @ 0xca9de6c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')>, <Medication 16 @ 0xca9c3ac: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>]"
-    matched_by_ingredients_reconciled_repr = "[<Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 2 @ 0xcaa262c: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')> <-> <Medication 18 @ 0xca9992c: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4314c>, <Identical reconciliation (Ingredient lists match): <Medication 3 @ 0xcaa258c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ 0xca42b6c>, <Identical reconciliation (Ingredient lists match): <Medication 4 @ 0xcaa252c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4296c>, <Potential reconciliation (66.67% certainty; Ingredient lists match) <Medication 5 @ 0xcaa0eec: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> <-> <Medication 17 @ 0xca9b26c: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4290c>, <Identical reconciliation (Ingredient lists match): <Medication 6 @ 0xcaa0e4c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ 0xca4262c>, <Identical reconciliation (Ingredient lists match): <Medication 7 @ 0xcaa042c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0xca426ac>, <Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 8 @ 0xca9fbec: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')> <-> <Medication 15 @ 0xca9d3ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')> @ 0xca4234c>]"
-    matched_by_ingredients_reconciled_rev_repr = "[<Identical reconciliation (Ingredient lists match): <Medication 12 @ 0x6880fd0: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ 0x589da90>, <Identical reconciliation (Ingredient lists match): <Medication 13 @ 0x589d050: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ 0x589dad0>, <Identical reconciliation (Ingredient lists match): <Medication 15 @ 0x589d110: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0x589db10>, <Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 16 @ 0x589d150: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')> <-> <Medication 9 @ 0x6880e50: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')> @ 0x589db50>, <Potential reconciliation (66.67% certainty; Ingredient lists match) <Medication 18 @ 0x589d210: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> <-> <Medication 6 @ 0x6880d10: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> @ 0x589db90>, <Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 19 @ 0x589d250: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> <-> <Medication 3 @ 0x6880c10: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')> @ 0x589dbd0>, <Identical reconciliation (Ingredient lists match): <Medication 20 @ 0x589d2d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x589dc10>]"
-    matched_by_strings = match.match_by_strings(meds_list_1, meds_list_2)
-    matched_by_strings_rev = match.match_by_strings(meds_list_2, meds_list_1)
-    matched_by_brand_name = match.match_by_brand_name(meds_list_1, meds_list_2)
-    matched_by_brand_name_rev = match.match_by_brand_name(meds_list_2, meds_list_1)
-    matched_by_ingredients = match.match_by_ingredients(meds_list_1, meds_list_2)
-    matched_by_ingredients_rev = match.match_by_ingredients(meds_list_2, meds_list_1)
-
-    def rmObjIds(self, repr_string):
-        return self.id_regex.sub('', repr_string)
-    
-    def matchTest(self, myMatchObj, list1, list2, reconciled):
-        self.assertEqual(rmAllIds(repr(myMatchObj.list1)),
-                         rmAllIds(list1))
-        self.assertEqual(rmAllIds(repr(myMatchObj.list2)),
-                         rmAllIds(list2))
-        self.assertEqual(rmAllIds(repr(myMatchObj.reconciled)),
-                         rmAllIds(reconciled))
-        
-    def test_match_by_strings(self):
-        myMatchObj = self.matched_by_strings
-        list1 = self.matched_by_strings_list1_repr
-        list2 = self.matched_by_strings_list2_repr
-        reconciled = self.matched_by_strings_reconciled_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
-
-    def test_match_by_strings_rev(self):
-        myMatchObj = self.matched_by_strings_rev
-        list1 = self.matched_by_strings_list2_repr
-        list2 = self.matched_by_strings_list1_repr
-        reconciled = self.matched_by_strings_reconciled_rev_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
-
-    def test_match_by_brand_name(self):
-        myMatchObj = self.matched_by_brand_name
-        list1 = self.matched_by_brand_name_list1_repr
-        list2 = self.matched_by_brand_name_list2_repr
-        reconciled = self.matched_by_brand_name_reconciled_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
-
-    def test_match_by_brand_name_rev(self):
-        myMatchObj = self.matched_by_brand_name_rev
-        list1 = self.matched_by_brand_name_list2_repr
-        list2 = self.matched_by_brand_name_list1_repr
-        reconciled = self.matched_by_brand_name_reconciled_rev_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
-
-    def test_match_by_ingredients_list(self):
-        myMatchObj = self.matched_by_ingredients
-        list1 = self.matched_by_ingredients_list1_repr
-        list2 = self.matched_by_ingredients_list2_repr
-        reconciled = self.matched_by_ingredients_reconciled_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
-
-    def test_match_by_ingredients_list_rev(self):
-        myMatchObj = self.matched_by_ingredients_rev
-        list1 = self.matched_by_ingredients_list2_repr
-        list2 = self.matched_by_ingredients_list1_repr
-        reconciled = self.matched_by_ingredients_reconciled_rev_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
-
-
 class TestFunctions(unittest.TestCase):
 
     medString1 = 'Lisinopril 5 MG Tablet;TAKE  TABLET TWICE DAILY; Rx'
@@ -336,6 +252,31 @@ class TestFunctions(unittest.TestCase):
     matched_by_tradenames_list2_repr = "[<Medication 22 @ 0x3ffa210: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
     matched_by_tradenames_reconciled1_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 19 @ 0x42e2110: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 21 @ 0x42e21d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x3aad150>]"
     matched_by_tradenames_reconciled2_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 21 @ 0x3347250: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 19 @ 0x3347190: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x2ca2190>]"
+    # Use the demo lists for testing; this code was previously  in TestMatchResult
+    demo_list_1 = [pm for pm in
+      [ParsedMedication(x, mappings, "List 1") for x in demo_list_1]
+        if pm.parsed]
+    demo_list_2 = [pm for pm in
+      [ParsedMedication(x, mappings, "List 2") for x in demo_list_2]
+        if pm.parsed]
+    demo_matched_by_strings_list1_repr = "[<Medication 2 @ 0xb86130c: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')>, <Medication 5 @ 0xb85fa6c: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 8 @ 0xb85e70c: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>, <Medication 9 @ 0xb85e58c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')>]"
+    demo_matched_by_strings_list2_repr = "[<Medication 13 @ 0xb85c46c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')>, <Medication 15 @ 0xb85b1ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')>, <Medication 16 @ 0xb85ac8c: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 17 @ 0xb8588ac: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 18 @ 0xb85840c: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>]" 
+    demo_matched_by_strings_reconciled_repr = "[<Identical reconciliation (Identical strings): <Medication 3 @ 0xb8610ac: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ 0xb7faa2c>, <Identical reconciliation (Identical strings): <Medication 4 @ 0xb85ffec: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xb7fa06c>, <Identical reconciliation (Identical strings): <Medication 6 @ 0xb85f68c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ 0xb7f9b6c>, <Identical reconciliation (Identical strings): <Medication 7 @ 0xb85e8cc: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0xb7f9aec>]" 
+    demo_matched_by_strings_reconciled_rev_repr = "[<Identical reconciliation (Identical strings): <Medication  @ : 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ >, <Identical reconciliation (Identical strings): <Medication  @ : 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ >]" 
+    demo_matched_by_brand_name_list1_repr = "[<Medication 2 @ 0xcbdb2ac: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')>, <Medication 3 @ 0xcbdb04c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>, <Medication 4 @ 0xcbdaf8c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 5 @ 0xcbdaa0c: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 6 @ 0xcbda62c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')>, <Medication 7 @ 0xcbd886c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')>, <Medication 8 @ 0xcbd86ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
+    demo_matched_by_brand_name_list2_repr = "[<Medication 11 @ 0xcbd6e4c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>, <Medication 12 @ 0xcbd6aec: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')>, <Medication 14 @ 0xcbd524c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 15 @ 0xcbd514c: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')>, <Medication 16 @ 0xcbd4c2c: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 17 @ 0xcbd284c: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 18 @ 0xcbd23ac: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 19 @ 0xcbd232c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')>]"
+    demo_matched_by_brand_name_reconciled_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 9 @ 0xcbd852c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')> <-> <Medication 13 @ 0xcbd640c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')> @ 0xcb73a8c>]"
+    demo_matched_by_brand_name_reconciled_rev_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 14 @ 0x60d4050: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')> <-> <Medication 10 @ 0x711aed0: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')> @ 0x60d4650>]"
+    demo_matched_by_ingredients_list1_repr = "[<Medication 9 @ 0xca9fb2c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')>]"
+    demo_matched_by_ingredients_list2_repr = "[<Medication 13 @ 0xca9de6c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')>, <Medication 16 @ 0xca9c3ac: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>]"
+    demo_matched_by_ingredients_reconciled_repr = "[<Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 2 @ 0xcaa262c: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')> <-> <Medication 18 @ 0xca9992c: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4314c>, <Identical reconciliation (Ingredient lists match): <Medication 3 @ 0xcaa258c: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ 0xca42b6c>, <Identical reconciliation (Ingredient lists match): <Medication 4 @ 0xcaa252c: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4296c>, <Potential reconciliation (66.67% certainty; Ingredient lists match) <Medication 5 @ 0xcaa0eec: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> <-> <Medication 17 @ 0xca9b26c: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> @ 0xca4290c>, <Identical reconciliation (Ingredient lists match): <Medication 6 @ 0xcaa0e4c: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ 0xca4262c>, <Identical reconciliation (Ingredient lists match): <Medication 7 @ 0xcaa042c: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0xca426ac>, <Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 8 @ 0xca9fbec: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')> <-> <Medication 15 @ 0xca9d3ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')> @ 0xca4234c>]"
+    demo_matched_by_ingredients_reconciled_rev_repr = "[<Identical reconciliation (Ingredient lists match): <Medication 12 @ 0x6880fd0: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')> @ 0x589da90>, <Identical reconciliation (Ingredient lists match): <Medication 13 @ 0x589d050: 'WARFARIN SODIUM' 5 'MG' 'TABLET' ('TAKE 1 TABLET DAILY AS DIRECTED.; RX')> @ 0x589dad0>, <Identical reconciliation (Ingredient lists match): <Medication 15 @ 0x589d110: 'LIPITOR' 10 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> @ 0x589db10>, <Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 16 @ 0x589d150: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')> <-> <Medication 9 @ 0x6880e50: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')> @ 0x589db50>, <Potential reconciliation (66.67% certainty; Ingredient lists match) <Medication 18 @ 0x589d210: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> <-> <Medication 6 @ 0x6880d10: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')> @ 0x589db90>, <Potential reconciliation (100.00% certainty; Ingredient lists match) <Medication 19 @ 0x589d250: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')> <-> <Medication 3 @ 0x6880c10: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')> @ 0x589dbd0>, <Identical reconciliation (Ingredient lists match): <Medication 20 @ 0x589d2d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x589dc10>]"
+    demo_matched_by_strings = match.match_by_strings(demo_list_1, demo_list_2)
+    demo_matched_by_strings_rev = match.match_by_strings(demo_list_2, demo_list_1)
+    demo_matched_by_brand_name = match.match_by_brand_name(demo_list_1, demo_list_2)
+    demo_matched_by_brand_name_rev = match.match_by_brand_name(demo_list_2, demo_list_1)
+    demo_matched_by_ingredients = match.match_by_ingredients(demo_list_1, demo_list_2)
+    demo_matched_by_ingredients_rev = match.match_by_ingredients(demo_list_2, demo_list_1)
 
     def matchTest(self, myMatchObj, list1, list2, reconciled):
         self.assertEqual(rmAllIds(repr(myMatchObj.list1)),
@@ -394,6 +335,73 @@ class TestFunctions(unittest.TestCase):
 
     #def test_match_by_treatment(self):
     #    pass
+
+    def test_demo_match_by_strings(self):
+        myMatchObj = self.demo_matched_by_strings
+        list1 = self.demo_matched_by_strings_list1_repr
+        list2 = self.demo_matched_by_strings_list2_repr
+        reconciled = self.demo_matched_by_strings_reconciled_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
+
+    def test_demo_match_by_strings_rev(self):
+        myMatchObj = self.demo_matched_by_strings_rev
+        list1 = self.demo_matched_by_strings_list2_repr
+        list2 = self.demo_matched_by_strings_list1_repr
+        reconciled = self.demo_matched_by_strings_reconciled_rev_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
+
+    def test_demo_match_by_brand_name(self):
+        myMatchObj = self.demo_matched_by_brand_name
+        list1 = self.demo_matched_by_brand_name_list1_repr
+        list2 = self.demo_matched_by_brand_name_list2_repr
+        reconciled = self.demo_matched_by_brand_name_reconciled_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
+
+    def test_demo_match_by_brand_name_rev(self):
+        myMatchObj = self.demo_matched_by_brand_name_rev
+        list1 = self.demo_matched_by_brand_name_list2_repr
+        list2 = self.demo_matched_by_brand_name_list1_repr
+        reconciled = self.demo_matched_by_brand_name_reconciled_rev_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
+
+    def test_demo_match_by_ingredients_list(self):
+        myMatchObj = self.demo_matched_by_ingredients
+        list1 = self.demo_matched_by_ingredients_list1_repr
+        list2 = self.demo_matched_by_ingredients_list2_repr
+        reconciled = self.demo_matched_by_ingredients_reconciled_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
+
+    def test_demo_match_by_ingredients_list_rev(self):
+        myMatchObj = self.demo_matched_by_ingredients_rev
+        list1 = self.demo_matched_by_ingredients_list2_repr
+        list2 = self.demo_matched_by_ingredients_list1_repr
+        reconciled = self.demo_matched_by_ingredients_reconciled_rev_repr
+        self.matchTest(myMatchObj, list1, list2, reconciled)
+
+
+class TestMatchResult(unittest.TestCase):
+
+    med1 = ParsedMedication(TestFunctions.medString1, mappings)
+    med2a = ParsedMedication(TestFunctions.medString2, mappings)
+    med2b = ParsedMedication(TestFunctions.medString2, mappings)
+    med3 = ParsedMedication(TestFunctions.medString3, mappings)
+    rec_med = match.Match(med2a, med2b)
+    matchResult = match.MatchResult([med1], [med3], [rec_med])
+    list1 = "[<Medication 26 @ 0x667bed0: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
+    list2 = "[<Medication 29 @ 0x667bfd0: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
+    reconciled = "[<Identical reconciliation (unspecified): <Medication 27 @ 0x667bf10: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x62b5050>]"
+        
+    def matchTest(self, myMatchObj, list1, list2, reconciled):
+        self.assertEqual(rmAllIds(repr(myMatchObj.list1)),
+                         rmAllIds(list1))
+        self.assertEqual(rmAllIds(repr(myMatchObj.list2)),
+                         rmAllIds(list2))
+        self.assertEqual(rmAllIds(repr(myMatchObj.reconciled)),
+                         rmAllIds(reconciled))
+
+    def test_basic(self):
+        self.matchTest(self.matchResult, self.list1, self.list2, self.reconciled)
+
 
 
 if __name__ == "__main__":
