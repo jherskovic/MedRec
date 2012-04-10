@@ -17,8 +17,9 @@ from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS,
 import cPickle as pickle
 import bz2
 from mapping_context import MappingContext
+import logging
 
-import pdb
+#logging.basicConfig(filename='test_match.log', level=logging.DEBUG)
 
 rx = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
 ts = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
@@ -239,6 +240,10 @@ class TestFunctions(unittest.TestCase):
     pMed3 = ParsedMedication(medString3, mappings)
     pMed3CUIs = set(['C0376218'])
     pMed3Tradenames = []
+    medString4 = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
+    pMed4 = ParsedMedication(medString4, mappings)
+    medString5 = 'Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
+    pMed5 = ParsedMedication(medString5, mappings)
     list1 = [pMed1, pMed2]
     list1rev = [pMed2, pMed1]
     list2 = [pMed2a, pMed3]
@@ -329,12 +334,33 @@ class TestFunctions(unittest.TestCase):
         reconciled = self.matched_by_tradenames_reconciled2_repr
         self.matchTest(myMatchResult, list1, list2, reconciled)
 
-#    def test_match_by_ingredients(self):
-#        myMatchResult = match.match_by_brand_name(self.list1, self.list2)
-#        pdb.set_trace()
+    def test_match_by_ingredients_above(self):
+        myMatchResult = match.match_by_ingredients([self.pMed4], [self.pMed5],
+          min_match_threshold=0.6)
+        self.assertEqual(len(myMatchResult.list1), 0)
+        self.assertEqual(len(myMatchResult.list2), 0)
+        self.assertEqual(len(myMatchResult.reconciled), 1)
 
-    #def test_match_by_treatment(self):
-    #    pass
+    def test_match_by_ingredients_below(self):
+        myMatchResult = match.match_by_ingredients([self.pMed4], [self.pMed5],
+          min_match_threshold=0.7)
+        self.assertEqual(len(myMatchResult.list1), 1)
+        self.assertEqual(len(myMatchResult.list2), 1)
+        self.assertEqual(len(myMatchResult.reconciled), 0)
+
+    def test_match_by_ingredients_rev_above(self):
+        myMatchResult = match.match_by_ingredients([self.pMed5], [self.pMed4],
+          min_match_threshold=0.6)
+        self.assertEqual(len(myMatchResult.list1), 0)
+        self.assertEqual(len(myMatchResult.list2), 0)
+        self.assertEqual(len(myMatchResult.reconciled), 1)
+
+    def test_match_by_ingredients_rev_below(self):
+        myMatchResult = match.match_by_ingredients([self.pMed5], [self.pMed4],
+          min_match_threshold=0.7)
+        self.assertEqual(len(myMatchResult.list1), 1)
+        self.assertEqual(len(myMatchResult.list2), 1)
+        self.assertEqual(len(myMatchResult.reconciled), 0)
 
     def test_demo_match_by_strings(self):
         myMatchObj = self.demo_matched_by_strings
@@ -381,6 +407,9 @@ class TestFunctions(unittest.TestCase):
 
 class TestMatchResult(unittest.TestCase):
 
+    """The MatchResult class gets exercised a lot above, so we'll implement
+    only a basic test of the members of the class.
+    """
     med1 = ParsedMedication(TestFunctions.medString1, mappings)
     med2a = ParsedMedication(TestFunctions.medString2, mappings)
     med2b = ParsedMedication(TestFunctions.medString2, mappings)
