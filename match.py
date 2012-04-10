@@ -160,6 +160,7 @@ def match_by_brand_name(list1, list2):
         logging.debug("Testing %r", concepts_1[y])
         if concepts_1[y] is not None:
             for c1 in concepts_1[y]:
+                # Test to see if the concepts in c1 match any tradenames of c2
                 logging.debug("Testing %r against %r", c1, tradenames_of_c2)
                 potential_matches = [c1 in t for t in tradenames_of_c2
                                   if t is not None]
