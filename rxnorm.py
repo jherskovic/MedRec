@@ -104,8 +104,12 @@ class SemanticTypeLine(object):
         
 class RXNORM(object):
     def __init__(self, concepts, relations, ingredients):
+        # 'concepts' is a dictionary of Drug objects indexed by CUI
         self.concepts = concepts
+        # 'relations' is a list of Relation objects
         self.relations = relations
+        # 'formulas' is a dictionary of sets of Drug objects indexed
+        # by the CUI of the drug of which they are a formulation
         self.formulas = ingredients
     def __getstate__(self):
         return {"c": self.concepts,

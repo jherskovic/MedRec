@@ -257,7 +257,7 @@ def match_by_treatment(list1, list2, mappings,
         len_2 = len(set2)
         if len_1 + len_2 == 0:
             return 0.0
-        len_common = len([x for x in set1 if x in set2])
+        len_common = len(set1 & set2)
         return float(len_common) / float(len_1 + len_2 - len_common)
      
     logging.debug("Determining CUIs for %r", list1)
