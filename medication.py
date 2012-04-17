@@ -76,12 +76,16 @@ def build_regular_expressions(list_of_tuples, formulation):
 class ParsedMedication(Medication):
     formulation_regexp_cache = {}
     times_regexp_cache = {}
-    def __init__(self, med_line, context=None, provenance=""):
+    def __init__(self, med_info, context=None, provenance=""):
         """ParsedMedication constructor. It attempts to parse the med_line 
         arg into its components using the from_text() method. Pass
         a MappingContext as part of the context parameter to provide 
         a version of rxnorm to perform computations. Pass a provenance
-        to assist in reconciling several lists of medications.""" 
+        to assist in reconciling several lists of medications."""
+        if isinstance(med_info, dict):
+            med_line = self._dict_to_string(med_info)
+        else:
+            med_line = med_info
         super(ParsedMedication, self).__init__(med_line, provenance)
         self._name = None
         self._dose = None
@@ -94,7 +98,12 @@ class ParsedMedication(Medication):
         self._cuis = None
         self._tradenames = None
         self._mappings = context
-        self._from_text(med_line)
+        if isinstance(med_info, str):
+            self._from_text(med_info)
+        else:
+            self._from_dict(med_info)
+    def _dict_to_string(self, med_dict):
+        return "%(name)s %(dose)s %(units)s %(formulation)s; %(instructions)s" % med_dict
     def _from_text(self, med_line):
         """Separates a medication string into its components according to the
         medication_parser regular expression."""
@@ -112,6 +121,15 @@ class ParsedMedication(Medication):
         else:
             logging.debug("Could not parse %s. _parsed is %r", med_line,
                           self._parsed)
+    def _from_dict(self, med_dict):
+        self._name = self._normalize_field(med_dict['name'])
+        self._dose = self._normalize_field(med_dict['dose'])
+        self._units = self._normalize_field(med_dict['units'])
+        self._formulation = self._normalize_field(med_dict['formulation'])
+        self._instructions = self._normalize_field(med_dict['instructions'])
+        self._norm_dose = self._normalize_dose()
+        self._parsed = True
+        pass
     def __repr__(self):
         if self._parsed:
             return "<Medication %d @ 0x%x: %r %s %r %r (%r)>" % (
