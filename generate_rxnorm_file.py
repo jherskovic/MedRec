@@ -30,9 +30,12 @@ def display_count(count, dot_threshold=1000, pipe_threshold=10000,
     if count % newline_threshold == 0:
         print >>output_stream, " %d" % count
         output_stream.flush()
-    
+
+rrf_dir = sys.argv[1]
+save_file = sys.argv[2]
+
 print >>sys.stderr, "Reading Semantic Types"
-sty_filename=os.path.join(sys.argv[1], "MRSTY.RRF")
+sty_filename=os.path.join(rrf_dir, "MRSTY.RRF")
 sty_file=open(sty_filename, 'rU')
 types={}
 count=0
@@ -122,6 +125,6 @@ zoloft=concept_names['zoloft']
 for z in zoloft:
     print >>sys.stderr, "Ingredients for", concepts[z]._name ,":", [y for y in ingredients[z] ]
 
-print >>sys.stderr, "Saving to",sys.argv[2]
+print >>sys.stderr, "Saving to", save_file
 r=rxnorm.RXNORM(concepts, relations, ingredients)
-pickle.dump(r, bz2.BZ2File(sys.argv[2], 'wb'), pickle.HIGHEST_PROTOCOL)
+pickle.dump(r, bz2.BZ2File(save_file, 'wb'), pickle.HIGHEST_PROTOCOL)
