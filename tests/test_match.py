@@ -244,6 +244,10 @@ class TestFunctions(unittest.TestCase):
     pMed4 = ParsedMedication(medString4, mappings)
     medString5 = 'Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
     pMed5 = ParsedMedication(medString5, mappings)
+    medString6 = 'Paroxetine 20 MG Tablet; TAKE 1 TABLET DAILY.; Rx'
+    pMed6 = ParsedMedication(medString6, mappings)
+    medString7 = 'Sertraline 50 MG Tablet;TAKE 1 TABLET BY MOUTH EVERY DAY; Rx'
+    pMed7 = ParsedMedication(medString7, mappings)
     list1 = [pMed1, pMed2]
     list1rev = [pMed2, pMed1]
     list2 = [pMed2a, pMed3]
@@ -257,6 +261,8 @@ class TestFunctions(unittest.TestCase):
     matched_by_tradenames_list2_repr = "[<Medication 22 @ 0x3ffa210: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
     matched_by_tradenames_reconciled1_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 19 @ 0x42e2110: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 21 @ 0x42e21d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x3aad150>]"
     matched_by_tradenames_reconciled2_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 21 @ 0x3347250: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 19 @ 0x3347190: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x2ca2190>]"
+    matched_by_treatment_above = match.match_by_treatment([pMed6], [pMed7], mappings, match_acceptance_threshold=0.3)
+    matched_by_treatment_below = match.match_by_treatment([pMed6], [pMed7], mappings)
     # Use the demo lists for testing; this code was previously  in TestMatchResult
     demo_list_1 = [pm for pm in
       [ParsedMedication(x, mappings, "List 1") for x in demo_list_1]
@@ -403,6 +409,18 @@ class TestFunctions(unittest.TestCase):
         list2 = self.demo_matched_by_ingredients_list1_repr
         reconciled = self.demo_matched_by_ingredients_reconciled_rev_repr
         self.matchTest(myMatchObj, list1, list2, reconciled)
+
+    def test_match_by_treatment_above(self):
+        """These two medications should match by treatment if the 
+        match_acceptance_threshold is set to 0.3; note that this
+        behavior may change as the underlying 'treats' data change."""
+        self.assertEqual(len(self.matched_by_treatment_above.reconciled), 1)
+
+    def test_match_by_treatment_below(self):
+        """These two medications should not match by treatment if the
+        match_acceptance_threshold is set to default (0.5); note that this
+        behavior may change as the underlying 'treats' data change."""
+        self.assertEqual(len(self.matched_by_treatment_below.reconciled), 0)
 
 
 class TestMatchResult(unittest.TestCase):
