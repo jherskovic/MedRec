@@ -108,12 +108,16 @@ parsedFields = ('name', 'dose', 'units', 'formulation', 'instructions',)
 
 
 class TestMedParsing(unittest.TestCase):
-    
+    """Basic testing of medication parsing.
+    """
     def setUp(self):
         self.medList = demo_list_1 + demo_list_2
         self.parsedMedList = [medication.medication_parser.match(med) for med in self.medList]
    
     def testDemoMedParsing(self):
+        """Test to ensure that medication.medication_parser parses all the 
+        medications in the demo lists as expected. 
+        """
         i = 0
         while i < len(parsedDemoMeds):
             d = parsedDemoMeds[i]
@@ -123,6 +127,9 @@ class TestMedParsing(unittest.TestCase):
         return
     
     def _parseHorse(self, m, d, i):
+        """Helper function that iterates over each field in a ParsedMedication 
+        object and compares its value to the baseline.
+        """
         for field in parsedFields:
             self.assertTrue(m, "No match in example %d" % i)
             parsedVal = m.group(field)
@@ -157,10 +164,13 @@ class TestMedicationClass(unittest.TestCase):
             self.assertEqual(self.normalized_string, medInstance.normalized_string, "Failed to normalize example %d" % i)
 
     def test_normalized_string_readonly(self):
+        """Ensure that the normalized_string attribute is immutable."""
         self.assertRaises(AttributeError, self.instance.__setattr__,
           'normalized_string', self.original_strings[1])
 
     def test_original_string(self):
+        """Ensure that .original_string contains the original, unnormalized 
+        version of the medication string."""
         i = 0
         for original_string in self.original_strings:
             i += 1
@@ -168,10 +178,14 @@ class TestMedicationClass(unittest.TestCase):
             self.assertEqual(medInstance.original_string, original_string, "Failed original string equality in example %d" % i)
     
     def test_original_string_readonly(self):
+        """Ensure that the original_string attribute is immutable."""
         self.assertRaises(AttributeError, self.instance.__setattr__,
           'original_string', self.original_strings[1])
 
     def test_is_empty(self):
+        """Ensure that Medication.empty_string() method successfully detects
+        when the Medication object was initialized with an empty string and 
+        when not."""
         i = 0
         for empty_string in self.empty_strings:
             i += 1

@@ -19,6 +19,9 @@ mappings = MappingContext(rx, ts)
 
 
 class TestMappingContext(unittest.TestCase):
+    """A set of tests to ensure that the basic functionality of 
+    mapping.MappingContext works as expected.
+    """
     
     paxilTreats = set(['C0038454', 'C0020114', 'C0011581', 'C0678222', 'C0030705', 'C0008059', 'C0525045', 'C0030319'])
 

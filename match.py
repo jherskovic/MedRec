@@ -20,6 +20,8 @@ class Match(object):
         self.strength = strength
         self.mechanism = reconciliation_mechanism
     def as_dictionary(self):
+        """Return a dictionary representing attributes of this match that 
+        are used by interfaces."""
         my_dict = {'med1': self.med1.as_dictionary(),
                    'score': self.strength,
                    'mechanism': str(self.mechanism)
@@ -58,12 +60,15 @@ class MatchResult(object):
         self._reconciled = reconciled_list
     @property
     def list1(self):
+        "First input list minus the medications that were reconciled."
         return copy.copy(self._list1)
     @property
     def list2(self):
+        "Second input list minus the medications that were reconciled."
         return copy.copy(self._list2)
     @property
     def reconciled(self):
+        "List of medications that were reconciled."
         return copy.copy(self._reconciled)
     
 def match_by_strings(list1, list2):
