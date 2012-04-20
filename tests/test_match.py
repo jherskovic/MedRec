@@ -18,7 +18,7 @@ import cPickle as pickle
 import bz2
 from mapping_context import MappingContext
 import logging
-import pdb
+
 #logging.basicConfig(filename='test_match.log', level=logging.DEBUG)
 
 rx = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
@@ -238,8 +238,8 @@ class TestFunctions(unittest.TestCase):
     pMed2bTradenames = []
     medString3 = 'Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx'
     pMed3 = ParsedMedication(medString3, mappings)
-    pMed3CUIs = set(['C0376218'])
-    pMed3Tradenames = []
+    pMed3CUIs = set(['C0981139', 'C0981138', 'C0779882', 'C1276897', 'C0376218'])
+    pMed3Tradenames = ['C0710779']
     medString4 = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
     pMed4 = ParsedMedication(medString4, mappings)
     medString5 = 'Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
@@ -262,6 +262,10 @@ class TestFunctions(unittest.TestCase):
     list2rev = [pMed3, pMed2a]
     list3 = [pMed2b, pMed3]
     list3rev = [pMed3, pMed2b]
+    medication_list_test_CUIs = [pMed1CUIs, pMed2CUIs, pMed2aCUIs, pMed3CUIs, pMed2bCUIs, pMed3CUIs]
+    #medication_list_test_CUIs.sort()
+    medication_list_test_tradenames = [pMed1Tradenames, pMed2Tradenames, pMed2aTradenames, pMed3Tradenames, pMed2bTradenames, pMed3Tradenames]
+    #medication_list_test_tradenames.sort()
     matched_by_string_list1_repr = "[<Medication 18 @ 0x36ac090: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
     matched_by_string_list2_repr = "[<Medication 24 @ 0x6c30850: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
     matched_by_string_reconciled_repr = "[<Identical reconciliation (Identical strings): <Medication 22 @ 0x6c307d0: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x45748d0>]"
@@ -269,13 +273,12 @@ class TestFunctions(unittest.TestCase):
     matched_by_tradenames_list2_repr = "[<Medication 22 @ 0x3ffa210: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
     matched_by_tradenames_reconciled1_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 19 @ 0x42e2110: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 21 @ 0x42e21d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x3aad150>]"
     matched_by_tradenames_reconciled2_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 21 @ 0x3347250: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 19 @ 0x3347190: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x2ca2190>]"
-    pdb.set_trace()
     matched_by_treatment_above = match.match_by_treatment([pMed6], [pMed7], mappings, match_acceptance_threshold=0.3)
     matched_by_treatment_below = match.match_by_treatment([pMed6], [pMed7], mappings)
     matched_by_treatment_05_yes = match.match_by_treatment([pMed8], [pMed9], mappings, match_acceptance_threshold=0.5)
-    matched_by_treatment_05_no = match.match_by_treatment([pMed8], [pMed9], mappings, match_acceptance_threshold=0.26)
-    matched_by_treatment_04_yes = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.2)
-    matched_by_treatment_04_no = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.21)
+    matched_by_treatment_05_no = match.match_by_treatment([pMed8], [pMed9], mappings, match_acceptance_threshold=0.51)
+    matched_by_treatment_04_yes = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.4)
+    matched_by_treatment_04_no = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.43)
     # Use the demo lists for testing; this code was previously  in TestMatchResult
     demo_list_1 = [pm for pm in
       [ParsedMedication(x, mappings, "List 1") for x in demo_list_1]
@@ -326,11 +329,11 @@ class TestFunctions(unittest.TestCase):
 
     def test_medication_list_CUIs(self):
         cuis = match.medication_list_CUIs(self.list1 + self.list2 + self.list3)
-        self.assertEqual(cuis, [self.pMed1CUIs, self.pMed2CUIs, self.pMed2aCUIs, self.pMed3CUIs, self.pMed2bCUIs, self.pMed3CUIs])
+        self.assertEqual(cuis, self.medication_list_test_CUIs)
 
     def test_medication_list_tradenames(self):
         tradenames = match.medication_list_tradenames(self.list1 + self.list2 + self.list3)
-        self.assertEqual(tradenames, [self.pMed1Tradenames, self.pMed2Tradenames, self.pMed2aTradenames, self.pMed3Tradenames, self.pMed2bTradenames, self.pMed3Tradenames])
+        self.assertEqual(tradenames, self.medication_list_test_tradenames)
 
     def test_match_by_brand_name1(self):
         myMatchResult = match.match_by_brand_name(self.list1, self.list3)
@@ -437,9 +440,9 @@ class TestFunctions(unittest.TestCase):
     
     def test_match_by_treatment_varies(self):
         self.assertEqual(len(self.matched_by_treatment_05_yes.reconciled), 1)
-#        self.assertEqual(len(self.matched_by_treatment_05_no.reconciled), 0)
-#        self.assertEqual(len(self.matched_by_treatment_04_yes.reconciled), 1)
-#        self.assertEqual(len(self.matched_by_treatment_04_no.reconciled), 0)
+        self.assertEqual(len(self.matched_by_treatment_05_no.reconciled), 0)
+        self.assertEqual(len(self.matched_by_treatment_04_yes.reconciled), 1)
+        self.assertEqual(len(self.matched_by_treatment_04_no.reconciled), 0)
 
 
 class TestMatchResult(unittest.TestCase):
