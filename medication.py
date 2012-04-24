@@ -359,4 +359,12 @@ class ParsedMedication(Medication):
            self._instructions != other._instructions or self._norm_dose != other._norm_dose:
             return True
         return False
+    def __gt__(self, other):
+        if self._normalized_string > other._normalized_string:
+            return True
+        return False
+    def __lt__(self, other):
+        if self._normalized_string < other._normalized_string:
+            return True
+        return False
 
