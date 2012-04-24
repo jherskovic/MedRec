@@ -47,6 +47,21 @@ class Match(object):
         return "<Potential reconciliation (%1.2f%% certainty; %s) %r <-> %r @ 0x%x>" % \
                (self.strength * 100.0, self.mechanism,
                 self.med1, self.med2, id(self))
+    def __eq__(self, other):
+        if ((self.med1 == other.med1 and self.med2 == other.med2) or \
+            (self.med1 == other.med2 and self.med2 == other.med1)) and \
+             self.strength == other.strength and \
+             self.mechanism == other.mechanism:
+            return True
+        return False
+    def __ne__(self, other):
+        if (self.med1 != other.med1 and self.med1 != other.med2) or \
+           (self.med2 != other.med2 and self.med2 != other.med1) or \
+             self.strength != other.strength or \
+             self.mechanism != other.mechanism:
+            return True
+        return False
+
     
 class MatchResult(object):
     """Represents the results of medication reconciliation: the two

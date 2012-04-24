@@ -8,6 +8,7 @@ import unittest
 import sys
 sys.path.append('..')
 import re
+import copy
 import match
 from medication import ParsedMedication
 from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS, 
@@ -25,6 +26,7 @@ rx = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
 ts = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
 mappings = MappingContext(rx, ts)
 
+test_match_objects = pickle.load(bz2.BZ2File('test_match.pickle.bz2', 'r'))
 # The following functions and regexes help to normalize the repr() output
 # for the objects we are testing, which enables us easily to compare output
 # with the test baselines.
@@ -48,197 +50,94 @@ def rmAllIds(repr_string):
     "Remove both object IDs and Medication serial IDs from a string" 
     return(rmMedIds(rmObjIds(repr_string)))
 
+def rmIdsFromMatchDict(matchDict):
+    newDict = copy.copy(matchDict)
+    del(newDict['med1']['id'])
+    del(newDict['med2']['id'])
+    return newDict
+
 class TestMatch(unittest.TestCase):
     """A set of unit tests to exercise the match.Match class.
     """
     medString1 = 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx'
+    medString1b = 'Mirapex 0.5 MG Tablet;TAKE 2 TABLETS 3 TIMES DAILY.; Rx'
     medString2 = 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx'
     medString2a = 'PRAMIPEXOLE 0.5 MG TABLET;take 1 tablet 3 times daily.; rx'
+    medString2b = 'PRAMIPEXOLE 0.5 MG TABLET;take 2 tablets 3 times daily.; rx'
     med1 = ParsedMedication(medString1, mappings)
+    med1b = ParsedMedication(medString1b, mappings)
     med2 = ParsedMedication(medString2, mappings)
     med2a = ParsedMedication(medString2a, mappings)
-    # These dictionaries are for testing the Match.as_dictionary() 
-    # representation of a potential reconciliation
-    matched_by_string_dictionary = {
-      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-      'med2': {
-        'medication_name': 'PRAMIPEXOLE',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 1,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'med1': {
-        'medication_name': 'MIRAPEX',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 0,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'score': 0.5, 'mechanism': 'MATCH_STRING'
-    }
-    matched_by_brand_name_dictionary = {
-      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-      'med2': {
-        'medication_name': 'PRAMIPEXOLE',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 1,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'med1': {
-        'medication_name': 'MIRAPEX',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 0,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'score': 0.8, 'mechanism': 'MATCH_BRAND_NAME'
-    }
-    matched_by_ingredients_dictionary = {
-      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-      'med2': {
-        'medication_name': 'PRAMIPEXOLE',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 1,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'med1': {
-        'medication_name': 'MIRAPEX',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 0,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'score': 0.9, 'mechanism': 'MATCH_INGREDIENTS'
-    }
-    matched_by_treatment_dictionary = {
-      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-      'med2': {
-        'medication_name': 'PRAMIPEXOLE',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 1,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'med1': {
-        'medication_name': 'MIRAPEX',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 0,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'score': 0.5,
-      'mechanism': 'MATCH_TREATMENT_INTENT'
-    }
-    matched_unspecified_dictionary = {
-      'identical': ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION'],
-      'med2': {
-        'medication_name': 'PRAMIPEXOLE',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 1,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Pramipexole 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'med1': {
-        'medication_name': 'MIRAPEX',
-        'provenance': '',
-        'formulation': 'TABLET',
-        'units': 'MG',
-        'id': 0,
-        'instructions': 'TAKE 1 TABLET 3 TIMES DAILY.; RX',
-        'original_string': 'Mirapex 0.5 MG Tablet;TAKE 1 TABLET 3 TIMES DAILY.; Rx',
-        'normalized_dose': '0.5 MG*3*1',
-        'parsed': True,
-        'dose': '0.5'
-      },
-      'score': 0.1, 'mechanism': 'unspecified'
-    }
+    med2b = ParsedMedication(medString2b, mappings)
+    test_objects = test_match_objects['TestMatch']
     # Match objects used in testing below
     matched_by_string = match.Match(med1, med2, 0.5, "MATCH_STRING")
     matched_by_brand_name = match.Match(med1, med2, 0.8, "MATCH_BRAND_NAME")
     matched_by_ingredients = match.Match(med1, med2, 0.9, "MATCH_INGREDIENTS")
     matched_by_treatment = match.Match(med1, med2, 0.5, "MATCH_TREATMENT_INTENT")
     matched_unspecified = match.Match(med1, med2, 0.1)
-    matched_potential = match.Match(med1, med2, 0.5)
-    matched_identical = match.Match(med2a, med2, 0.5)
-    # repr() strings representing a potential reconciliation and an identical reconcilation
-    potential_match_repr = "<Potential reconciliation (50.00% certainty; unspecified) <Medication 12 @ 0x499b190: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 13 @ 0x499b1d0: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x499b250>"
-    identical_match_repr = "<Identical reconciliation (unspecified): <Medication 14 @ 0x499b210: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x499b290>"
+    matched_potential1 = match.Match(med1, med2, 0.5)
+    matched_identical1 = match.Match(med2a, med2, 0.5)
+    matched_potential2 = match.Match(med2, med1, 0.5)
+    matched_identical2 = match.Match(med2, med2a, 0.5)
+    matched_potential3 = match.Match(med1, med2, 0.4)
+    matched_identical3 = match.Match(med2a, med2, 0.4)
+    matched_potential4 = match.Match(med1b, med2, 0.5)
+    matched_potential4_rev = match.Match(med2, med1b, 0.5)
+    matched_identical4 = match.Match(med2a, med2, 0.5)
        
+    def test_potential_match_eq1(self):
+        "Test that a newly-instantiated potential match is equivalent to our baseline."
+        self.assertEqual(self.matched_potential1, self.test_objects['matched_potential'])
+    
+    def test_potential_match_eq2(self):
+        "Test that a newly-instantiated potential match with meds in reverse order is equivalent to our baseline."
+        self.assertEqual(self.matched_potential2, self.test_objects['matched_potential'])
+    
+    def test_potential_match_ne1(self):
+        "Test that a newly-instantiated potential match is not equivalent to our baseline (certainty differs)."
+        self.assertNotEqual(self.matched_potential3, self.test_objects['matched_potential'])
+
+    def test_potential_match_ne2(self):
+        "Test that a newly-instantiated potential match is not equivalent to our baseline (dosage differs)."
+        self.assertNotEqual(self.matched_potential4, self.test_objects['matched_potential'])
+    
+    def test_potential_match_ne3(self):
+        "Test that a newly-instantiated potential match with meds in reverse order is not equivalent to our baseline."
+        self.assertNotEqual(self.matched_potential4_rev, self.test_objects['matched_potential'])
+    
+    def test_identical_match_eq1(self):
+        "Test that a newly-instantiated identical match is equivalent to our baseline."
+        self.assertEqual(self.matched_identical1, self.test_objects['matched_identical'])
+
+    def test_identical_match_eq2(self):
+        "Test that a newly-instantiated identical match with meds in reverse order is equivalent to our baseline."
+        self.assertEqual(self.matched_identical2, self.test_objects['matched_identical'])
+
     def test_by_string_dictionary(self):
         "Test that the dictionary from a by-string match is as we expect."
-        self.assertEqual(self.matched_by_string.as_dictionary(), self.matched_by_string_dictionary)
+        self.assertEqual(rmIdsFromMatchDict(self.matched_by_string.as_dictionary()),
+                         rmIdsFromMatchDict(self.test_objects['matched_by_string'].as_dictionary()))
     
     def test_by_brand_name_dictionary(self):
         "Test that the dictionary from a by-brand-name match is as we expect."
-        self.assertEqual(self.matched_by_brand_name.as_dictionary(), self.matched_by_brand_name_dictionary)
+        self.assertEqual(rmIdsFromMatchDict(self.matched_by_brand_name.as_dictionary()),
+                         rmIdsFromMatchDict(self.test_objects['matched_by_brand_name'].as_dictionary()))
     
     def test_by_ingredients_dictionary(self):
         "Test that the dictionary from a by-ingredients match is as we expect."
-        self.assertEqual(self.matched_by_ingredients.as_dictionary(), self.matched_by_ingredients_dictionary)
+        self.assertEqual(rmIdsFromMatchDict(self.matched_by_ingredients.as_dictionary()),
+                         rmIdsFromMatchDict(self.test_objects['matched_by_ingredients'].as_dictionary()))
     
     def test_by_treatment_dictionary(self):
         "Test that the dictionary from a by-treatment match is as we expect."
-        self.assertEqual(self.matched_by_treatment.as_dictionary(), self.matched_by_treatment_dictionary)
+        self.assertEqual(rmIdsFromMatchDict(self.matched_by_treatment.as_dictionary()),
+                         rmIdsFromMatchDict(self.test_objects['matched_by_treatment'].as_dictionary()))
     
     def test_unspecified_dictionary(self):
         "Test that a dictionary from a match by unspecified mechanism is as we expect."
-        self.assertEqual(self.matched_unspecified.as_dictionary(), self.matched_unspecified_dictionary)
-
-    def test_potential_match_repr(self):
-        "Test __repr__() for Match ('potential') objects against our baseline." 
-        self.assertEqual(rmAllIds(repr(self.matched_potential)), rmAllIds(self.potential_match_repr))
-    
-    def test_identical_match_repr(self):
-        "Test __repr__() for Match ('identical') objects against our baseline." 
-        self.assertEqual(rmAllIds(repr(self.matched_identical)), rmAllIds(self.identical_match_repr))
+        self.assertEqual(rmIdsFromMatchDict(self.matched_unspecified.as_dictionary()),
+                         rmIdsFromMatchDict(self.test_objects['matched_unspecified'].as_dictionary()))
 
     
 class TestFunctions(unittest.TestCase):
