@@ -15,8 +15,12 @@ class Match(object):
     meds); 'med1' and 'med2' are medication.ParsedMedication objects."""
     def __init__(self, med1, med2, strength=1.0, reconciliation_mechanism="unspecified"):
         super(Match, self).__init__()
-        self.med1 = med1
-        self.med2 = med2
+        if med1 < med2:
+            self.med1 = med1
+            self.med2 = med2
+        else:
+            self.med1 = med2
+            self.med2 = med1
         self.strength = strength
         self.mechanism = reconciliation_mechanism
     def as_dictionary(self):
@@ -61,6 +65,27 @@ class Match(object):
              self.mechanism != other.mechanism:
             return True
         return False
+    def _is_lt(self, other):
+        if self.med1 < other.med1:
+            return True
+        elif self.med1 > other.med1:
+            return False
+        elif self.med2 < other.med2:
+            return True
+        elif self.med2 > other.med2:
+            return False
+        elif self.mechanism < other.mechanism:
+            return True
+        elif self.mechanism > other.mechanism:
+            return False
+        elif self.strength >= other.strength:
+            return True
+        elif self.strength < other.strength:
+            return False
+    def __lt__(self, other):
+        return self._is_lt(other)
+    def __gt__(self, other):
+        return not self._is_lt(other)
 
     
 class MatchResult(object):
@@ -71,8 +96,12 @@ class MatchResult(object):
     """
     def __init__(self, new_list_1, new_list_2, reconciled_list):
         self._list1 = new_list_1
+        self._list1_sorted = None
         self._list2 = new_list_2
+        self._list2_sorted = None
         self._reconciled = reconciled_list
+        self._reconciled_sorted = None
+        self._sort_lists()
     @property
     def list1(self):
         "First input list minus the medications that were reconciled."
@@ -85,6 +114,33 @@ class MatchResult(object):
     def reconciled(self):
         "List of medications that were reconciled."
         return copy.copy(self._reconciled)
+    def _sort_list(self, liszt):
+        sorted_list = copy.copy(liszt)
+        sorted_list.sort()
+        return sorted_list
+    def _sort_lists(self):
+        self._list1_sorted = self.list1[:]
+        self._list1_sorted.sort()
+        self._list2_sorted = self.list2[:]
+        self._list2_sorted.sort()
+        self._reconciled_sorted = self.reconciled[:]
+        self._reconciled_sorted.sort()
+    def _lists_comparison(self, other):
+        if self._list1_sorted == other._list1_sorted and \
+          self._list2_sorted == other._list2_sorted and \
+          self._reconciled_sorted == other._reconciled_sorted:
+            return True
+        return False
+    def __eq__(self, other):
+        areSame = self._lists_comparison(other)
+        if areSame:
+            return True
+        return False
+    def __ne__(self, other):
+        areSame = self._lists_comparison(other)
+        if areSame:
+            return False
+        return True
     
 def match_by_strings(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by comparing the

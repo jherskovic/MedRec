@@ -13,8 +13,8 @@ import match
 from medication import ParsedMedication
 from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS, 
                        MATCH_STRING, MATCH_TREATMENT_INTENT,
-                       MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS,
-                       demo_list_1, demo_list_2)
+                       MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS,)
+import constants
 import cPickle as pickle
 import bz2
 from mapping_context import MappingContext
@@ -189,6 +189,7 @@ class TestFunctions(unittest.TestCase):
     #medication_list_test_CUIs.sort()
     medication_list_test_tradenames = [pMed1Tradenames, pMed2Tradenames, pMed2aTradenames, pMed3Tradenames, pMed2bTradenames, pMed3Tradenames]
     #medication_list_test_tradenames.sort()
+    test_objects = test_match_objects['TestFunctions']
     matched_by_string_list1_repr = "[<Medication 18 @ 0x36ac090: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
     matched_by_string_list2_repr = "[<Medication 24 @ 0x6c30850: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
     matched_by_string_reconciled_repr = "[<Identical reconciliation (Identical strings): <Medication 22 @ 0x6c307d0: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x45748d0>]"
@@ -196,6 +197,15 @@ class TestFunctions(unittest.TestCase):
     matched_by_tradenames_list2_repr = "[<Medication 22 @ 0x3ffa210: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
     matched_by_tradenames_reconciled1_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 19 @ 0x42e2110: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 21 @ 0x42e21d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x3aad150>]"
     matched_by_tradenames_reconciled2_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 21 @ 0x3347250: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 19 @ 0x3347190: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x2ca2190>]"
+    matched_by_strings = match.match_by_strings(list1, list2)
+    matched_by_strings_rev = match.match_by_strings(list1rev, list2rev)
+    matched_by_brand_name1 = match.match_by_brand_name(list1, list3)
+    matched_by_brand_name1_rev = match.match_by_brand_name(list1rev, list3rev)
+    matched_by_brand_name2 = match.match_by_brand_name(list3, list1)
+    matched_by_ingredients_above = match.match_by_ingredients([pMed4], [pMed5], min_match_threshold=0.6)
+    matched_by_ingredients_below = match.match_by_ingredients([pMed4], [pMed5], min_match_threshold=0.7)
+    matched_by_ingredients_rev_above = match.match_by_ingredients([pMed5], [pMed4], min_match_threshold=0.6)
+    matched_by_ingredients_rev_below = match.match_by_ingredients([pMed5], [pMed4], min_match_threshold=0.7)
     matched_by_treatment_above = match.match_by_treatment([pMed6], [pMed7], mappings, match_acceptance_threshold=0.3)
     matched_by_treatment_below = match.match_by_treatment([pMed6], [pMed7], mappings)
     matched_by_treatment_05_yes = match.match_by_treatment([pMed8], [pMed9], mappings, match_acceptance_threshold=0.5)
@@ -204,10 +214,10 @@ class TestFunctions(unittest.TestCase):
     matched_by_treatment_04_no = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.43)
     # Use the demo lists for testing; this code was previously  in TestMatchResult
     demo_list_1 = [pm for pm in
-      [ParsedMedication(x, mappings, "List 1") for x in demo_list_1]
+      [ParsedMedication(x, mappings, "List 1") for x in constants.demo_list_1]
         if pm.parsed]
     demo_list_2 = [pm for pm in
-      [ParsedMedication(x, mappings, "List 2") for x in demo_list_2]
+      [ParsedMedication(x, mappings, "List 2") for x in constants.demo_list_2]
         if pm.parsed]
     demo_matched_by_strings_list1_repr = "[<Medication 2 @ 0xb86130c: 'ZOLOFT' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RPT')>, <Medication 5 @ 0xb85fa6c: 'PROTONIX' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 8 @ 0xb85e70c: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>, <Medication 9 @ 0xb85e58c: 'COREG' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RPT')>]"
     demo_matched_by_strings_list2_repr = "[<Medication 13 @ 0xb85c46c: 'CARVEDILOL' 25 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY, WITH MORNING AND EVENING MEAL; RX')>, <Medication 15 @ 0xb85b1ac: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE 1 TABLET TWICE DAILY; RX')>, <Medication 16 @ 0xb85ac8c: 'SYNTHROID' 100 'MCG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 17 @ 0xb8588ac: 'PANTOPRAZOLE SODIUM' 40 'MG' 'TABLET DELAYED RELEASE' ('TAKE 1 TABLET DAILY.; RX')>, <Medication 18 @ 0xb85840c: 'SERTRALINE HCL' 50 'MG' 'TABLET' ('TAKE 1 TABLET DAILY.; RX')>]" 
@@ -243,20 +253,12 @@ class TestFunctions(unittest.TestCase):
 
     def test_match_by_strings(self):
         "Test that the MatchResult from a by-string match contains the lists we expect."
-        myMatchResult = match.match_by_strings(self.list1, self.list2)
-        list1 = self.matched_by_string_list1_repr
-        list2 = self.matched_by_string_list2_repr
-        reconciled = self.matched_by_string_reconciled_repr
-        self.matchTest(myMatchResult, list1, list2, reconciled)
+        self.assertEqual(self.matched_by_strings, self.test_objects['matched_by_strings'])
 
     def test_match_by_strings_rev(self):
         """Test that the MatchResult from a by-string match is order-independent
         with respect to the order the medication lists are passed in."""
-        myMatchResult = match.match_by_strings(self.list1rev, self.list2rev)
-        list1 = self.matched_by_string_list1_repr
-        list2 = self.matched_by_string_list2_repr
-        reconciled = self.matched_by_string_reconciled_repr
-        self.matchTest(myMatchResult, list1, list2, reconciled)
+        self.assertEqual(self.matched_by_strings_rev, self.test_objects['matched_by_strings_rev'])
 
     def test_medication_list_CUIs(self):
         "Test the operation of match.medication_list_CUIs()"
@@ -271,167 +273,138 @@ class TestFunctions(unittest.TestCase):
     def test_match_by_brand_name1(self):
         """Test that the MatchResult from a by-brand-name match contains the 
         lists we expect."""
-        myMatchResult = match.match_by_brand_name(self.list1, self.list3)
-        list1 = self.matched_by_tradenames_list1_repr
-        list2 = self.matched_by_tradenames_list2_repr
-        reconciled = self.matched_by_tradenames_reconciled1_repr
-        self.matchTest(myMatchResult, list1, list2, reconciled)
+        self.assertEqual(self.matched_by_brand_name1, self.test_objects['matched_by_brand_name1'])
 
     def test_match_by_brand_name1_rev(self):
         """Test that the MatchResult from a by-brand-name match is order-independent
         with respect to the order the medication lists are passed in."""
-        myMatchResult = match.match_by_brand_name(self.list1rev, self.list3rev)
-        list1 = self.matched_by_tradenames_list1_repr
-        list2 = self.matched_by_tradenames_list2_repr
-        reconciled = self.matched_by_tradenames_reconciled1_repr
-        self.matchTest(myMatchResult, list1, list2, reconciled)
+        self.assertEqual(self.matched_by_brand_name1_rev, self.test_objects['matched_by_brand_name1_rev'])
 
     def test_match_by_brand_name2(self):
-        """Test that the MatchResult from a by-brand-name match is order-independent
-        with respect to the order the medication lists are passed in."""
-        myMatchResult = match.match_by_brand_name(self.list3, self.list1)
-        list1 = self.matched_by_tradenames_list2_repr
-        list2 = self.matched_by_tradenames_list1_repr
-        reconciled = self.matched_by_tradenames_reconciled2_repr
-        self.matchTest(myMatchResult, list1, list2, reconciled)
+        """Test that the MatchResult from a by-brand-name match contains the
+        lists we expect."""
+        self.assertEqual(self.matched_by_brand_name2, self.test_objects['matched_by_brand_name2'])
 
     def test_match_by_ingredients_above(self):
         """Test reconcilation of medications by treatment intent that should
         match at a threshold of 0.6."""
-        myMatchResult = match.match_by_ingredients([self.pMed4], [self.pMed5],
-          min_match_threshold=0.6)
-        self.assertEqual(len(myMatchResult.list1), 0)
-        self.assertEqual(len(myMatchResult.list2), 0)
-        self.assertEqual(len(myMatchResult.reconciled), 1)
+        self.assertEqual(self.matched_by_ingredients_above, self.test_objects['matched_by_ingredients_above'])
 
     def test_match_by_ingredients_below(self):
         """Test reconcilation of medications by treatment intent that should
         not match at a threshold of 0.7."""
-        myMatchResult = match.match_by_ingredients([self.pMed4], [self.pMed5],
-          min_match_threshold=0.7)
-        self.assertEqual(len(myMatchResult.list1), 1)
-        self.assertEqual(len(myMatchResult.list2), 1)
-        self.assertEqual(len(myMatchResult.reconciled), 0)
+        self.assertEqual(self.matched_by_ingredients_below, self.test_objects['matched_by_ingredients_below'])
 
     def test_match_by_ingredients_rev_above(self):
         """Test order independence of the reconcilation of medications by 
         treatment intent that should match at a threshold of 0.6."""
-        myMatchResult = match.match_by_ingredients([self.pMed5], [self.pMed4],
-          min_match_threshold=0.6)
-        self.assertEqual(len(myMatchResult.list1), 0)
-        self.assertEqual(len(myMatchResult.list2), 0)
-        self.assertEqual(len(myMatchResult.reconciled), 1)
+        self.assertEqual(self.matched_by_ingredients_rev_above, self.test_objects['matched_by_ingredients_rev_above'])
 
     def test_match_by_ingredients_rev_below(self):
         """Test order independence of the reconcilation of medications by 
         treatment intent that should not match at a threshold of 0.7."""
-        myMatchResult = match.match_by_ingredients([self.pMed5], [self.pMed4],
-          min_match_threshold=0.7)
-        self.assertEqual(len(myMatchResult.list1), 1)
-        self.assertEqual(len(myMatchResult.list2), 1)
-        self.assertEqual(len(myMatchResult.reconciled), 0)
+        self.assertEqual(self.matched_by_ingredients_rev_below, self.test_objects['matched_by_ingredients_rev_below'])
 
     def test_demo_match_by_strings(self):
         """Use demo lists to test matching by strings."""
-        myMatchObj = self.demo_matched_by_strings
-        list1 = self.demo_matched_by_strings_list1_repr
-        list2 = self.demo_matched_by_strings_list2_repr
-        reconciled = self.demo_matched_by_strings_reconciled_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
+        self.assertEqual(self.demo_matched_by_strings, self.test_objects['demo_matched_by_strings'])
 
     def test_demo_match_by_strings_rev(self):
         """Use demo lists to test order independence of matching by strings."""
-        myMatchObj = self.demo_matched_by_strings_rev
-        list1 = self.demo_matched_by_strings_list2_repr
-        list2 = self.demo_matched_by_strings_list1_repr
-        reconciled = self.demo_matched_by_strings_reconciled_rev_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
+        #import pdb; pdb.set_trace()
+        #self.demo_matched_by_strings_rev == self.test_objects['demo_matched_by_strings_rev']
+        self.assertEqual(self.demo_matched_by_strings_rev, self.test_objects['demo_matched_by_strings_rev'])
+        
+#        list1 = self.demo_matched_by_strings_list2_repr
+#        list2 = self.demo_matched_by_strings_list1_repr
+#        reconciled = self.demo_matched_by_strings_reconciled_rev_repr
+#        self.matchTest(myMatchObj, list1, list2, reconciled)
 
     def test_demo_match_by_brand_name(self):
         """Use demo lists to test matching by brand names."""
-        myMatchObj = self.demo_matched_by_brand_name
-        list1 = self.demo_matched_by_brand_name_list1_repr
-        list2 = self.demo_matched_by_brand_name_list2_repr
-        reconciled = self.demo_matched_by_brand_name_reconciled_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
-
+        self.assertEqual(self.demo_matched_by_brand_name, self.test_objects['demo_matched_by_brand_name'])
+##        list1 = self.demo_matched_by_brand_name_list1_repr
+##        list2 = self.demo_matched_by_brand_name_list2_repr
+##        reconciled = self.demo_matched_by_brand_name_reconciled_repr
+##        self.matchTest(myMatchObj, list1, list2, reconciled)
+#
     def test_demo_match_by_brand_name_rev(self):
         """Use demo lists to test order independence of matching by brand names."""
-        myMatchObj = self.demo_matched_by_brand_name_rev
-        list1 = self.demo_matched_by_brand_name_list2_repr
-        list2 = self.demo_matched_by_brand_name_list1_repr
-        reconciled = self.demo_matched_by_brand_name_reconciled_rev_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
+        self.assertEqual(self.demo_matched_by_brand_name_rev, self.test_objects['demo_matched_by_brand_name_rev'])
+##        list1 = self.demo_matched_by_brand_name_list2_repr
+##        list2 = self.demo_matched_by_brand_name_list1_repr
+##        reconciled = self.demo_matched_by_brand_name_reconciled_rev_repr
+##        self.matchTest(myMatchObj, list1, list2, reconciled)
 
     def test_demo_match_by_ingredients_list(self):
         """Use demo lists to test matching by ingredients."""
-        myMatchObj = self.demo_matched_by_ingredients
-        list1 = self.demo_matched_by_ingredients_list1_repr
-        list2 = self.demo_matched_by_ingredients_list2_repr
-        reconciled = self.demo_matched_by_ingredients_reconciled_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
+        self.assertEqual(self.demo_matched_by_ingredients, self.test_objects['demo_matched_by_ingredients'])
+##        list1 = self.demo_matched_by_ingredients_list1_repr
+##        list2 = self.demo_matched_by_ingredients_list2_repr
+##        reconciled = self.demo_matched_by_ingredients_reconciled_repr
+##        self.matchTest(myMatchObj, list1, list2, reconciled)
 
     def test_demo_match_by_ingredients_list_rev(self):
         """Use demo lists to test order independence of matching by ingredients."""
-        myMatchObj = self.demo_matched_by_ingredients_rev
-        list1 = self.demo_matched_by_ingredients_list2_repr
-        list2 = self.demo_matched_by_ingredients_list1_repr
-        reconciled = self.demo_matched_by_ingredients_reconciled_rev_repr
-        self.matchTest(myMatchObj, list1, list2, reconciled)
+        self.assertEqual(self.demo_matched_by_ingredients_rev, self.test_objects['demo_matched_by_ingredients_rev'])
+##        list1 = self.demo_matched_by_ingredients_list2_repr
+##        list2 = self.demo_matched_by_ingredients_list1_repr
+##        reconciled = self.demo_matched_by_ingredients_reconciled_rev_repr
+##        self.matchTest(myMatchObj, list1, list2, reconciled)
 
-    def test_match_by_treatment_above(self):
-        """These two medications should match by treatment if the 
-        match_acceptance_threshold is set to 0.3; note that this
-        behavior may change as the underlying 'treats' data change."""
-        self.assertEqual(len(self.matched_by_treatment_above.reconciled), 1)
+#    def test_match_by_treatment_above(self):
+#        """These two medications should match by treatment if the 
+#        match_acceptance_threshold is set to 0.3; note that this
+#        behavior may change as the underlying 'treats' data change."""
+#        self.assertEqual(len(self.matched_by_treatment_above.reconciled), 1)
+#
+#    def test_match_by_treatment_below(self):
+#        """These two medications should not match by treatment if the
+#        match_acceptance_threshold is set to default (0.5); note that this
+#        behavior may change as the underlying 'treats' data change."""
+#        self.assertEqual(len(self.matched_by_treatment_below.reconciled), 0)
+#    
+#    def test_match_by_treatment_varies(self):
+#        """Test matching by treatment intent, varying thresholds to induce
+#        matches and non-matches on the same two sets of medication lists.
+#        """
+#        self.assertEqual(len(self.matched_by_treatment_05_yes.reconciled), 1)
+#        self.assertEqual(len(self.matched_by_treatment_05_no.reconciled), 0)
+#        self.assertEqual(len(self.matched_by_treatment_04_yes.reconciled), 1)
+#        self.assertEqual(len(self.matched_by_treatment_04_no.reconciled), 0)
 
-    def test_match_by_treatment_below(self):
-        """These two medications should not match by treatment if the
-        match_acceptance_threshold is set to default (0.5); note that this
-        behavior may change as the underlying 'treats' data change."""
-        self.assertEqual(len(self.matched_by_treatment_below.reconciled), 0)
-    
-    def test_match_by_treatment_varies(self):
-        """Test matching by treatment intent, varying thresholds to induce
-        matches and non-matches on the same two sets of medication lists.
-        """
-        self.assertEqual(len(self.matched_by_treatment_05_yes.reconciled), 1)
-        self.assertEqual(len(self.matched_by_treatment_05_no.reconciled), 0)
-        self.assertEqual(len(self.matched_by_treatment_04_yes.reconciled), 1)
-        self.assertEqual(len(self.matched_by_treatment_04_no.reconciled), 0)
 
-
-class TestMatchResult(unittest.TestCase):
-    """A set of unit tests to exercise the match.Match class. The MatchResult 
-    class gets exercised a lot above, so we'll implement only a basic test
-    of the members of the class.
-    """
-    med1 = ParsedMedication(TestFunctions.medString1, mappings)
-    med2a = ParsedMedication(TestFunctions.medString2, mappings)
-    med2b = ParsedMedication(TestFunctions.medString2, mappings)
-    med3 = ParsedMedication(TestFunctions.medString3, mappings)
-    rec_med = match.Match(med2a, med2b)
-    matchResult = match.MatchResult([med1], [med3], [rec_med])
-    list1 = "[<Medication 26 @ 0x667bed0: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
-    list2 = "[<Medication 29 @ 0x667bfd0: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
-    reconciled = "[<Identical reconciliation (unspecified): <Medication 27 @ 0x667bf10: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x62b5050>]"
-        
-    def matchTest(self, myMatchObj, list1, list2, reconciled):
-        """Helper function that takes a MatchResult object and three repr() 
-        strings to represent the expected shape of .list1, .list2, and 
-        .reconciled, respectively. Tests a normalized version of repr() of 
-        the corresponding list with a normalized version of the baseline list.
-        """
-        self.assertEqual(rmAllIds(repr(myMatchObj.list1)),
-                         rmAllIds(list1))
-        self.assertEqual(rmAllIds(repr(myMatchObj.list2)),
-                         rmAllIds(list2))
-        self.assertEqual(rmAllIds(repr(myMatchObj.reconciled)),
-                         rmAllIds(reconciled))
-
-    def test_basic(self):
-        "Basic test of MatchResult functionality."
-        self.matchTest(self.matchResult, self.list1, self.list2, self.reconciled)
+#class TestMatchResult(unittest.TestCase):
+#    """A set of unit tests to exercise the match.Match class. The MatchResult 
+#    class gets exercised a lot above, so we'll implement only a basic test
+#    of the members of the class.
+#    """
+#    med1 = ParsedMedication(TestFunctions.medString1, mappings)
+#    med2a = ParsedMedication(TestFunctions.medString2, mappings)
+#    med2b = ParsedMedication(TestFunctions.medString2, mappings)
+#    med3 = ParsedMedication(TestFunctions.medString3, mappings)
+#    rec_med = match.Match(med2a, med2b)
+#    matchResult = match.MatchResult([med1], [med3], [rec_med])
+#    list1 = "[<Medication 26 @ 0x667bed0: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
+#    list2 = "[<Medication 29 @ 0x667bfd0: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
+#    reconciled = "[<Identical reconciliation (unspecified): <Medication 27 @ 0x667bf10: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x62b5050>]"
+#        
+#    def matchTest(self, myMatchObj, list1, list2, reconciled):
+#        """Helper function that takes a MatchResult object and three repr() 
+#        strings to represent the expected shape of .list1, .list2, and 
+#        .reconciled, respectively. Tests a normalized version of repr() of 
+#        the corresponding list with a normalized version of the baseline list.
+#        """
+#        self.assertEqual(rmAllIds(repr(myMatchObj.list1)),
+#                         rmAllIds(list1))
+#        self.assertEqual(rmAllIds(repr(myMatchObj.list2)),
+#                         rmAllIds(list2))
+#        self.assertEqual(rmAllIds(repr(myMatchObj.reconciled)),
+#                         rmAllIds(reconciled))
+#
+#    def test_basic(self):
+#        "Basic test of MatchResult functionality."
+#        self.matchTest(self.matchResult, self.list1, self.list2, self.reconciled)
 
 
 
