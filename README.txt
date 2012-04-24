@@ -40,9 +40,3 @@ the AMIA Symposium:
 Bozzo Silva PA, Bernstam EV, Markowitz E, Johnson TR, Zhang J, Herskovic JR. 
 Automated medication reconciliation and complexity of care transitions. 
 Proc AMIA Ann Symp 2011.
-
-Notes on issues to consider
-'Paroxetine HCl' alone isn't a name in RXNORM; either 'Paroxetine' alone, or
-'PAROXETINE HCL 10MG ORAL TABLET' (i.e. qualified with amount and formulation); 
-this may have implications for how we parse medication lines with 'HCl' after 
-the med name.
