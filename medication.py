@@ -65,6 +65,14 @@ class Medication(object):
     def provenance(self):
         "The medication's provenance"
         return self._provenance
+    def __eq__(self, other):
+        if self._normalized_string == other._normalized_string:
+            return True
+        return False
+    def __ne__(self, other):
+        if self._normalized_string != other._normalized_string:
+            return True
+        return False
         
 def build_regular_expressions(list_of_tuples, formulation):
     my_regexps = []
@@ -339,4 +347,16 @@ class ParsedMedication(Medication):
                 result.add(MEDICATION_FIELDS[field])
         return list(result)
     
-        
+    def __eq__(self, other):
+        if self._name == other._name and self._dose == other._dose and \
+           self._units == other._units and self._formulation == other._formulation and \
+           self._instructions == other._instructions and self._norm_dose == other._norm_dose:
+            return True
+        return False
+    def __ne__(self, other):
+        if self._name != other._name or self._dose != other._dose and \
+           self._units != other._units or self._formulation != other._formulation and \
+           self._instructions != other._instructions or self._norm_dose != other._norm_dose:
+            return True
+        return False
+
