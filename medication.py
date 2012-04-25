@@ -97,7 +97,10 @@ class ParsedMedication(Medication):
         to assist in reconciling several lists of medications."""
         if isinstance(med_info, dict):
             # FIXME: for now we fabricate a synthetic med_line
-            med_line = self._dict_to_string(med_info)
+            if med_info.get('original_line'):
+                med_line = med_info.get('original_line')
+            else:
+                med_line = self._dict_to_string(med_info)
         else:
             med_line = med_info
         super(ParsedMedication, self).__init__(med_line, provenance)
@@ -171,7 +174,7 @@ class ParsedMedication(Medication):
     def instructions(self):
         return copy.copy(self._instructions)
     @property
-    def original_line(self):
+    def original_string(self):
         return self._original_string
     @property 
     def generic_formula(self):
@@ -387,14 +390,15 @@ def make_medication(med_info, mappings=None, provenance=None):
         if len(missing_fields) > 0:
             raise MedicationInitializationError, "Can't construct a ParsedMedication without fields %r" % missing_fields
         return ParsedMedication(med_info, **argz)
-    if isinstance(med_info, str):
+    elif isinstance(med_info, str):
         med_match = medication_parser.match(normalize_field(med_info))
         if med_match:
             med_dict = med_match.groupdict()
             missing_fields = find_missing_keys(med_dict, reqd_fields)
             if len(missing_fields) > 0:
-                return Medication(med_info)
+                return Medication(med_info, provenance=argz.get('provenance', ''))
+            med_dict['original_line'] = med_info
             return ParsedMedication(med_dict, **argz)
-        return Medication(med_info)
+        return Medication(med_info, provenance=argz.get('provenance', ''))
     else:
         raise MedicationInitializationError, "Don't know how to construct a Medication object from a %s" % type(med_info)
