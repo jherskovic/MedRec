@@ -405,14 +405,18 @@ class TestParsedMedication(unittest.TestCase):
         self.assertRaises(medication.MappingContextError, self.constructed.__getattribute__, 'generic_formula')
 
     def test_CUIs_get(self):
+        """Test that we get the expected CUIs from our test object."""
         CUIs = list(self.constructed_mappings.CUIs)
         self.assertEqual(set(CUIs), set(self.CUIs))
 
     def test_CUIs_readonly(self):
+        """Test that the CUIs property is immutable."""
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
           'CUIs', set(['C02','C01']))
 
     def test_CUIs_nomappings(self):
+        """A ParsedMedication object initialized without CUIs should raise an
+        error when the CUIs are accessed."""
         self.assertRaises(medication.MappingContextError,
           self.constructed.__getattribute__, 'CUIs')
 
@@ -441,6 +445,30 @@ class TestParsedMedication(unittest.TestCase):
         pm1 = medication.ParsedMedication('Sertraline 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT', mappings)
         pm2 = medication.ParsedMedication('Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT', mappings)
         self.assertEqual(set(pm1.fieldwise_comparison(pm2)), set(desired_results))
+
+    def test_factory_m1(self):
+        med_line = "Take 2 aspirin and call me in the morning"
+        provenance="List 2"
+        m = medication.make_medication(med_line, provenance=provenance)
+        self.assertTrue(isinstance(m, medication.Medication))
+        self.assertEqual(m.original_string, med_line)
+        self.assertEqual(m.provenance, provenance)
+        
+    def test_factory_m2(self):
+        med_line = "James Beam (for medicinal purposes only)"
+        provenance = ""
+        m = medication.make_medication(med_line)
+        self.assertTrue(isinstance(m, medication.Medication))
+        self.assertEqual(m.original_string, med_line)
+        self.assertEqual(m.provenance, provenance)
+
+    def test_factory_pm(self):
+        provenance = "List 1"
+        pm = medication.make_medication(self.original, provenance=provenance, mappings=mappings)
+        self.assertTrue(isinstance(pm, medication.ParsedMedication))
+        self.assertEqual(pm.original_string, self.original)
+        self.assertEqual(pm.provenance, provenance)
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
