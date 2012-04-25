@@ -66,13 +66,13 @@ class Medication(object):
         "The medication's provenance"
         return self._provenance
     def __eq__(self, other):
-        if self._normalized_string == other._normalized_string:
-            return True
-        return False
+        return self._normalized_string == other._normalized_string
     def __ne__(self, other):
-        if self._normalized_string != other._normalized_string:
-            return True
-        return False
+        return self._normalized_string != other._normalized_string
+    def __gt__(self, other):
+        return self._normalized_string >= other._normalized_string
+    def __lt__(self, other):
+        return self._normalized_string < other._normalized_string
         
 def build_regular_expressions(list_of_tuples, formulation):
     my_regexps = []
@@ -346,25 +346,32 @@ class ParsedMedication(Medication):
             if self.__getattribute__(field)==other.__getattribute__(field):
                 result.add(MEDICATION_FIELDS[field])
         return list(result)
-    
+    def _is_eq(self, other):
+        """We test equality on the medication name, formulation, and normalized dose."""
+        if self._name == other._name and \
+           self._formulation == other._formulation and \
+           self._norm_dose == other._norm_dose:
+            return True
+        return False
     def __eq__(self, other):
-        if self._name == other._name and self._dose == other._dose and \
-           self._units == other._units and self._formulation == other._formulation and \
-           self._instructions == other._instructions and self._norm_dose == other._norm_dose:
-            return True
-        return False
+        return self._is_eq(other)
     def __ne__(self, other):
-        if self._name != other._name or self._dose != other._dose and \
-           self._units != other._units or self._formulation != other._formulation and \
-           self._instructions != other._instructions or self._norm_dose != other._norm_dose:
+        return not self._is_eq(other)
+    def _is_lt(self, other):
+        """We test magnitude on the medication name, formulation, and normalized dose."""
+        if self._name < other._name:
             return True
-        return False
-    def __gt__(self, other):
-        if self._normalized_string > other._normalized_string:
+        elif self._name > other._name:
+            return False
+        elif self._formulation < other._formulation:
             return True
-        return False
+        elif self._formulation > other._formulation:
+            return False
+        elif self._norm_dose <= other._norm_dose:
+            return True
+        elif self._norm_dose > other._norm_dose:
+            return False
     def __lt__(self, other):
-        if self._normalized_string < other._normalized_string:
-            return True
-        return False
-
+        return self._is_lt(other)
+    def __gt__(self, other):
+        return not self._is_lt(other)
