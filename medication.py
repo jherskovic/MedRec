@@ -347,10 +347,12 @@ class ParsedMedication(Medication):
                 result.add(MEDICATION_FIELDS[field])
         return list(result)
     def _is_eq(self, other):
-        """We test equality on the medication name, formulation, and normalized dose."""
-        if self._name == other._name and \
-           self._formulation == other._formulation and \
-           self._norm_dose == other._norm_dose:
+        """We test equality on name, dose, units, formulation, and
+        instructions; be ridiculously conservative in matching."""
+        if self._name == other._name and self._dose == other._dose and \
+               self._units == other._units and \
+               self._formulation == other._formulation and \
+               self._instructions == other._instructions:
             return True
         return False
     def __eq__(self, other):
