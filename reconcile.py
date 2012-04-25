@@ -15,6 +15,7 @@ import bz2
 import copy
 import os.path
 from constants import *
+from medication import make_medication
 from medication import ParsedMedication
 from json_output import *
 from match import Match, match_by_strings, match_by_brand_name, match_by_ingredients, match_by_treatment
@@ -23,8 +24,8 @@ from mapping_context import MappingContext
 def separate_parsed_from_unparsed(medication_list):
     """Returns a tuple of two lists. The first one contains the medications with
     the 'parsed' flag set, the second one contains the rest."""
-    return ([x for x in medication_list if x.parsed],
-            [x for x in medication_list if not x.parsed])
+    return ([x for x in medication_list if isinstance(x, ParsedMedication)],
+            [x for x in medication_list if not isinstance(x, ParsedMedication)])
  
 # If you pass a dictionary as the "stats" parameter to this function, you'll
 # get statistics in it after it's done
@@ -35,8 +36,8 @@ def reconcile_lists(list1, list2, mappings, stats=None):
     print
     print "Original list 2=\n", '\n'.join(list2)
     print
-    meds_list_1 = [ParsedMedication(x, mappings, "List 1") for x in list1]
-    meds_list_2 = [ParsedMedication(x, mappings, "List 2") for x in list2]
+    meds_list_1 = [make_medication(x, mappings, "List 1") for x in list1]
+    meds_list_2 = [make_medication(x, mappings, "List 2") for x in list2]
     if stats is not None:
         stats['size_original_list_1'] = len(meds_list_1)
         stats['size_original_list_2'] = len(meds_list_2)
