@@ -165,13 +165,6 @@ class TestFunctions(unittest.TestCase):
     medication_list_test_CUIs = [pMed1CUIs, pMed2CUIs, pMed2aCUIs, pMed3CUIs, pMed2bCUIs, pMed3CUIs]
     medication_list_test_tradenames = [pMed1Tradenames, pMed2Tradenames, pMed2aTradenames, pMed3Tradenames, pMed2bTradenames, pMed3Tradenames]
     test_objects = test_match_objects['TestFunctions']
-    matched_by_string_list1_repr = "[<Medication 18 @ 0x36ac090: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
-    matched_by_string_list2_repr = "[<Medication 24 @ 0x6c30850: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
-    matched_by_string_reconciled_repr = "[<Identical reconciliation (Identical strings): <Medication 22 @ 0x6c307d0: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x45748d0>]"
-    matched_by_tradenames_list1_repr = "[<Medication 18 @ 0x3ffa090: 'LISINOPRIL' 5 'MG' 'TABLET' ('TAKE TABLET TWICE DAILY; RX')>]"
-    matched_by_tradenames_list2_repr = "[<Medication 22 @ 0x3ffa210: 'WARFARIN SODIUM' 2.5 'MG' 'TABLET' ('TAKE AS DIRECTED.; RX')>]"
-    matched_by_tradenames_reconciled1_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 19 @ 0x42e2110: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 21 @ 0x42e21d0: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x3aad150>]"
-    matched_by_tradenames_reconciled2_repr = "[<Potential reconciliation (100.00% certainty; Brand name and generic) <Medication 21 @ 0x3347250: 'MIRAPEX' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> <-> <Medication 19 @ 0x3347190: 'PRAMIPEXOLE' 0.5 'MG' 'TABLET' ('TAKE 1 TABLET 3 TIMES DAILY.; RX')> @ 0x2ca2190>]"
     matched_by_strings = match.match_by_strings(list1, list2)
     matched_by_strings_rev = match.match_by_strings(list1rev, list2rev)
     matched_by_brand_name1 = match.match_by_brand_name(list1, list3)
