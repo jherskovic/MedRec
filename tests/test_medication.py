@@ -6,7 +6,6 @@ Created on Feb 28, 2012
 import sys
 sys.path.append('..')
 import os
-#print sys.path
 import cPickle as pickle
 import bz2
 import unittest
@@ -110,9 +109,9 @@ parsedFields = ('name', 'dose', 'units', 'formulation', 'instructions',)
 class TestMedParsing(unittest.TestCase):
     """Basic testing of medication parsing.
     """
-    def setUp(self):
-        self.medList = demo_list_1 + demo_list_2
-        self.parsedMedList = [medication.medication_parser.match(med) for med in self.medList]
+
+    medList = demo_list_1 + demo_list_2
+    parsedMedList = [medication.medication_parser.match(med) for med in medList]
    
     def testDemoMedParsing(self):
         """Test to ensure that medication.medication_parser parses all the 
@@ -137,7 +136,7 @@ class TestMedParsing(unittest.TestCase):
             self.assertEqual(parsedVal, givenVal, 'Incorrect parsing of %s in example %d: "%s" vs "%s"' % (field, i+1, parsedVal, givenVal))
 
 
-class TestMedicationClass(unittest.TestCase):
+class TestMedication(unittest.TestCase):
     
     def setUp(self):
         self.original_strings = [
@@ -219,50 +218,54 @@ else:
     mappings = None
 
 
-class TestParsedMedicationClass(unittest.TestCase):
+class TestParsedMedication(unittest.TestCase):
     
-    def setUp(self):
-        self.original     = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
-        self.normalized   = 'PROTONIX 40 MG TABLET DELAYED RELEASE;TAKE 1 TABLET DAILY.; RX'
-        self.multi_tradenames = 'Naproxen 500 MG Tablet;TAKE 1 TABLET EVERY 12 HOURS AS NEEDED.; Rx'
-        self.original_generic = 'Sertraline 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT'
-        self.name         = 'Protonix'
-        self.normalized_name = 'PROTONIX'
-        self.dose         = '40'
-        self.normalized_dose = '40'
-        self.units        = 'MG'
-        self.normalized_units = 'MG'
-        self.formulation  = 'Tablet Delayed Release'
-        self.normalized_formulation  = 'TABLET DELAYED RELEASE'
-        self.instructions = 'TAKE 1 TABLET DAILY.; Rx'
-        self.normalized_instructions = 'TAKE 1 TABLET DAILY.; RX'
-        self.normalized_dose = '40 MG*1*1'
-        self.provenance   = 'List 42'
-        self.generic_formula = ['PANTOPRAZOLE (AS PANTOPRAZOLE SODIUM SESQUIHYDRATE)', 'PANTOPRAZOLE SODIUM']
-        self.generic_formula.sort()
-        self.CUIs         = ['C0876139']
-        self.tradenames = ['C0002800', 'C0591117', 'C0591706', 'C0591843', 
-            'C0591844', 'C0591891', 'C0592014', 'C0592068', 'C0592182',
-            'C0593835', 'C0594335', 'C0699095', 'C0700017', 'C0718343',
-            'C0721957', 'C0731332', 'C0731333', 'C0875956', 'C1170025',
-            'C1186767', 'C1186768', 'C1186779', 'C1631235', 'C1724066',
-            'C2343621', 'C2684675', 'C2725144', 'C2911866', 'C2911868', 'C3194766']
-        self.original_dict = {
-          'medication_name' : self.normalized_name,
-          'dose'            : self.dose,
-          'units'           : self.units,
-          'formulation'     : self.normalized_formulation,
-          'instructions'    : self.normalized_instructions,
-          'original_string' : self.original,
-          'provenance'      : self.provenance,
-          'normalized_dose' : self.normalized_dose,
-          'parsed'          : True,
-        }
-        self.drug_names_tobe_normalized = ['MetFORMIN HCl', 'Dextromethorphan Hydrobromide']
-        self.drug_names_normalized = ['METFORMIN HYDROCHLORIDE', 'DEXTROMETHORPHAN HYDROBROMIDE']
-        self.constructed  = medication.ParsedMedication(self.original, provenance=self.provenance)
-        self.constructed_mappings  = medication.ParsedMedication(self.original, mappings, self.provenance)
-        self.constructed_multitradenames = medication.ParsedMedication(self.multi_tradenames, mappings)
+    original     = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
+    normalized   = 'PROTONIX 40 MG TABLET DELAYED RELEASE;TAKE 1 TABLET DAILY.; RX'
+    multi_tradenames = 'Naproxen 500 MG Tablet;TAKE 1 TABLET EVERY 12 HOURS AS NEEDED.; Rx'
+    original_generic = 'Sertraline 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT'
+    name         = 'Protonix'
+    normalized_name = 'PROTONIX'
+    dose         = '40'
+    normalized_dose = '40'
+    units        = 'MG'
+    normalized_units = 'MG'
+    formulation  = 'Tablet Delayed Release'
+    normalized_formulation  = 'TABLET DELAYED RELEASE'
+    instructions = 'TAKE 1 TABLET DAILY.; Rx'
+    normalized_instructions = 'TAKE 1 TABLET DAILY.; RX'
+    normalized_dose = '40 MG*1*1'
+    provenance   = 'List 42'
+    generic_formula = ['PANTOPRAZOLE (AS PANTOPRAZOLE SODIUM SESQUIHYDRATE)', 'PANTOPRAZOLE SODIUM']
+    generic_formula.sort()
+    CUIs         = ['C0876139']
+    tradenames = ['C0002800', 'C0591117', 'C0591706', 'C0591843', 
+        'C0591844', 'C0591891', 'C0592014', 'C0592068', 'C0592182',
+        'C0593835', 'C0594335', 'C0699095', 'C0700017', 'C0718343',
+        'C0721957', 'C0731332', 'C0731333', 'C0875956', 'C1170025',
+        'C1186767', 'C1186768', 'C1186779', 'C1631235', 'C1724066',
+        'C2343621', 'C2684675', 'C2725144', 'C2911866', 'C2911868', 'C3194766']
+    original_dict = {
+      'medication_name' : normalized_name,
+      'dose'            : dose,
+      'units'           : units,
+      'formulation'     : normalized_formulation,
+      'instructions'    : normalized_instructions,
+      'original_string' : original,
+      'provenance'      : provenance,
+      'normalized_dose' : normalized_dose,
+      'parsed'          : True,
+    }
+    drug_names_tobe_normalized = ['MetFORMIN HCl', 'Dextromethorphan Hydrobromide']
+    drug_names_normalized = ['METFORMIN HYDROCHLORIDE', 'DEXTROMETHORPHAN HYDROBROMIDE']
+    ne_name = 'Protronix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
+    ne_dose = 'Protonix 20 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
+    ne_units = 'Protonix 20 ml Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
+    ne_formulation = 'Protonix 20 ml Capsule;TAKE 1 TABLET DAILY.; Rx'
+    ne_instructions = 'Protonix 20 ml Capsule;TAKE 2 TABLETS DAILY.; Rx'
+    constructed  = medication.ParsedMedication(original, provenance=provenance)
+    constructed_mappings  = medication.ParsedMedication(original, mappings, provenance)
+    constructed_multitradenames = medication.ParsedMedication(multi_tradenames, mappings)
 
     def test_construct_no_text(self):
         """Must pass a string to the constructor."""
@@ -289,6 +292,52 @@ class TestParsedMedicationClass(unittest.TestCase):
 
     def test_c_normalized_string_readonly(self):
         self.assertRaises(AttributeError, self.constructed.__setattr__, 'normalized_string', 'foo')
+
+    def test_name_ne(self):
+        """Test that a difference in name makes ParsedMedication objects unequal."""
+        name_ne = medication.ParsedMedication(self.ne_name, mappings)
+        self.assertNotEqual(self.constructed, name_ne)
+
+    def test_dose_ne(self):
+        """Test that a difference in dose makes ParsedMedication objects unequal."""
+        dose_ne = medication.ParsedMedication(self.ne_dose, mappings)
+        self.assertNotEqual(self.constructed, dose_ne)
+
+    def test_units_ne(self):
+        """Test that a difference in units makes ParsedMedication objects unequal."""
+        units_ne = medication.ParsedMedication(self.ne_units, mappings)
+        self.assertNotEqual(self.constructed, units_ne)
+
+    def test_formulation_ne(self):
+        """Test that a difference in formulation makes ParsedMedication objects unequal."""
+        formulation_ne = medication.ParsedMedication(self.ne_formulation, mappings)
+        self.assertNotEqual(self.constructed, formulation_ne)
+
+    def test_instructions_ne(self):
+        """Test that a difference in instructions makes ParsedMedication objects unequal."""
+        instructions_ne = medication.ParsedMedication(self.ne_instructions, mappings)
+        self.assertNotEqual(self.constructed, instructions_ne)
+    
+    def test_name_sort(self):
+        """Test that ParsedMedications that differ in name sort in the correct order."""
+        orig = medication.ParsedMedication(self.original, mappings)
+        orig_generic = medication.ParsedMedication(self.original_generic, mappings) 
+        self.assertLess(orig, orig_generic)
+        self.assertGreater(orig_generic, orig)
+
+    def test_formulation_sort(self):
+        """Test that ParsedMedications that differ in formulation sort in the correct order."""
+        ne_units = medication.ParsedMedication(self.ne_units, mappings)
+        ne_formulation = medication.ParsedMedication(self.ne_formulation, mappings) 
+        self.assertLess(ne_formulation, ne_units)
+        self.assertGreater(ne_units, ne_formulation)
+
+    def test_normalized_dose_sort(self):
+        """Test that ParsedMedications that differ in normalized dose sort in the correct order."""
+        ne_dose = medication.ParsedMedication(self.ne_dose, mappings)
+        original = medication.ParsedMedication(self.original, mappings) 
+        self.assertLess(ne_dose, original)
+        self.assertGreater(original, ne_dose)
 
     def test_name_get(self):
         self.assertEqual(self.constructed.name, self.normalized_name)
