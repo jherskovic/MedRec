@@ -34,23 +34,28 @@ def _sequential_id_gen(starting=0):
 
 _sequential_id=_sequential_id_gen()
 
+def normalize_field(field):
+    """Remove leading & trailing whitespace and undesirable punctuation;
+    normalize internal spacing."""
+    my_field = field.upper().strip()
+    # Remove undesirable trailing and leading punctuation
+    for punct in UNDESIRABLE_PUNCTUATION:
+        my_field = my_field.strip(punct)
+    # Normalize spacing to only one space between components
+    my_field = ' '.join(my_field.split())
+    return my_field
+
+class MedicationInitializationError(Exception): pass
+
 class Medication(object):
     """Represents a single medication from a list to be reconciled."""
     def __init__(self, original_string, provenance=""):
         self._original_string = original_string
-        self._normalized_string = self._normalize_field(original_string)
+        self._normalized_string = normalize_field(original_string)
         self._provenance = provenance
         self._seq_id=_sequential_id.next()
     def _normalize_field(self, field):
-        """Remove leading & trailing whitespace and undesirable punctuation;
-        normalize internal spacing."""
-        my_field = field.upper().strip()
-        # Remove undesirable trailing and leading punctuation
-        for punct in UNDESIRABLE_PUNCTUATION:
-            my_field = my_field.strip(punct)
-        # Normalize spacing to only one space between components
-        my_field = ' '.join(my_field.split())
-        return my_field
+        return normalize_field(field)
     @property
     def original_string(self):
         "The original unparsed string for the medication"
@@ -91,6 +96,7 @@ class ParsedMedication(Medication):
         a version of rxnorm to perform computations. Pass a provenance
         to assist in reconciling several lists of medications."""
         if isinstance(med_info, dict):
+            # FIXME: for now we fabricate a synthetic med_line
             med_line = self._dict_to_string(med_info)
         else:
             med_line = med_info
@@ -359,3 +365,36 @@ class ParsedMedication(Medication):
         return self._is_lt(other)
     def __gt__(self, other):
         return not self._is_lt(other)
+
+def find_missing_keys(dikt, reqd_fields):
+    missing_fields = []
+    for field in reqd_fields:
+        if not dikt.get(field):
+            missing_fields.append(field)
+    return missing_fields
+
+def make_medication(med_info, mappings=None, provenance=None):
+    """Factory function to return a ParsedMedication object if 'med_info' is
+    suitably parseable, a Medication object otherwise."""
+    reqd_fields = ('name', 'units', 'dose', 'formulation', 'instructions',)
+    argz = {}
+    if mappings:
+        argz['context'] = mappings
+    if provenance:
+        argz['provenance'] = provenance
+    if isinstance(med_info, dict):
+        missing_fields = find_missing_keys(med_info, reqd_fields)
+        if len(missing_fields) > 0:
+            raise MedicationInitializationError, "Can't construct a ParsedMedication without fields %r" % missing_fields
+        return ParsedMedication(med_info, **argz)
+    if isinstance(med_info, str):
+        med_match = medication_parser.match(normalize_field(med_info))
+        if med_match:
+            med_dict = med_match.groupdict()
+            missing_fields = find_missing_keys(med_dict, reqd_fields)
+            if len(missing_fields) > 0:
+                return Medication(med_info)
+            return ParsedMedication(med_dict, **argz)
+        return Medication(med_info)
+    else:
+        raise MedicationInitializationError, "Don't know how to construct a Medication object from a %s" % type(med_info)
