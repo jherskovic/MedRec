@@ -254,7 +254,6 @@ class TestParsedMedication(unittest.TestCase):
       'original_string' : original,
       'provenance'      : provenance,
       'normalized_dose' : normalized_dose,
-      'parsed'          : True,
     }
     drug_names_tobe_normalized = ['MetFORMIN HCl', 'Dextromethorphan Hydrobromide']
     drug_names_normalized = ['METFORMIN HYDROCHLORIDE', 'DEXTROMETHORPHAN HYDROBROMIDE']

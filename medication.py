@@ -38,18 +38,18 @@ class Medication(object):
     """Represents a single medication from a list to be reconciled."""
     def __init__(self, original_string, provenance=""):
         self._original_string = original_string
-        self._normalized_string = self._normalize_string(original_string)
+        self._normalized_string = self._normalize_field(original_string)
         self._provenance = provenance
         self._seq_id=_sequential_id.next()
-    def _normalize_string(self, string):
-        return self._normalize_field(string)
     def _normalize_field(self, field):
+        """Remove leading & trailing whitespace and undesirable punctuation;
+        normalize internal spacing."""
         my_field = field.upper().strip()
         # Remove undesirable trailing and leading punctuation
         for punct in UNDESIRABLE_PUNCTUATION:
             my_field = my_field.strip(punct)
-        my_field = ' '.join(my_field.split())
         # Normalize spacing to only one space between components
+        my_field = ' '.join(my_field.split())
         return my_field
     @property
     def original_string(self):
@@ -100,7 +100,6 @@ class ParsedMedication(Medication):
         self._units = None
         self._formulation = None
         self._instructions = None
-        self._parsed = False
         self._generic_formula = None
         self._norm_dose = None
         self._cuis = None
@@ -125,10 +124,8 @@ class ParsedMedication(Medication):
             self._formulation = self._normalize_field(med[3])
             self._instructions = self._normalize_field(med[4])
             self._norm_dose = self._normalize_dose()
-            self._parsed = True
         else:
-            logging.debug("Could not parse %s. _parsed is %r", med_line,
-                          self._parsed)
+            logging.debug("Could not parse %s.", med_line)
     def _from_dict(self, med_dict):
         self._name = self._normalize_field(med_dict['name'])
         self._dose = self._normalize_field(med_dict['dose'])
@@ -136,33 +133,22 @@ class ParsedMedication(Medication):
         self._formulation = self._normalize_field(med_dict['formulation'])
         self._instructions = self._normalize_field(med_dict['instructions'])
         self._norm_dose = self._normalize_dose()
-        self._parsed = True
-        pass
     def __repr__(self):
-        if self._parsed:
-            return "<Medication %d @ 0x%x: %r %s %r %r (%r)>" % (
-                self._seq_id,
-                id(self),
-                self.name,
-                self.dose,
-                self.units,
-                self.formulation,
-                self.instructions)
-        else:
-            return "<Medication (not parsed) %d @ 0x%x: %s>" % (
-                self._seq_id,
-                id(self),
-                self.normalized_string)
+        return "<Medication %d @ 0x%x: %r %s %r %r (%r)>" % (
+            self._seq_id,
+            id(self),
+            self.name,
+            self.dose,
+            self.units,
+            self.formulation,
+            self.instructions)
     def __str__(self):
-        if self._parsed:
-            return "%s %s %s %s: %s" % (
-                self.name,
-                self.dose,
-                self.units,
-                self.formulation,
-                self.instructions)
-        else:
-            return "%s" % self.normalized_string
+        return "%s %s %s %s: %s" % (
+            self.name,
+            self.dose,
+            self.units,
+            self.formulation,
+            self.instructions)
     @property
     def name(self):
         return self._name
@@ -181,9 +167,6 @@ class ParsedMedication(Medication):
     @property
     def original_line(self):
         return self._original_string
-    @property
-    def parsed(self):
-        return self._parsed
     @property 
     def generic_formula(self):
         if self._generic_formula is None:
@@ -201,7 +184,6 @@ class ParsedMedication(Medication):
                 'provenance': self.provenance,
                 'normalized_dose': self._norm_dose,
                 'id': self._seq_id,
-                'parsed': self._parsed,
                }
     def _normalize_drug_name(self, drug_name):
         truncated = drug_name.split('@')[0].strip().upper()
