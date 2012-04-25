@@ -11,6 +11,7 @@ import re
 import copy
 import match
 from medication import ParsedMedication
+from medication import make_medication
 from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS, 
                        MATCH_STRING, MATCH_TREATMENT_INTENT,
                        MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS,)
@@ -182,11 +183,11 @@ class TestFunctions(unittest.TestCase):
     matched_by_treatment_04_no = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.43)
     # Use the demo lists for testing; this code was previously  in TestMatchResult
     demo_list_1 = [pm for pm in
-      [ParsedMedication(x, mappings, "List 1") for x in constants.demo_list_1]
-        if pm.parsed]
+      [make_medication(x, mappings, "List 1") for x in constants.demo_list_1]
+        if isinstance(pm, ParsedMedication)]
     demo_list_2 = [pm for pm in
-      [ParsedMedication(x, mappings, "List 2") for x in constants.demo_list_2]
-        if pm.parsed]
+      [make_medication(x, mappings, "List 2") for x in constants.demo_list_2]
+        if isinstance(pm, ParsedMedication)]
     demo_matched_by_strings = match.match_by_strings(demo_list_1, demo_list_2)
     demo_matched_by_strings_rev = match.match_by_strings(demo_list_2, demo_list_1)
     demo_matched_by_brand_name = match.match_by_brand_name(demo_list_1, demo_list_2)
