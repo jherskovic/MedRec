@@ -179,6 +179,20 @@ def medication_list_tradenames(medication_list):
     new lists have the same indices)."""
     return [x.tradenames for x in medication_list]
 
+def find_brand_name_matches(c1, concepts_of_c2):
+    logging.debug("Testing %r against %r", c1, concepts_of_c2)
+    potential_matches = [c1 in t for t in concepts_of_c2 if t is not None]
+    logging.debug("Result: %r", potential_matches)
+    matches = potential_matches.index(True) \
+            if True in potential_matches \
+            else None
+    return matches
+
+def brand_name_match_bookkeeping(list_2, tradenames_c2, concepts_2, matches):
+    del list_2[matches]
+    del tradenames_c2[matches]
+    del concepts_2[matches]
+
 def match_by_brand_name(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by checking whether
     elements in list1 are brand names of elements in list2, and viceversa.
@@ -225,49 +239,36 @@ def match_by_brand_name(list1, list2):
     
     for y in xrange(len(list1)):
         logging.debug("y=%d", y)
-        # Test to see if the concept in c1 is one of the tradenames of c2
         matches = None
         dose_1 = list1[y].normalized_dose
         logging.debug("Testing %r", concepts_1[y])
         if concepts_1[y] is not None:
+            # Test to see if any concept in concepts_1 is one of the tradenames of c2
             for c1 in concepts_1[y]:
-                # Test to see if the concepts in c1 match any tradenames of c2
-                logging.debug("Testing %r against %r", c1, tradenames_of_c2)
-                potential_matches = [c1 in t for t in tradenames_of_c2
-                                  if t is not None]
-                logging.debug("Result: %r", potential_matches)
-                matches = potential_matches.index(True) \
-                        if True in potential_matches \
-                        else None
+                # Find the index of the first medication in list 2 one of whose tradenames c1 matches
+                matches = find_brand_name_matches(c1, tradenames_of_c2)
                 if matches is not None:
                     dose_2 = my_list_2_of_objects[matches].normalized_dose
+                    # If the dosages are equal, we have a match
                     if dose_1 == dose_2:
-                        common.append(Match(list1[y], my_list_2_of_objects[matches],
-                                                     1.0, MATCH_BRAND_NAME))
-                        del my_list_2_of_objects[matches]
-                        del tradenames_of_c2[matches]
-                        del concepts_2[matches]
+                        common.append(Match(list1[y], my_list_2_of_objects[matches], 1.0, MATCH_BRAND_NAME))
+
+                        brand_name_match_bookkeeping(my_list_2_of_objects, tradenames_of_c2, concepts_2, matches)
                         break
                     else:
                         matches = None
         if matches is None:
             if tradenames_of_c1[y] is not None:
+                # Test to see if any concept in tradenames_of_c1 is one of the concepts of c2
                 for t1 in tradenames_of_c1[y]:
-                    # Test to see if the concepts in c2 match any tradenames of c1
-                    logging.debug("Testing %r" % t1 + " against %r" % concepts_2)
-                    potential_matches = [t1 in c for c in concepts_2 if c is not None]
-                    logging.debug("Result: %r", potential_matches)
-                    matches = potential_matches.index(True) \
-                            if True in potential_matches \
-                            else None
+                    # Find the index of the first medication in list 2 whose concept matches a tradename of a med in list 1
+                    matches = find_brand_name_matches(t1, concepts_2)
                     if matches is not None:
                         dose_2 = my_list_2_of_objects[matches].normalized_dose
+                        # If the dosages are equal, we have a match
                         if dose_1 == dose_2:
-                            common.append(Match(list1[y], my_list_2_of_objects[matches],
-                                                         1.0, MATCH_BRAND_NAME))
-                            del my_list_2_of_objects[matches]
-                            del tradenames_of_c2[matches]
-                            del concepts_2[matches]
+                            common.append(Match(list1[y], my_list_2_of_objects[matches], 1.0, MATCH_BRAND_NAME))
+                            brand_name_match_bookkeeping(my_list_2_of_objects, tradenames_of_c2, concepts_2, matches)
                             break
                         else:
                             matches = None
