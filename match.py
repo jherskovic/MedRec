@@ -320,6 +320,17 @@ def match_by_ingredients(list1, list2, min_match_threshold=0.3):
             logging.debug("The best match for %r is %r", ph1, matched_items[0])
     return MatchResult(my_list_1, my_list_2_of_objects, common)
 
+def build_treatment_lists(concepts, mappings):
+    treats = []
+    for c in concepts:
+        this_treats = set([])
+        if c is not None:
+            for each_concept in c:
+                for each_treated_thing in mappings.treatment.get(each_concept, []):
+                    this_treats.add(each_treated_thing)
+        treats.append(this_treats)
+    return treats
+
 def match_by_treatment(list1, list2, mappings,
                        highest_possible_match=0.5,
                        match_acceptance_threshold=0.5):
@@ -351,24 +362,10 @@ def match_by_treatment(list1, list2, mappings,
     common = []
     
     # Build lists of potential treatments
-    treats_1 = []
-    for c in concepts_1:
-        this_treats = set([])
-        if c is not None:
-            for each_concept in c:
-                for each_treated_thing in mappings.treatment.get(each_concept, []):
-                    this_treats.add(each_treated_thing)
-        treats_1.append(this_treats)
+    treats_1 = build_treatment_lists(concepts_1, mappings)
     logging.debug("Treatment list for medication list 1: %r", treats_1)
     
-    treats_2 = []
-    for c in concepts_2:
-        this_treats = set([])
-        if c is not None:
-            for each_concept in c:
-                for each_treated_thing in mappings.treatment.get(each_concept, []):
-                    this_treats.add(each_treated_thing)
-        treats_2.append(this_treats)
+    treats_2 = build_treatment_lists(concepts_2, mappings)
     logging.debug("Treatment list for medication list 2: %r", treats_2)
     
     for y in xrange(len(concepts_1)):
