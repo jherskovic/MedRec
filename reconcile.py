@@ -55,6 +55,7 @@ def reconciliation_step_1(list1, list2, mappings, stats):
     """Helper function to handle matching by strings."""
     print "********** RECONCILIATION STEP 1 **********"
     print
+    # rec is a MatchResult object with the results of matching by string
     rec = match_by_strings(list1, list2)
     rec_list_1 = rec.list1
     rec_list_2 = rec.list2
@@ -78,6 +79,7 @@ def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
     # Unpack the lists produced by the regular expression.findall,
     # and restore missing meds if they couldn't be parsed    
     print
+    # rec_bn is a MatchResult object with the results of matching by brand name
     rec_bn = match_by_brand_name(parsed_meds_1, parsed_meds_2)
     pb1, pb2, bnrec = rec_bn.list1, rec_bn.list2, rec_bn.reconciled
     left1 = pb1 + unparsed_meds_1
@@ -105,6 +107,7 @@ def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
 def reconciliation_step_3(pb1=[], pb2=[], unparsed_meds_1=[], unparsed_meds_2=[], already_reconciled=[], stats={}):
     """Helper function to handle matching by ingredients."""
     print "********** RECONCILIATION STEP 3 **********"
+    # rec_ing is a MatchResult object with the results of matching by ingredients
     rec_ing = match_by_ingredients(pb1, pb2)
     pm1, pm2, pmrec = rec_ing.list1, rec_ing.list2, rec_ing.reconciled
     left1 = pm1 + unparsed_meds_1
@@ -126,6 +129,7 @@ def reconciliation_step_4(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[]
     """Helper function to handle matching by treatment intent."""
     print "********** RECONCILIATION STEP 4 **********"
     print
+    # rec_treat is a MatchResult object with the results of matching by treatment intent
     rec_treat = match_by_treatment(pm1, pm2, mappings,
                                            match_acceptance_threshold=0.3)
     pt1, pt2, ptrec = rec_treat.list1, rec_treat.list2, rec_treat.reconciled
