@@ -149,13 +149,12 @@ class TestMedication(unittest.TestCase):
         self.instance = medication.Medication(self.original_strings[0])
     
     def test_construct_no_text(self):
-        """Medication class is read-only & must be initialized with a string;
-        if it isn't, a TypeError should be thrown with the message 
-        '__init__() takes at least 2 arguments (1 given)'"""
+        """Test that Medication class raises a TypeError if it isn't 
+        initialized with a string."""
         self.assertRaises(TypeError, medication.Medication)
 
     def test_normalize_string(self):
-        """.normalize_string() should normalize both test strings to the same test output."""
+        """Test that .normalize_string() normalizes both test strings to the same test output."""
         i = 0
         for original_string in self.original_strings:
             i += 1
@@ -196,10 +195,18 @@ class TestMedication(unittest.TestCase):
             self.assertTrue(not medInstance.is_empty(), "Failed to detect non-empty string in example %d" % i)
     
     def test_provenance(self):
+        """Test that the optional provenance parameter becomes an attribute of the object."""
         medInstance = medication.Medication(self.original_strings[0], provenance=self.provenance)
         self.assertEqual(medInstance.provenance, self.provenance)
+    
+    def test_no_provenance(self):
+        """Test that a Medication initialized without the provenance 
+        parameter has an empty provenance attribute."""
+        medInstance = medication.Medication(self.original_strings[0])
+        self.assertEqual(medInstance.provenance, "")
 
     def test_provenance_readonly(self):
+        """Test that the provenance attribute is immutable."""
         self.assertRaises(AttributeError, self.instance.__setattr__,
           'provenance', self.original_strings[1])
 
@@ -267,29 +274,39 @@ class TestParsedMedication(unittest.TestCase):
     constructed_multitradenames = medication.ParsedMedication(multi_tradenames, mappings)
 
     def test_construct_no_text(self):
-        """Must pass a string to the constructor."""
+        """Test that constructor requires at least one argument."""
         self.assertRaises(TypeError, medication.ParsedMedication)
     
     def test_c_original_string_equals(self):
+        """Test that the original string arg to the constructor becomes the 
+        .original_string attribute of the object."""
         self.assertEqual(self.constructed.original_string, self.original,
           "ParsedMedication class wasn't properly initialized from constructor.")
 
     def test_cm_original_string_equals(self):
+        """Test that the original string arg to the constructor becomes the 
+        .original_string attribute of the object when the object is initialized
+        with a mappings arg."""
         self.assertEqual(self.constructed_mappings.original_string, self.original,
           "ParsedMedication class wasn't properly initialized from constructor.")
 
     def test_c_original_string_readonly(self):
+        """Test that the .original_string property is immutable."""
         self.assertRaises(AttributeError, self.constructed.__setattr__, 'original_string', 'foo') 
 
     def test_c_normalized_string_equals(self):
+        """Test that the original string is normalized as expected."""
         self.assertEqual(self.constructed.normalized_string, self.normalized,
           "ParsedMedication class wasn't properly initialized from constructor.")
 
     def test_cm_normalized_string_equals(self):
+        """Test that the original string is normalized as expected when the 
+        object is initialized with a mappings arg."""
         self.assertEqual(self.constructed_mappings.normalized_string, self.normalized,
           "ParsedMedication class wasn't properly initialized from constructor.")
 
     def test_c_normalized_string_readonly(self):
+        """Test that the .normalized_string property is immutable."""
         self.assertRaises(AttributeError, self.constructed.__setattr__, 'normalized_string', 'foo')
 
     def test_name_ne(self):
@@ -339,69 +356,90 @@ class TestParsedMedication(unittest.TestCase):
         self.assertGreater(original, ne_dose)
 
     def test_name_get(self):
+        """Test that the .name property has the expected value."""
         self.assertEqual(self.constructed.name, self.normalized_name)
 
     def test_name_readonly(self):
+        """Test that the .name property is immutable."""
         self.assertRaises(AttributeError, self.constructed.__setattr__,
           'name', "Dr. Jimson's Pantonic Remedy")
     
     def test_dose_get(self):
+        """Test that the .dose property has the expected value."""
         self.assertEqual(self.constructed.dose, self.dose)
 
     def test_dose_readonly(self):
+        """Test that the .dose property is immutable."""
         self.assertRaises(AttributeError, self.constructed.__setattr__,
           'dose', '1')
 
     def test_units_get(self):
+        """Test that the .units property has the expected value."""
         self.assertEqual(self.constructed.units, self.normalized_units)
 
     def test_units_readonly(self):
+        """Test that the .units property is immutable."""
         self.assertRaises(AttributeError, self.constructed.__setattr__,
           'units', 'bottle')
 
     def test_formulation_get(self):
+        """Test that the .formulation property has the expected value."""
         self.assertEqual(self.constructed.formulation, self.normalized_formulation)
 
     def test_formulation_readonly(self):
+        """Test that the .formulation property is immutable."""
         self.assertRaises(AttributeError, self.constructed.__setattr__,
           'formulation', 'elixir')
 
     def test_instructions_get(self):
+        """Test that the .instructions property has the expected value."""
         self.assertEqual(self.constructed.instructions, self.normalized_instructions)
 
     def test_instructions_readonly(self):
+        """Test that the .instructions property is immutable."""
         self.assertRaises(AttributeError, self.constructed.__setattr__,
           'instructions', 'Drink 1 tblsp every 4 hours')
 
     def test_normalized_dose_get(self):
+        """Test that the .normalized_dose property has the expected value."""
         self.assertEqual(self.constructed.normalized_dose, self.normalized_dose)
 
     def test_normalized_dose_readonly(self):
+        """Test that the .normalized_dose property is immutable."""
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
           'normalized_dose', '1 Tblsp*6*1')
 
     def test_provenance_get(self):
+        """Test that the .provenance property has the expected value."""
         self.assertEqual(self.constructed_mappings.provenance, self.provenance)
 
     def test_provenance_readonly(self):
+        """Test that the .provenance property is immutable."""
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
           'provenance', 'Lot 49')
 
     def test_as_dictionary(self):
+        """Test that the dictionary representation of the ParsedMedication 
+        object contains the expected items."""
         test_dict_set = set(self.original_dict.items())
         obj_dict_set  = set(self.constructed.as_dictionary().items())
         test_dict_set.add(('id', self.constructed.as_dictionary()['id']))
         self.assertTrue(test_dict_set <= obj_dict_set)
 
     def test_generic_formula_get(self):
+        """Test that the .generic_formula property has the expected value."""
         generic_formula = self.constructed_mappings.generic_formula
         self.assertEqual(set(generic_formula), set(self.generic_formula))
 
     def test_generic_formula_readonly(self):
+        """Test that the .generic_formula property is immutable."""
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
           'generic_formula', 'Generic Elixir')
 
     def test_generic_formula_nomappings(self):
+        """Test that a MappingContextError is raised when the 
+        .generic_formula property of an object initialized without a 
+        MappingContext is accessed."""
         self.assertRaises(medication.MappingContextError, self.constructed.__getattribute__, 'generic_formula')
 
     def test_CUIs_get(self):
@@ -421,19 +459,25 @@ class TestParsedMedication(unittest.TestCase):
           self.constructed.__getattribute__, 'CUIs')
 
     def test_tradenames_get(self):
+        """Test that we get the expected tradenames from our test object."""
         tradenames = list(self.constructed_multitradenames.tradenames)
         tradenames.sort()
         self.assertEqual(tradenames, self.tradenames)
 
     def test_tradenames_readonly(self):
+        """Test that the tradenames property is immutable."""
         self.assertRaises(AttributeError, self.constructed_mappings.__setattr__,
           'tradenames', set(['C02','C01']))
 
     def test_tradenames_nomappings(self):
+        """A ParsedMedication object initialized without a MappingContext 
+        should raise a MappingContextError when .CUIs is accessed."""
         self.assertRaises(medication.MappingContextError,
           self.constructed.__getattribute__, 'tradenames')
 
     def test__normalize_drug_name(self):
+        """Test that the ._normalize_drug_name() class method normalizes 
+        drug names as expected."""
         normalized_drug_names = []
         for drug_name in self.drug_names_tobe_normalized:
             normalized_drug_name = self.constructed._normalize_drug_name(drug_name)
@@ -441,12 +485,16 @@ class TestParsedMedication(unittest.TestCase):
         self.assertEqual(set(normalized_drug_names), set(self.drug_names_normalized))
 
     def test_fieldwise_comparison(self):
+        """Test that fieldwise comparison of two ParsedMedication objects 
+        yields the expected results."""
         desired_results = ['UNITS', 'NORMALIZED_DOSE', 'DOSE', 'SIG', 'FORMULATION']
         pm1 = medication.ParsedMedication('Sertraline 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT', mappings)
         pm2 = medication.ParsedMedication('Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT', mappings)
         self.assertEqual(set(pm1.fieldwise_comparison(pm2)), set(desired_results))
 
     def test_factory_m1(self):
+        """Test that a Medication initialized with an unparseable string and 
+        a provenance yields the expected results."""
         med_line = "Take 2 aspirin and call me in the morning"
         provenance="List 2"
         m = medication.make_medication(med_line, provenance=provenance)
@@ -455,6 +503,8 @@ class TestParsedMedication(unittest.TestCase):
         self.assertEqual(m.provenance, provenance)
         
     def test_factory_m2(self):
+        """Test that a Medication initialized with an unparseable string and 
+        without a provenance yields the expected results."""
         med_line = "James Beam (for medicinal purposes only)"
         provenance = ""
         m = medication.make_medication(med_line)
@@ -462,9 +512,47 @@ class TestParsedMedication(unittest.TestCase):
         self.assertEqual(m.original_string, med_line)
         self.assertEqual(m.provenance, provenance)
 
-    def test_factory_pm(self):
+    def test_factory_pm1(self):
+        """Test that a ParsedMedication initialized with a parseable string 
+        and a provenance yields the expected results."""
         provenance = "List 1"
         pm = medication.make_medication(self.original, provenance=provenance, mappings=mappings)
+        self.assertTrue(isinstance(pm, medication.ParsedMedication))
+        self.assertEqual(pm.original_string, self.original)
+        self.assertEqual(pm.provenance, provenance)
+
+    def test_factory_pm2(self):
+        """Test that a ParsedMedication initialized with a dictionary 
+        and a provenance yields the expected results."""
+        original = 'Protonix 40 MG Tablet Delayed Release; TAKE 1 TABLET DAILY.; Rx'
+        dikt = dict(
+            name=self.name,
+            units=self.units,
+            dose=self.dose,
+            formulation=self.formulation,
+            instructions=self.instructions
+        )
+        provenance = "List 3"
+        pm = medication.make_medication(dikt, provenance=provenance, mappings=mappings)
+        self.assertTrue(isinstance(pm, medication.ParsedMedication))
+        self.assertEqual(pm.original_string, original)
+        self.assertEqual(pm.provenance, provenance)
+
+    def test_factory_pm3(self):
+        """Test that a ParsedMedication initialized with a dictionary 
+        containing a provenance and with a provenance yields 
+        the expected results."""
+        original = 'Protonix 40 MG Tablet Delayed Release; TAKE 1 TABLET DAILY.; Rx'
+        dikt = dict(
+            name=self.name,
+            units=self.units,
+            dose=self.dose,
+            formulation=self.formulation,
+            instructions=self.instructions,
+            original_line=self.original
+        )
+        provenance = "List 3"
+        pm = medication.make_medication(dikt, provenance=provenance, mappings=mappings)
         self.assertTrue(isinstance(pm, medication.ParsedMedication))
         self.assertEqual(pm.original_string, self.original)
         self.assertEqual(pm.provenance, provenance)
