@@ -80,8 +80,8 @@ def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
     print
     rec_bn = match_by_brand_name(parsed_meds_1, parsed_meds_2)
     pb1, pb2, bnrec = rec_bn.list1, rec_bn.list2, rec_bn.reconciled
-    left1 = [x for x in pb1] + unparsed_meds_1
-    left2 = [x for x in pb2] + unparsed_meds_2
+    left1 = pb1 + unparsed_meds_1
+    left2 = pb2 + unparsed_meds_2
     print "List 1 after brand name matching=\n", '\n'.join([str(x) for x in left1])
     print
     print "List 2 after brand name matching=\n", '\n'.join([str(x) for x in left2])
@@ -107,8 +107,8 @@ def reconciliation_step_3(pb1=[], pb2=[], unparsed_meds_1=[], unparsed_meds_2=[]
     print "********** RECONCILIATION STEP 3 **********"
     rec_ing = match_by_ingredients(pb1, pb2)
     pm1, pm2, pmrec = rec_ing.list1, rec_ing.list2, rec_ing.reconciled
-    left1 = [x for x in pm1] + unparsed_meds_1
-    left2 = [x for x in pm2] + unparsed_meds_2
+    left1 = pm1 + unparsed_meds_1
+    left2 = pm2 + unparsed_meds_2
     print "List 1 after pharma matching=\n", '\n'.join([str(x) for x in left1])
     print
     print "List 2 after pharma matching=\n", '\n'.join([str(x) for x in left2])
@@ -129,8 +129,8 @@ def reconciliation_step_4(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[]
     rec_treat = match_by_treatment(pm1, pm2, mappings,
                                            match_acceptance_threshold=0.3)
     pt1, pt2, ptrec = rec_treat.list1, rec_treat.list2, rec_treat.reconciled
-    left1 = [x for x in pt1] + unparsed_meds_1
-    left2 = [x for x in pt2] + unparsed_meds_2    
+    left1 = pt1 + unparsed_meds_1
+    left2 = pt2 + unparsed_meds_2    
     print "List 1 after therapeutic intent matching=\n", '\n'.join([str(x) for x in left1])
     print
     print "List 2 after therapeutic intent matching=\n", '\n'.join([str(x) for x in left2])
