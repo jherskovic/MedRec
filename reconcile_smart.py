@@ -14,25 +14,24 @@ UTHealth SBMI, 2011
 
 import web,  urllib
 import datetime
-import smart_client
-from smart_client import oauth
-from smart_client.smart import SmartClient
-from smart_client.common.util import serialize_rdf
+import smart_client_python
+from smart_client_python import oauth
+from smart_client_python.smart import SmartClient
+from smart_client_python.common.util import serialize_rdf
 from reconcile import reconcile_lists
 import bz2
-import cPickle
+import cPickle as pickle
+import base64
 from html_output import output_html
+import random
+from mapping_context import MappingContext
+
+web.config.debug = False
 
 # Basic configuration:  the consumer key and secret we'll use
 # to OAuth-sign requests.
 SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org', 
                       'consumer_secret': 'smartapp-secret'}
-
-
-# The SMArt contianer we're planning to talk to
-SMART_SERVER_PARAMS = {
-    'api_base' :          'http://sandbox-api.smartplatforms.org'
-}
 
 
 """
@@ -56,20 +55,13 @@ class bootstrap:
                    </html>"""
 
 print "Bootstrapping reconciliation: Reading data files"
-rxnorm=cPickle.load(bz2.BZ2File('rxnorm.pickle.bz2'))
+rxnorm=pickle.load(bz2.BZ2File('rxnorm.pickle.bz2'))
 try:
-    treats=cPickle.load(bz2.BZ2File('treats.pickle.bz2'))
+    treats=pickle.load(bz2.BZ2File('treats.pickle.bz2'))
 except:
     treats={}
 print "Building concept index"
-concept_names={}
-for c in rxnorm.concepts:
-    cn=rxnorm.concepts[c]._name.lower()
-    cn=cn.split('@')[0].strip() # Just use stuff to the left of a @ for a concept name
-    if cn in concept_names:
-        concept_names[cn].add(c)
-    else:
-        concept_names[cn]=set([c])
+mc=MappingContext(rxnorm, treats)
 
 OUTPUT_TEMPLATE="""<html>
     <head>
@@ -132,14 +124,15 @@ DATE_TEMPLATE="""<html>
     </body>
 </html>"""
 
+
+
 class GetDate(object):
     def GET(self):
-        # Fetch and use
-        cookie_name = web.input().cookie_name
-        smart_oauth_header = web.cookies().get(cookie_name)
+        smart_oauth_header = web.input().oauth_header
         smart_oauth_header = urllib.unquote(smart_oauth_header)
-        client = get_smart_client(smart_oauth_header)
-        return DATE_TEMPLATE % cookie_name
+        #client = get_smart_client(smart_oauth_header)
+        oauth_data=base64.b64encode(bz2.compress(smart_oauth_header, 9))
+        return DATE_TEMPLATE % oauth_data
  
 
 # Exposes pages through web.py
@@ -147,13 +140,12 @@ class RxReconcile(object):
     """An SMArt REST App start page"""
     def GET(self):
         # Fetch and use
-        cookie_name = web.input().cookie_name
-        smart_oauth_header = web.cookies().get(cookie_name)
-        smart_oauth_header = urllib.unquote(smart_oauth_header)
-        client = get_smart_client(smart_oauth_header)
+        oauth_data=bz2.decompress(base64.b64decode(web.input().cookie_name))
+        print oauth_data
+        client = get_smart_client(oauth_data)
 
         # Represent the list as an RDF graph
-        meds = client.records_X_medications_GET()
+        meds = client.records_X_medications_GET().graph
 
         # Find a list of all fulfillments for each med.
         q = """
@@ -200,10 +192,10 @@ class RxReconcile(object):
                 list1.append(this_pill)
             else:
                 list2.append(this_pill)
-        r1, r2, rec=reconcile_lists(list1, list2, rxnorm, concept_names, treats)
+        r1, r2, rec=reconcile_lists(list1, list2, mc)
 
         #Print a formatted list
-        return output_html(list1, list2, r1, r2, rec, template=OUTPUT_TEMPLATE)
+        return output_html(list1, list2, r1, r2, rec)
 
 
 header = """<!DOCTYPE html>
@@ -224,14 +216,19 @@ def get_smart_client(authorization_header, resource_tokens=None):
     resource_tokens={'oauth_token':       oa_params['smart_oauth_token'],
                      'oauth_token_secret':oa_params['smart_oauth_token_secret']}
 
+    server_params={'api_base':            oa_params['smart_container_api_base']}
+
     ret = SmartClient(SMART_SERVER_OAUTH['consumer_key'], 
-                       SMART_SERVER_PARAMS, 
+                       server_params, 
                        SMART_SERVER_OAUTH, 
                        resource_tokens)
-    
+    print ret
+    print ret.baseURL
     ret.record_id=oa_params['smart_record_id']
     return ret
 
 app = web.application(urls, globals())
+session = web.session.Session(app, web.session.DiskStore('sessions'))
+
 if __name__ == "__main__":
     app.run()
