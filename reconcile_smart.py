@@ -40,8 +40,7 @@ SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org',
    * "index.html" page to supply the UI.
 """
 urls = ('/smartapp/bootstrap.html', 'bootstrap',
-        '/smartapp/index.html',     'GetDate',
-        '/smartapp/reconcile.html', 'RxReconcile')
+        '/smartapp/index.html', 'RxReconcile')
 
 # Required "bootstrap.html" page just includes SMArt client library
 class bootstrap:
@@ -111,50 +110,46 @@ OUTPUT_TEMPLATE="""<html>
 </html>
 """
 
-DATE_TEMPLATE="""<html>
-    <head>
-        <title>MedRec dates</title>
-        <script src="http://sample-apps.smartplatforms.org/framework/smart/scripts/smart-api-page.js"></script>
-    </head>
-    <body>
-    <form action="/smartapp/reconcile.html" method="GET">
-    <p>Reconcile the medications before this date to the medications after this date: <input type="text" name="recdate" />
-      <input type="hidden" name="cookie_name" value="%s">
-    </p><p><input type="submit" value="Submit" /></p></form>
-    </body>
-</html>"""
-
-
-
-class GetDate(object):
-    def GET(self):
-        smart_oauth_header = web.input().oauth_header
-        smart_oauth_header = urllib.unquote(smart_oauth_header)
-        #client = get_smart_client(smart_oauth_header)
-        oauth_data=base64.b64encode(bz2.compress(smart_oauth_header, 9))
-        return DATE_TEMPLATE % oauth_data
- 
+de_parenthesize=lambda x: x.replace('[', '').replace(']', '').replace('{', '').replace('}', '')
 
 # Exposes pages through web.py
 class RxReconcile(object):
     """An SMArt REST App start page"""
     def GET(self):
         # Fetch and use
-        oauth_data=bz2.decompress(base64.b64decode(web.input().cookie_name))
-        print oauth_data
-        client = get_smart_client(oauth_data)
+        smart_oauth_header = web.input().oauth_header
+        smart_oauth_header = urllib.unquote(smart_oauth_header)
+        client = get_smart_client(smart_oauth_header)
+        oauth_data=base64.b64encode(bz2.compress(smart_oauth_header, 9))
+        #client = get_smart_client(oauth_data)
 
         # Represent the list as an RDF graph
-        meds = client.records_X_medications_GET().graph
-
-        # Find a list of all fulfillments for each med.
-        q = """
-            PREFIX dc:<http://purl.org/dc/elements/1.1/>
+        med_lists = client.records_X_medication_lists_GET()
+ 
+        lists_q = """
             PREFIX dcterms:<http://purl.org/dc/terms/>
             PREFIX sp:<http://smartplatforms.org/terms#>
             PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-               SELECT  ?med ?name ?quantx ?quant ?quantunit ?freqx ?freq ?frequnit ?inst ?startdate
+            select ?l ?s ?sname ?d 
+            where {
+                ?l a sp:MedicationList.
+                ?l sp:medListSource ?s.
+                ?s dcterms:title ?sname.
+              
+                optional { ?l dcterms:date ?d }
+ 
+            }"""
+ 
+        lists = med_lists.graph.query(lists_q)
+ 
+        def one_list(list_uri):
+            one_list_q = """
+            PREFIX dcterms:<http://purl.org/dc/terms/>
+            PREFIX sp:<http://smartplatforms.org/terms#>
+            PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+               SELECT  ?med  ?name ?quant ?quantunit ?freq ?frequnit ?inst ?startdate ?prov
                WHERE {
+                    """ + list_uri.n3() + """ sp:medication ?med.
                       ?med rdf:type sp:Medication .
                      ?med sp:drugName ?medc.
                       ?medc dcterms:title ?name.
@@ -168,10 +163,36 @@ class RxReconcile(object):
                       ?freqx sp:value ?freq.
                       ?freqx sp:unit ?frequnit. }
                       ?med sp:startDate ?startdate.
-               }
+                      OPTIONAL {
+                      ?med sp:provenance ?prov. }
+                }
             """
-        pills = meds.query(q)
-
+            return med_lists.graph.query(one_list_q)
+        
+        if len(lists) < 2:
+            print "I am lame, and therefore expect exactly two lists. Besides, with less than two, what do you expect me to reconcile?"
+            return "<html><head></head><body>Nothing to reconcile. There were less than two lists.</body></html>"
+            
+        if len(lists)>2:
+            print "*** WARNING *** There were %d lists, but I only used the first two." % len(lists)
+        
+        lists=[x for x in lists]
+        
+        rdf_list_1=one_list(lists[0][0])
+        rdf_list_2=one_list(lists[1][0])
+        print "List 1:", len(rdf_list_1), "items"
+        for x in rdf_list_1:
+            print "Med=", x[0].toPython()
+            print "Name=", x[1].toPython()
+            print "quant=", x[2].toPython()
+            print "quantunit=", x[3].toPython()
+            print "freq=",x[4].toPython()
+            print "frequnit=",x[5].toPython()
+            print "inst=",x[6].toPython()
+            print "startdate=",x[7].toPython()
+            print "provenance=", x[8].toPython() if x[8] is not None else ""
+            print
+            
         # Find the last fulfillment date for each medication
         #self.last_pill_dates = {}
         #for pill in pills:
@@ -179,7 +200,14 @@ class RxReconcile(object):
         list1=[]
         list2=[]
         # THIS WORKS WITH CAROL DIAZ OR BRIAN ROBINSON
-        SPLIT_DATE=web.input().recdate
+        def make_med_list_from_rdf(rdf_results):
+            drugName=rdf_results[1].toPython()
+            quantity=rdf_results[2].toPython() if rdf_results[2] is not None else ""
+            quantity_unit=rdf_results[3].toPython() if rdf_results[3] is not None else ""
+            quantity_unit=de_parenthesize(quantity_unit)
+            frequency=rdf_results[4].toPython() if rdf_results[4] is not None else ""
+            # TODO: Finish the rest of the conversion.
+            
         for x in pills:
             #print x
             #this_pill=str(x['name'])+" "+str(x['inst'])
