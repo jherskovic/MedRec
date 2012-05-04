@@ -21,8 +21,6 @@ Created by Charles Bearden
 """
 import drug_problem_kb
 import sys
-import os.path
-import random
 import cPickle as pickle
 import bz2
 import csv
