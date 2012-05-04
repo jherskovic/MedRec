@@ -53,8 +53,10 @@ def problem_relation_factory(name, patient_count, ratio):
     return pr
 
 class DrugProblemKB(object):
-    """The drug_problem_dict passed in to the constructor will be
-    drug CUI -> [<list of problems>]
+    """A class to enable lookup by drug CUI of problems (with patient counts 
+    & ratios) associated with the drug. The drug_problem_dict passed in to 
+    the constructor will be 
+    drug CUI -> <sequence or set of problems>
     """
     def __init__(self, drug_problem_dict):
         self._drug_problem_dict = {}
@@ -64,4 +66,6 @@ class DrugProblemKB(object):
             liszt.sort()
             self._drug_problem_dict[cui] = liszt
     def problem_by_drug_cui(self, drug_cui):
-        return self._drug_problem_dict.get(drug_cui)
+        """Given the CUI for a medication, return a sorted list of problem 
+        data associated with that medication."""
+        return self._drug_problem_dict.get(drug_cui, [])
