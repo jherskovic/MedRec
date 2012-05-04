@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-import pdb
-
 class Drug(object):
     """Class to represent a drug from an MRCONSO line. Assumes that
     appropriate selection of MRCONSO lines is done prior to instantiation."""
