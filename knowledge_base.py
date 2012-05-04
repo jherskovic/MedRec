@@ -4,7 +4,10 @@ Created on May 3, 2012
 @author: cbearden
 '''
 
-class Problem(object):
+class ProblemRelation(object):
+    """A class to model a problem with a particular count of patients and 
+    ratio of patients.
+    """
     __slots__ = ['_name', '_patient_count', '_ratio']
     def __init__(self, name, patient_count, ratio):
         self._name = name
@@ -19,6 +22,8 @@ class Problem(object):
     @property
     def ratio(self):
         return self._ratio
+    def __repr__(self):
+        return "<ProblemRelation '%s' (patients: %d ; ratio: %.6f) @0x%x>" % (self._name, self._patient_count, self._ratio, id(self))
     def _is_lt(self, other):
         if self.ratio > other.ratio:
             return True
@@ -39,4 +44,13 @@ class Problem(object):
 
 
 class DrugProblemKB(object):
-    pass
+    """The drug_problem_dict passed in to the constructor will be
+    drug CUI -> [<list of problems>]
+    """
+    def __init__(self, drug_problem_dict):
+        self._drug_problem_dict = {}
+        for cui, liszt in drug_problem_dict.items():
+            liszt.sort()
+            self._drug_problem_dict[cui] = liszt
+    def problem_by_drug_cui(self, drug_cui):
+        return self._drug_problem_dict.get(drug_cui)
