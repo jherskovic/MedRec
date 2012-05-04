@@ -7,7 +7,6 @@ data to represent these problems.
 
 The expected input is a bz2-compressed CSV file with at least the following fields:
 mcui          (string, the CUI of the medication)
-medication    (string, the name of the medication)
 problem       (string, the name of the problem)
 patientcount  (int, the count of patients)
 ratio         (float, the ratio of patients)
