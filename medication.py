@@ -21,7 +21,7 @@ from mapping_context import MappingContextError
 
 medication_parser = re.compile(r"""^\s*(?P<name>.*?)
                                   \s+(?P<dose>[0-9\.\/]+)
-                                  \s+(?P<units>m?c?k?g|m?d?l)
+                                  \s*(?P<units>[mck]g|[md]l)
                                   \s*(?P<formulation>.*?)
                                   ;
                                   \s*?(?P<instructions>.*)""",
@@ -113,6 +113,7 @@ class ParsedMedication(Medication):
         self._norm_dose = None
         self._cuis = None
         self._tradenames = None
+        self._problems = None
         self._mappings = context
         if isinstance(med_info, str):
             self._from_text(med_info)
@@ -256,6 +257,27 @@ class ParsedMedication(Medication):
                                               and x._concept1.CUI == y] 
                                           for y in my_cuis])
         return copy.copy(self._tradenames)
+    @property
+    def problems(self):
+        if self._problems is not None:
+            return copy.copy(self._problems)
+        if self._cuis is None:
+            return []
+        mappings = self._mappings
+        if mappings is None:
+            raise MappingContextError, "Requires an instance initialized with a MappingContext object."
+        elif mappings.drug_problem is None:
+            raise MappingContextError, "Requires that the MappingContext object be initialized with a drug/problem dataset."
+        problems_set = set()
+        cuis = self._cuis
+        for cui in cuis:
+            for problem in mappings.drug_problem.problem_by_drug_cui(cui):
+                problems_set.add(problem)
+        problems_list = list(problems_set)
+        problems_list.sort()
+        self._problems = problems_list
+        return copy.copy(self._problems)
+        
     def _normalize_dose(self):
         """Takes a drug tuple (i.e. the output of the regular expression listed 
         above) and returns the total number of units a day the patient is 
