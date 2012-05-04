@@ -9,9 +9,10 @@ class MappingContextError(Exception): pass
 class MappingContext(object):
     """Packages the information needed to map medications to each other and the
     UMLS."""
-    def __init__(self, rxnorm, treatment):
+    def __init__(self, rxnorm, treatment, drug_problem=None):
         self._rxnorm=rxnorm
         self._treatment=treatment
+        self._drug_problem = drug_problem
         concept_names = {}
         for c in rxnorm.concepts:
             cn = rxnorm.concepts[c]._name.lower()
@@ -30,3 +31,6 @@ class MappingContext(object):
     @property
     def concept_names(self):
         return self._concept_names
+    @property
+    def drug_problem(self):
+        return self._drug_problem
