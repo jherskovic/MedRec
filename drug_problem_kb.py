@@ -1,3 +1,4 @@
+#!/usr/bin/python
 '''
 Created on May 3, 2012
 
@@ -42,6 +43,14 @@ class ProblemRelation(object):
     def __gt__(self, other):
         return not self._is_lt(other)
 
+problem_relation_dict = {}
+def problem_relation_factory(name, patient_count, ratio):
+    pr_data = (name, patient_count, ratio)
+    pr = problem_relation_dict.get(pr_data)
+    if not pr:
+        pr = ProblemRelation(*pr_data)
+        problem_relation_dict[pr_data] = pr
+    return pr
 
 class DrugProblemKB(object):
     """The drug_problem_dict passed in to the constructor will be
@@ -49,7 +58,9 @@ class DrugProblemKB(object):
     """
     def __init__(self, drug_problem_dict):
         self._drug_problem_dict = {}
-        for cui, liszt in drug_problem_dict.items():
+        for cui, liszt1 in drug_problem_dict.items():
+            # Just in case the DrugProblem objects are in a set 
+            liszt = list(liszt1)
             liszt.sort()
             self._drug_problem_dict[cui] = liszt
     def problem_by_drug_cui(self, drug_cui):
