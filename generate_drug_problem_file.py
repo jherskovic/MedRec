@@ -44,9 +44,10 @@ drug_problem_mapping = defaultdict(set)
 print >>sys.stderr, "Reading Drug/Problem data"
 infile = csv.DictReader(bz2.BZ2File(src_file, 'r'))
 for row in infile:
-    cui, name, patientcount, ratio = row['mcui'], row['problem'], int(row['patientcount']), float(row['ratio'])
+    cuis, name, patientcount, ratio = row['mcuis'].split('|'), row['problem'], int(row['patientcount']), float(row['ratio'])
     pr = drug_problem_kb.problem_relation_factory(name, patientcount, ratio)
-    drug_problem_mapping[cui].add(pr)
+    for cui in cuis:
+        drug_problem_mapping[cui].add(pr)
     
 print >>sys.stderr
 
