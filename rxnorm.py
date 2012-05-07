@@ -99,6 +99,8 @@ class SemanticTypeLine(object):
     def CUI(self):
         """Property: the CUI of the drug associated with this MRSTY line."""
         return self._cui
+    def __repr__(self):
+        return "<SemanticType %s: '%s' 0x%x>" % (self._cui, type_kinds[self._type], id(self))
         
 class RXNORM(object):
     def __init__(self, concepts, relations, ingredients):

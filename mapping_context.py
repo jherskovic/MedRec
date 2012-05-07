@@ -34,3 +34,8 @@ class MappingContext(object):
     @property
     def drug_problem(self):
         return self._drug_problem
+    def __repr__(self):
+        rxcount = len(self._rxnorm.concepts)
+        tscount = len(self._treatment)
+        dpcount = len(self._drug_problem._drug_problem_dict)
+        return "<MappingContext RXNORM: %d; treats: %d; drug/problem: %d; 0x%x>" % (rxcount, tscount, dpcount, id(self),)

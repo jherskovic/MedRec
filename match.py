@@ -136,7 +136,11 @@ class MatchResult(object):
         if areSame:
             return False
         return True
-    
+    def __repr__(self):
+        return "<MatchResult list 1: %d; list 2: %d; reconciled: %d; 0x%x>" % \
+            (len(self._list1), len(self._list2), len(self._reconciled), id(self),)
+
+
 def match_by_strings(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by comparing the
     strings one by one. This is an O(n^2) comparison, but given the average 
