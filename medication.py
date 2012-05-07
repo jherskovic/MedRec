@@ -21,7 +21,7 @@ from mapping_context import MappingContextError
 
 medication_parser = re.compile(r"""^\s*(?P<name>.*?)
                                   \s+(?P<dose>[0-9\.\/]+)
-                                  \s*(?P<units>[mck]g|[md]l)
+                                  \s*(?P<units>([mck]|mc)g|[md]l)
                                   \s*(?P<formulation>.*?)
                                   ;
                                   \s*?(?P<instructions>.*)""",
@@ -401,7 +401,7 @@ def find_missing_keys(dikt, reqd_fields):
 def make_medication(med_info, mappings=None, provenance=None):
     """Factory function to return a ParsedMedication object if 'med_info' is
     suitably parseable, a Medication object otherwise."""
-    reqd_fields = ('name', 'units', 'dose', 'formulation', 'instructions',)
+    reqd_fields = ('name', 'units', 'dose', 'formulation', 'instructions','original_line')
     argz = {}
     if mappings:
         argz['context'] = mappings
@@ -416,10 +416,10 @@ def make_medication(med_info, mappings=None, provenance=None):
         med_match = medication_parser.match(normalize_field(med_info))
         if med_match:
             med_dict = med_match.groupdict()
+            med_dict['original_line'] = med_info
             missing_fields = find_missing_keys(med_dict, reqd_fields)
             if len(missing_fields) > 0:
                 return Medication(med_info, provenance=argz.get('provenance', ''))
-            med_dict['original_line'] = med_info
             return ParsedMedication(med_dict, **argz)
         return Medication(med_info, provenance=argz.get('provenance', ''))
     else:
