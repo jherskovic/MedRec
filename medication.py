@@ -125,14 +125,15 @@ class ParsedMedication(Medication):
         """Separates a medication string into its components according to the
         medication_parser regular expression."""
         #super(ParsedMedication, self).from_text(med_line)
-        med = medication_parser.findall(self.normalized_string)
-        if len(med) > 0:
-            med = med[0]
-            self._name = self._normalize_field(med[0])
-            self._dose = self._normalize_field(med[1])
-            self._units = self._normalize_field(med[2])
-            self._formulation = self._normalize_field(med[3])
-            self._instructions = self._normalize_field(med[4])
+        med_match = medication_parser.match(normalize_field(med_line))
+        if med_match:
+            med_dict = med_match.groupdict()
+            med_dict['original_line'] = med_line
+            self._name = med_dict['name']
+            self._dose = med_dict['dose']
+            self._units = med_dict['units']
+            self._formulation = med_dict['formulation']
+            self._instructions = med_dict['instructions']
             self._norm_dose = self._normalize_dose()
         else:
             logging.debug("Could not parse %s.", med_line)
