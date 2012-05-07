@@ -344,7 +344,7 @@ class TestParsedMedication(unittest.TestCase):
     def test_formulation_sort(self):
         """Test that ParsedMedications that differ in formulation sort in the correct order."""
         ne_units = medication.ParsedMedication(self.ne_units, mappings)
-        ne_formulation = medication.ParsedMedication(self.ne_formulation, mappings) 
+        ne_formulation = medication.ParsedMedication(self.ne_formulation, mappings)
         self.assertLess(ne_formulation, ne_units)
         self.assertGreater(ne_units, ne_formulation)
 
@@ -530,7 +530,8 @@ class TestParsedMedication(unittest.TestCase):
             units=self.units,
             dose=self.dose,
             formulation=self.formulation,
-            instructions=self.instructions
+            instructions=self.instructions,
+            original_line = original,
         )
         provenance = "List 3"
         pm = medication.make_medication(dikt, provenance=provenance, mappings=mappings)
