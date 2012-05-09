@@ -6,18 +6,18 @@ Reads data on relations between drugs and problems, and creates structured
 data to represent these problems.
 
 The expected input is a bz2-compressed CSV file with at least the following fields:
-mcui          (string, the CUI of the medication)
+mcuis         (string, a '|'-delimited list of CUIs for the medication)
 problem       (string, the name of the problem)
 patientcount  (int, the count of patients)
 ratio         (float, the ratio of patients)
 
 For each row in this file, a DrugProblem object will be instantiated and 
-appended to a list in a dictionary with the CUI 'mcui' as the key. This 
-dictionary serves as the input data for the DrugProblemKB object, which 
-will be pickled and bz2'd.
+appended to a list in a dictionary with each of the CUIs in 'mcuis' as 
+the key. This dictionary serves as the input data for the DrugProblemKB 
+object, which will be pickled and bz2'd.
 
 Created by Charles Bearden 
---Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
+--Copyright (c) 2012 UTHealth School of Biomedical Informatics. All rights reserved.
 """
 import drug_problem_kb
 import sys
