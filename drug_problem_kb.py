@@ -73,7 +73,7 @@ class DrugProblemKB(object):
     def __init__(self, drug_problem_dict):
         self._drug_problem_dict = {}
         for cui, liszt1 in drug_problem_dict.items():
-            # Just in case the DrugProblem objects are in a set 
+            # Just in case the ProblemRelation objects are in a set 
             liszt = list(liszt1)
             liszt.sort()
             self._drug_problem_dict[cui] = liszt
