@@ -12,6 +12,7 @@ import unittest
 from constants import demo_list_1, demo_list_2
 import medication
 from mapping_context import MappingContext
+from drug_problem_kb import ProblemRelation, problem_relation_factory
 
 parsedDemoMeds = (
   dict(
@@ -219,8 +220,12 @@ if os.path.isfile('treats.pickle.bz2'):
     treats = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
 else:
     treats = None
+if os.path.isfile('drug_problem_relations.pickle.bz2'):
+    drug_problem_relations = pickle.load(bz2.BZ2File('drug_problem_relations.pickle.bz2', 'r'))
+else:
+    drug_problem_relations = None
 if rxnorm is not None:
-    mappings = MappingContext(rxnorm, treats)
+    mappings = MappingContext(rxnorm, treats, drug_problem_relations)
 else:
     mappings = None
 
@@ -272,6 +277,9 @@ class TestParsedMedication(unittest.TestCase):
     constructed  = medication.ParsedMedication(original, provenance=provenance)
     constructed_mappings  = medication.ParsedMedication(original, mappings, provenance)
     constructed_multitradenames = medication.ParsedMedication(multi_tradenames, mappings)
+    problemList = [problem_relation_factory(*t) for t in (
+        ('Chronic Reflux Esophagitis', 3, 0.750000),
+        ('Esophageal Reflux', 9, 0.236842),)]
 
     def test_construct_no_text(self):
         """Test that constructor requires at least one argument."""
@@ -426,6 +434,7 @@ class TestParsedMedication(unittest.TestCase):
         test_dict_set.add(('id', self.constructed.as_dictionary()['id']))
         self.assertTrue(test_dict_set <= obj_dict_set)
 
+    @unittest.skipUnless(os.path.isfile('rxnorm.pickle.bz2'), 'missing needed test data from rxnorm.pickle.bz2')
     def test_generic_formula_get(self):
         """Test that the .generic_formula property has the expected value."""
         generic_formula = self.constructed_mappings.generic_formula
@@ -442,6 +451,7 @@ class TestParsedMedication(unittest.TestCase):
         MappingContext is accessed."""
         self.assertRaises(medication.MappingContextError, self.constructed.__getattribute__, 'generic_formula')
 
+    @unittest.skipUnless(os.path.isfile('rxnorm.pickle.bz2'), 'missing needed test data from rxnorm.pickle.bz2')
     def test_CUIs_get(self):
         """Test that we get the expected CUIs from our test object."""
         CUIs = list(self.constructed_mappings.CUIs)
@@ -458,6 +468,7 @@ class TestParsedMedication(unittest.TestCase):
         self.assertRaises(medication.MappingContextError,
           self.constructed.__getattribute__, 'CUIs')
 
+    @unittest.skipUnless(os.path.isfile('rxnorm.pickle.bz2'), 'missing needed test data from rxnorm.pickle.bz2')
     def test_tradenames_get(self):
         """Test that we get the expected tradenames from our test object."""
         tradenames = list(self.constructed_multitradenames.tradenames)
@@ -474,6 +485,12 @@ class TestParsedMedication(unittest.TestCase):
         should raise a MappingContextError when .CUIs is accessed."""
         self.assertRaises(medication.MappingContextError,
           self.constructed.__getattribute__, 'tradenames')
+
+    @unittest.skipUnless(os.path.isfile('drug_problem_relations.pickle.bz2'), 'missing needed test data from drug_problem_relations.pickle.bz2')
+    def test_problems(self):
+        """Test that the ParsedMedication initialized with the mappings has
+        the expected problem list.""" 
+        self.assertEqual(self.constructed_mappings.problems, self.problemList)
 
     def test__normalize_drug_name(self):
         """Test that the ._normalize_drug_name() class method normalizes 
