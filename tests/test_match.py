@@ -9,6 +9,7 @@ import sys
 sys.path.append('..')
 import re
 import copy
+import os
 import match
 from medication import ParsedMedication
 from medication import make_medication
@@ -23,10 +24,27 @@ import logging
 
 logging.basicConfig(filename='test_match.log', level=logging.INFO)
 
-rx = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
-ts = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
-mappings = MappingContext(rx, ts)
-test_match_objects = pickle.load(bz2.BZ2File('test_match.pickle.bz2', 'r'))
+if os.path.isfile('rxnorm.pickle.bz2'):
+    rxnorm = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
+else:
+    rxnorm = None
+if os.path.isfile('treats.pickle.bz2'):
+    treats = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
+else:
+    treats = None
+if os.path.isfile('drug_problem_relations.pickle.bz2'):
+    drug_problem_relations = pickle.load(bz2.BZ2File('drug_problem_relations.pickle.bz2', 'r'))
+else:
+    drug_problem_relations = None
+if rxnorm is not None:
+    mappings = MappingContext(rxnorm, treats, drug_problem_relations)
+else:
+    mappings = None
+
+if os.path.isfile('test_match.pickle.bz2'):
+    test_match_objects = pickle.load(bz2.BZ2File('test_match.pickle.bz2', 'r'))
+else:
+    test_match_objects = None
 
 def rmIdsFromMatchDict(matchDict):
     newDict = copy.copy(matchDict)
@@ -47,7 +65,9 @@ class TestMatch(unittest.TestCase):
     med2 = ParsedMedication(medString2, mappings)
     med2a = ParsedMedication(medString2a, mappings)
     med2b = ParsedMedication(medString2b, mappings)
-    test_objects = test_match_objects['TestMatch']
+    test_objects = None
+    if test_match_objects:
+        test_objects = test_match_objects['TestMatch']
     # Match objects used in testing below
     matched_by_string = match.Match(med1, med2, 0.5, "MATCH_STRING")
     matched_by_brand_name = match.Match(med1, med2, 0.8, "MATCH_BRAND_NAME")
@@ -63,55 +83,67 @@ class TestMatch(unittest.TestCase):
     matched_potential4 = match.Match(med1b, med2, 0.5)
     matched_potential4_rev = match.Match(med2, med1b, 0.5)
     matched_identical4 = match.Match(med2a, med2, 0.5)
-       
+
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_potential_match_eq1(self):
         "Test that a newly-instantiated potential match is equivalent to our baseline."
         self.assertEqual(self.matched_potential1, self.test_objects['matched_potential'])
-    
+
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_potential_match_eq2(self):
         "Test that a newly-instantiated potential match with meds in reverse order is equivalent to our baseline."
         self.assertEqual(self.matched_potential2, self.test_objects['matched_potential'])
     
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_potential_match_ne1(self):
         "Test that a newly-instantiated potential match is not equivalent to our baseline (certainty differs)."
         self.assertNotEqual(self.matched_potential3, self.test_objects['matched_potential'])
-
+        
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_potential_match_ne2(self):
         "Test that a newly-instantiated potential match is not equivalent to our baseline (dosage differs)."
         self.assertNotEqual(self.matched_potential4, self.test_objects['matched_potential'])
     
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_potential_match_ne3(self):
         "Test that a newly-instantiated potential match with meds in reverse order is not equivalent to our baseline."
         self.assertNotEqual(self.matched_potential4_rev, self.test_objects['matched_potential'])
     
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_identical_match_eq1(self):
         "Test that a newly-instantiated identical match is equivalent to our baseline."
         self.assertEqual(self.matched_identical1, self.test_objects['matched_identical'])
 
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_identical_match_eq2(self):
         "Test that a newly-instantiated identical match with meds in reverse order is equivalent to our baseline."
         self.assertEqual(self.matched_identical2, self.test_objects['matched_identical'])
 
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_by_string_dictionary(self):
         "Test that the dictionary from a by-string match is as we expect."
         self.assertEqual(rmIdsFromMatchDict(self.matched_by_string.as_dictionary()),
                          rmIdsFromMatchDict(self.test_objects['matched_by_string'].as_dictionary()))
     
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_by_brand_name_dictionary(self):
         "Test that the dictionary from a by-brand-name match is as we expect."
         self.assertEqual(rmIdsFromMatchDict(self.matched_by_brand_name.as_dictionary()),
                          rmIdsFromMatchDict(self.test_objects['matched_by_brand_name'].as_dictionary()))
-    
+
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_by_ingredients_dictionary(self):
         "Test that the dictionary from a by-ingredients match is as we expect."
         self.assertEqual(rmIdsFromMatchDict(self.matched_by_ingredients.as_dictionary()),
                          rmIdsFromMatchDict(self.test_objects['matched_by_ingredients'].as_dictionary()))
     
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_by_treatment_dictionary(self):
         "Test that the dictionary from a by-treatment match is as we expect."
         self.assertEqual(rmIdsFromMatchDict(self.matched_by_treatment.as_dictionary()),
                          rmIdsFromMatchDict(self.test_objects['matched_by_treatment'].as_dictionary()))
     
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_unspecified_dictionary(self):
         "Test that a dictionary from a match by unspecified mechanism is as we expect."
         self.assertEqual(rmIdsFromMatchDict(self.matched_unspecified.as_dictionary()),
@@ -165,22 +197,26 @@ class TestFunctions(unittest.TestCase):
     list3rev = [pMed3, pMed2b]
     medication_list_test_CUIs = [pMed1CUIs, pMed2CUIs, pMed2aCUIs, pMed3CUIs, pMed2bCUIs, pMed3CUIs]
     medication_list_test_tradenames = [pMed1Tradenames, pMed2Tradenames, pMed2aTradenames, pMed3Tradenames, pMed2bTradenames, pMed3Tradenames]
-    test_objects = test_match_objects['TestFunctions']
+    test_objects = None
+    if test_match_objects:
+        test_objects = test_match_objects['TestFunctions']
     matched_by_strings = match.match_by_strings(list1, list2)
     matched_by_strings_rev = match.match_by_strings(list1rev, list2rev)
-    matched_by_brand_name1 = match.match_by_brand_name(list1, list3)
-    matched_by_brand_name1_rev = match.match_by_brand_name(list1rev, list3rev)
-    matched_by_brand_name2 = match.match_by_brand_name(list3, list1)
-    matched_by_ingredients_above = match.match_by_ingredients([pMed4], [pMed5], min_match_threshold=0.6)
-    matched_by_ingredients_below = match.match_by_ingredients([pMed4], [pMed5], min_match_threshold=0.7)
-    matched_by_ingredients_rev_above = match.match_by_ingredients([pMed5], [pMed4], min_match_threshold=0.6)
-    matched_by_ingredients_rev_below = match.match_by_ingredients([pMed5], [pMed4], min_match_threshold=0.7)
-    matched_by_treatment_above = match.match_by_treatment([pMed6], [pMed7], mappings, match_acceptance_threshold=0.3)
-    matched_by_treatment_below = match.match_by_treatment([pMed6], [pMed7], mappings)
-    matched_by_treatment_05_yes = match.match_by_treatment([pMed8], [pMed9], mappings, match_acceptance_threshold=0.5)
-    matched_by_treatment_05_no = match.match_by_treatment([pMed8], [pMed9], mappings, match_acceptance_threshold=0.51)
-    matched_by_treatment_04_yes = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.4)
-    matched_by_treatment_04_no = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.43)
+    if mappings:
+        matched_by_brand_name1 = match.match_by_brand_name(list1, list3)
+        matched_by_brand_name1_rev = match.match_by_brand_name(list1rev, list3rev)
+        matched_by_brand_name2 = match.match_by_brand_name(list3, list1)
+        matched_by_ingredients_above = match.match_by_ingredients([pMed4], [pMed5], min_match_threshold=0.6)
+        matched_by_ingredients_below = match.match_by_ingredients([pMed4], [pMed5], min_match_threshold=0.7)
+        matched_by_ingredients_rev_above = match.match_by_ingredients([pMed5], [pMed4], min_match_threshold=0.6)
+        matched_by_ingredients_rev_below = match.match_by_ingredients([pMed5], [pMed4], min_match_threshold=0.7)
+        if mappings.treatment:
+            matched_by_treatment_above = match.match_by_treatment([pMed6], [pMed7], mappings, match_acceptance_threshold=0.3)
+            matched_by_treatment_below = match.match_by_treatment([pMed6], [pMed7], mappings)
+            matched_by_treatment_05_yes = match.match_by_treatment([pMed8], [pMed9], mappings, match_acceptance_threshold=0.5)
+            matched_by_treatment_05_no = match.match_by_treatment([pMed8], [pMed9], mappings, match_acceptance_threshold=0.51)
+            matched_by_treatment_04_yes = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.4)
+            matched_by_treatment_04_no = match.match_by_treatment([pMed10], [pMed11], mappings, match_acceptance_threshold=0.43)
     # Use the demo lists for testing; this code was previously  in TestMatchResult
     demo_list_1 = [pm for pm in
       [make_medication(x, mappings, "List 1") for x in constants.demo_list_1]
@@ -190,101 +226,137 @@ class TestFunctions(unittest.TestCase):
         if isinstance(pm, ParsedMedication)]
     demo_matched_by_strings = match.match_by_strings(demo_list_1, demo_list_2)
     demo_matched_by_strings_rev = match.match_by_strings(demo_list_2, demo_list_1)
-    demo_matched_by_brand_name = match.match_by_brand_name(demo_list_1, demo_list_2)
-    demo_matched_by_brand_name_rev = match.match_by_brand_name(demo_list_2, demo_list_1)
-    demo_matched_by_ingredients = match.match_by_ingredients(demo_list_1, demo_list_2)
-    demo_matched_by_ingredients_rev = match.match_by_ingredients(demo_list_2, demo_list_1)
+    if mappings:
+        demo_matched_by_brand_name = match.match_by_brand_name(demo_list_1, demo_list_2)
+        demo_matched_by_brand_name_rev = match.match_by_brand_name(demo_list_2, demo_list_1)
+        demo_matched_by_ingredients = match.match_by_ingredients(demo_list_1, demo_list_2)
+        demo_matched_by_ingredients_rev = match.match_by_ingredients(demo_list_2, demo_list_1)
 
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_strings(self):
         "Test that the MatchResult from a by-string match contains the lists we expect."
         self.assertEqual(self.matched_by_strings, self.test_objects['matched_by_strings'])
 
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_strings_rev(self):
         """Test that the MatchResult from a by-string match is order-independent
         with respect to the order the medication lists are passed in."""
         self.assertEqual(self.matched_by_strings_rev, self.test_objects['matched_by_strings_rev'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
     def test_medication_list_CUIs(self):
         "Test the operation of match.medication_list_CUIs()"
         cuis = match.medication_list_CUIs(self.list1 + self.list2 + self.list3)
         self.assertEqual(cuis, self.medication_list_test_CUIs)
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_medication_list_tradenames(self):
         "Test the operation of match.medication_list_tradenames()"
         tradenames = match.medication_list_tradenames(self.list1 + self.list2 + self.list3)
         self.assertEqual(tradenames, self.medication_list_test_tradenames)
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_brand_name1(self):
         """Test that the MatchResult from a by-brand-name match contains the 
         lists we expect."""
         self.assertEqual(self.matched_by_brand_name1, self.test_objects['matched_by_brand_name1'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_brand_name1_rev(self):
         """Test that the MatchResult from a by-brand-name match is order-independent
         with respect to the order the medication lists are passed in."""
         self.assertEqual(self.matched_by_brand_name1_rev, self.test_objects['matched_by_brand_name1_rev'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_brand_name2(self):
         """Test that the MatchResult from a by-brand-name match contains the
         lists we expect."""
         self.assertEqual(self.matched_by_brand_name2, self.test_objects['matched_by_brand_name2'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_ingredients_above(self):
         """Test reconcilation of medications by treatment intent that should
         match at a threshold of 0.6."""
         self.assertEqual(self.matched_by_ingredients_above, self.test_objects['matched_by_ingredients_above'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_ingredients_below(self):
         """Test reconcilation of medications by treatment intent that should
         not match at a threshold of 0.7."""
         self.assertEqual(self.matched_by_ingredients_below, self.test_objects['matched_by_ingredients_below'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_ingredients_rev_above(self):
         """Test order independence of the reconcilation of medications by 
         treatment intent that should match at a threshold of 0.6."""
         self.assertEqual(self.matched_by_ingredients_rev_above, self.test_objects['matched_by_ingredients_rev_above'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_match_by_ingredients_rev_below(self):
         """Test order independence of the reconcilation of medications by 
         treatment intent that should not match at a threshold of 0.7."""
         self.assertEqual(self.matched_by_ingredients_rev_below, self.test_objects['matched_by_ingredients_rev_below'])
 
+    @unittest.skipUnless(test_objects, 'missing test_objects data')
     def test_demo_match_by_strings(self):
         """Use demo lists to test matching by strings."""
         self.assertEqual(self.demo_matched_by_strings, self.test_objects['demo_matched_by_strings'])
 
+    @unittest.skipUnless(test_objects, 'missing test_objects data')
     def test_demo_match_by_strings_rev(self):
         """Use demo lists to test order independence of matching by strings."""
         self.assertEqual(self.demo_matched_by_strings_rev, self.test_objects['demo_matched_by_strings_rev'])
-        
+
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(mappings and test_objects, 'missing MappingContext with RXNORM data')
     def test_demo_match_by_brand_name(self):
         """Use demo lists to test matching by brand names."""
         self.assertEqual(self.demo_matched_by_brand_name, self.test_objects['demo_matched_by_brand_name'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(mappings and test_objects, 'missing MappingContext with RXNORM data')
     def test_demo_match_by_brand_name_rev(self):
         """Use demo lists to test order independence of matching by brand names."""
         self.assertEqual(self.demo_matched_by_brand_name_rev, self.test_objects['demo_matched_by_brand_name_rev'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(mappings and test_objects, 'missing MappingContext with RXNORM data')
     def test_demo_match_by_ingredients_list(self):
         """Use demo lists to test matching by ingredients."""
         self.assertEqual(self.demo_matched_by_ingredients, self.test_objects['demo_matched_by_ingredients'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_demo_match_by_ingredients_list_rev(self):
         """Use demo lists to test order independence of matching by ingredients."""
         self.assertEqual(self.demo_matched_by_ingredients_rev, self.test_objects['demo_matched_by_ingredients_rev'])
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(mappings and mappings.treatment, 'MappingContext lacks treatment data')
     def test_match_by_treatment_above(self):
         """These two medications should match by treatment if the 
         match_acceptance_threshold is set to 0.3; note that this
         behavior may change as the underlying 'treats' data change."""
         self.assertEqual(len(self.matched_by_treatment_above.reconciled), 1)
 
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(mappings and mappings.treatment, 'MappingContext lacks treatment data')
     def test_match_by_treatment_below(self):
         """These two medications should not match by treatment if the
         match_acceptance_threshold is set to default (0.5); note that this
         behavior may change as the underlying 'treats' data change."""
         self.assertEqual(len(self.matched_by_treatment_below.reconciled), 0)
-    
+
+    @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
+    @unittest.skipUnless(mappings and mappings.treatment, 'MappingContext lacks treatment data')
     def test_match_by_treatment_varies(self):
         """Test matching by treatment intent, varying thresholds to induce
         matches and non-matches on the same two sets of medication lists.
@@ -306,8 +378,11 @@ class TestMatchResult(unittest.TestCase):
     med3 = ParsedMedication(TestFunctions.medString3, mappings)
     rec_med = match.Match(med2a, med2b)
     basic_match_result = match.MatchResult([med1], [med3], [rec_med])
-    test_objects = test_match_objects['TestMatchResult']
+    test_objects = None
+    if test_match_objects:
+        test_objects = test_match_objects['TestMatchResult']
 
+    @unittest.skipUnless(test_objects, 'missing test_match data')
     def test_basic(self):
         "Basic test of MatchResult functionality."
         self.assertEqual(self.basic_match_result, self.test_objects['basic_match_result'])
