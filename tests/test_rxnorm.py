@@ -10,7 +10,6 @@ sys.path.append('..')
 import rxnorm
 from cStringIO import StringIO
 import random
-import pdb
 
 #type_kinds = rxnorm.type_kinds
 #reverse_type_kinds = rxnorm.reverse_type_kinds

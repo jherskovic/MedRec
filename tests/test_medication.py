@@ -12,7 +12,7 @@ import unittest
 from constants import demo_list_1, demo_list_2
 import medication
 from mapping_context import MappingContext
-from drug_problem_kb import ProblemRelation, problem_relation_factory
+from drug_problem_kb import problem_relation_factory
 
 parsedDemoMeds = (
   dict(
@@ -560,7 +560,6 @@ class TestParsedMedication(unittest.TestCase):
         """Test that a ParsedMedication initialized with a dictionary 
         containing a provenance and with a provenance yields 
         the expected results."""
-        original = 'Protonix 40 MG Tablet Delayed Release; TAKE 1 TABLET DAILY.; Rx'
         dikt = dict(
             name=self.name,
             units=self.units,

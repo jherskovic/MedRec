@@ -96,7 +96,6 @@ class ParsedMedication(Medication):
         a version of rxnorm to perform computations. Pass a provenance
         to assist in reconciling several lists of medications."""
         if isinstance(med_info, dict):
-            # FIXME: for now we fabricate a synthetic med_line
             if med_info.get('original_line'):
                 med_line = med_info.get('original_line')
             else:
