@@ -7,15 +7,11 @@ Created on Mar 20, 2012
 import unittest
 import sys
 sys.path.append('..')
-import re
 import copy
 import os
 import match
 from medication import ParsedMedication
 from medication import make_medication
-from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS, 
-                       MATCH_STRING, MATCH_TREATMENT_INTENT,
-                       MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS,)
 import constants
 import cPickle as pickle
 import bz2
@@ -387,6 +383,12 @@ class TestMatchResult(unittest.TestCase):
         "Basic test of MatchResult functionality."
         self.assertEqual(self.basic_match_result, self.test_objects['basic_match_result'])
 
+
+loader = unittest.TestLoader()
+allTestsSuite = unittest.TestSuite()
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestMatch))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestFunctions))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestMatchResult))
 
 
 if __name__ == "__main__":

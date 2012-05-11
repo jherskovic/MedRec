@@ -181,6 +181,13 @@ class TestDrugProblemKB(TestProblemRelationData):
         self.assertEqual(dpkb.problem_by_drug_cui('C0065374'), C0065374)
 
 
+loader = unittest.TestLoader()
+allTestsSuite = unittest.TestSuite()
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestProblemRelation))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestFactory))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestDrugProblemKB))
+
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

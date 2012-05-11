@@ -55,5 +55,11 @@ class TestMappingContext(unittest.TestCase):
         """Ensure that the set of entities treated by Paxil is as expected."""
         self.assertEqual(mappings.treatment.get('C0376414'), self.paxilTreats)
 
+
+loader = unittest.TestLoader()
+allTestsSuite = unittest.TestSuite()
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestMappingContext))
+
+
 if __name__ == "__main__":
     unittest.main()

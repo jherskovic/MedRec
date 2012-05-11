@@ -576,6 +576,14 @@ class TestParsedMedication(unittest.TestCase):
         self.assertEqual(pm.provenance, provenance)
 
 
+loader = unittest.TestLoader()
+allTestsSuite = unittest.TestSuite()
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestMedParsing))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestMedication))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestParsedMedication))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestParsedMedication))
+
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

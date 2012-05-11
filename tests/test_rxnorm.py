@@ -289,5 +289,12 @@ C0000010|T200|A1.3.3|Clinical Drug|AT37405600||
         self.assertRaises(AttributeError, relObj.__setattr__, 'relation', 'is_caffeinated')
 
 
+loader = unittest.TestLoader()
+allTestsSuite = unittest.TestSuite()
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestSemanticTypeLine))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestDrug))
+allTestsSuite.addTests(loader.loadTestsFromTestCase(TestRelation))
+
+
 if __name__ == "__main__":
     unittest.main()
