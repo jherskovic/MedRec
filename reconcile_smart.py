@@ -12,7 +12,7 @@ together from Josh's smart_rx_reminder demo. Be gentle.
 UTHealth SBMI, 2011
 """
 
-import web,  urllib
+import web, urllib
 import datetime
 import smart_client_python
 from smart_client_python import oauth
@@ -199,7 +199,7 @@ class RxReconcile(object):
         #    self.update_pill_dates(pill)
         list1=[]
         list2=[]
-        # THIS WORKS WITH CAROL DIAZ OR BRIAN ROBINSON
+
         def make_med_list_from_rdf(rdf_results):
             drugName=rdf_results[1].toPython()
             quantity=rdf_results[2].toPython() if rdf_results[2] is not None else ""

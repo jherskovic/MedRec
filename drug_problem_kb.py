@@ -26,12 +26,9 @@ class ProblemRelation(object):
     def __repr__(self):
         return "<ProblemRelation '%s' (patients: %d ; ratio: %.6f) @0x%x>" % (self._name, self._patient_count, self._ratio, id(self))
     def _is_eq(self, other):
-        if self._name == other._name and \
-          self._patient_count == other._patient_count and \
-          self._ratio == other._ratio:
-            return True
-        else:
-            return False
+        return (self._name == other._name and 
+          self._patient_count == other._patient_count and 
+          self._ratio == other._ratio)
     def __eq__(self, other):
         return self._is_eq(other)
     def __ne__(self, other):
