@@ -401,7 +401,7 @@ def find_missing_keys(dikt, reqd_fields):
 def make_medication(med_info, mappings=None, provenance=None):
     """Factory function to return a ParsedMedication object if 'med_info' is
     suitably parseable, a Medication object otherwise."""
-    reqd_fields = ('name', 'units', 'dose', 'formulation', 'instructions','original_line')
+    reqd_fields = ('name', 'units', 'dose', 'formulation', 'instructions')
     argz = {}
     if mappings:
         argz['context'] = mappings

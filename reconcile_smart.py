@@ -18,13 +18,15 @@ import smart_client_python
 from smart_client_python import oauth
 from smart_client_python.smart import SmartClient
 from smart_client_python.common.util import serialize_rdf
-from reconcile import reconcile_lists
+from reconcile import reconcile_parsed_lists
 import bz2
 import cPickle as pickle
 import base64
 from html_output import output_html
 import random
 from mapping_context import MappingContext
+from lxml import  etree
+from medication import make_medication
 
 web.config.debug = False
 
@@ -33,6 +35,7 @@ web.config.debug = False
 SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org', 
                       'consumer_secret': 'smartapp-secret'}
 
+UCUM_URL='http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
 """
  A SMArt app serves at least two URLs: 
@@ -61,6 +64,9 @@ except:
     treats={}
 print "Building concept index"
 mc=MappingContext(rxnorm, treats)
+
+print "Loading and parsing UCUM data from", UCUM_URL
+ucum=etree.parse(UCUM_URL)
 
 OUTPUT_TEMPLATE="""<html>
     <head>
@@ -111,6 +117,16 @@ OUTPUT_TEMPLATE="""<html>
 """
 
 de_parenthesize=lambda x: x.replace('[', '').replace(']', '').replace('{', '').replace('}', '')
+def get_unit_name(abbr, ucum_xml=ucum):
+    if abbr[0]=='{':
+        return de_parenthesize(abbr)
+    root=ucum.getroot()
+    nodes=[x for x in root.findall(".//unit[@Code]") if x.attrib.get('Code', '') == abbr]
+    if len(nodes) != 1:
+        print "Error: number of UCUM entries for %s != 1" % abbr
+        return '?'
+    unitname=nodes[0].find('name')
+    return unitname.text
 
 # Exposes pages through web.py
 class RxReconcile(object):
@@ -197,30 +213,31 @@ class RxReconcile(object):
         #self.last_pill_dates = {}
         #for pill in pills:
         #    self.update_pill_dates(pill)
-        list1=[]
-        list2=[]
-
-        def make_med_list_from_rdf(rdf_results):
+        
+        def make_med_from_rdf(rdf_results):
             drugName=rdf_results[1].toPython()
             quantity=rdf_results[2].toPython() if rdf_results[2] is not None else ""
             quantity_unit=rdf_results[3].toPython() if rdf_results[3] is not None else ""
-            quantity_unit=de_parenthesize(quantity_unit)
+            quantity_unit=get_unit_name(quantity_unit)
             frequency=rdf_results[4].toPython() if rdf_results[4] is not None else ""
             # TODO: Finish the rest of the conversion.
-            
-        for x in pills:
-            #print x
-            #this_pill=str(x['name'])+" "+str(x['inst'])
-            this_pill=str(x[1])+" "+str(x[8]) # Now we have to access these via indices
-            #if str(x['startdate'])<SPLIT_DATE:
-            #if str(x[10])<SPLIT_DATE:
-            #    # This drug was discontinued before the date in question. Skip.
-            #    continue
-            if str(x[9])<SPLIT_DATE:
-                list1.append(this_pill)
-            else:
-                list2.append(this_pill)
-        r1, r2, rec=reconcile_lists(list1, list2, mc)
+            frequency_unit={'/d': 'daily', '/wk': 'weekly', '/mo': 'monthly', None: ''}[rdf_results[5].toPython()]
+            inst=rdf_results[6].toPython()
+            startdate=rdf_results[7].toPython()
+            provenance=rdf_results[8].toPython if rdf_results[8] is not None else ""
+            med_dict={'name': drugName,
+                      'units': quantity_unit,
+                      'dose': quantity,
+                      'instructions': inst,
+                      'formulation': quantity_unit,
+                      }
+            med=make_medication(med_dict, mc, provenance)
+            return med
+        
+        list1=[make_med_from_rdf(x) for x in rdf_list_1]
+        list2=[make_med_from_rdf(x) for x in rdf_list_2]
+        
+        r1, r2, rec=reconcile_parsed_lists(list1, list2, mc)
 
         #Print a formatted list
         return output_html(list1, list2, r1, r2, rec)

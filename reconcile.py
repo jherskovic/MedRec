@@ -150,8 +150,7 @@ def reconciliation_step_4(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[]
 
 # If you pass a dictionary as the "stats" parameter to this function, you'll
 # get statistics in it after it's done
-def reconcile_lists(list1, list2, mappings, stats=None):
-    meds_list_1, meds_list_2, stats = reconciliation_setup(list1, list2, mappings, stats)
+def reconcile_parsed_lists(meds_list_1, meds_list_2, mappings, stats=None):
     print
     # By strings
     step1 = reconciliation_step_1(meds_list_1, meds_list_2, mappings, stats)
@@ -168,6 +167,11 @@ def reconcile_lists(list1, list2, mappings, stats=None):
     # By treatment intent
     left1, left2, already_reconciled, stats = reconciliation_step_4(**step3)
     return (left1, left2, already_reconciled)
+
+# Call this function if you want the algorithm to parse the lists for you
+def reconcile_lists(list1, list2, mappings, stats=None):
+    meds_list_1, meds_list_2, stats = reconciliation_setup(list1, list2, mappings, stats)
+    return reconcile_parsed_lists(meds_list_1, meds_list_2, mappings, stats)
 
 ITERATION_TEMPLATE = """
 ########################################################
