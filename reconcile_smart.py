@@ -22,7 +22,7 @@ from reconcile import reconcile_parsed_lists
 import bz2
 import cPickle as pickle
 import base64
-from html_output import output_html
+from json_output import output_json
 import random
 from mapping_context import MappingContext
 from lxml import  etree
@@ -43,7 +43,10 @@ UCUM_URL='http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
    * "index.html" page to supply the UI.
 """
 urls = ('/smartapp/bootstrap.html', 'bootstrap',
-        '/smartapp/index.html', 'RxReconcile')
+        '/smartapp/index.html', 'RxReconcile',
+        '/smartapp/json/(.+)', 'jsonserver')
+
+json_data={}
 
 # Required "bootstrap.html" page just includes SMArt client library
 class bootstrap:
@@ -55,6 +58,13 @@ class bootstrap:
                     </head>
                     <body></body>
                    </html>"""
+
+class jsonserver:
+    def GET(self, json_id):
+        global json_data
+        my_data=json_data[json_id][:]
+        del json_data[json_id]
+        return my_data
 
 print "Bootstrapping reconciliation: Reading data files"
 rxnorm=pickle.load(bz2.BZ2File('rxnorm.pickle.bz2'))
@@ -79,7 +89,7 @@ OUTPUT_TEMPLATE="""<html>
         background-color: #B892CA; color: black;
     }
     tr.list12 td {
-        background-color: #c19ee3; color: black;
+        background-col+or: #c19ee3; color: black;
     }
     tr.list21 td {
         background-color: #95A7CA; color: black;
@@ -128,10 +138,15 @@ def get_unit_name(abbr, ucum_xml=ucum):
     unitname=nodes[0].find('name')
     return unitname.text
 
+def make_random_json_id(length=32):
+    source='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+    return ''.join( random.choice(source) for i in xrange(length) )
+    
 # Exposes pages through web.py
 class RxReconcile(object):
     """An SMArt REST App start page"""
     def GET(self):
+        global json_data
         # Fetch and use
         smart_oauth_header = web.input().oauth_header
         smart_oauth_header = urllib.unquote(smart_oauth_header)
@@ -239,9 +254,13 @@ class RxReconcile(object):
         
         r1, r2, rec=reconcile_parsed_lists(list1, list2, mc)
 
-        #Print a formatted list
-        return output_html(list1, list2, r1, r2, rec)
-
+        #store a formatted list
+        json_id=make_random_json_id()
+        while json_id in json_data:
+            json_id=make_random_json_id()
+        json_data[json_id]=output_json(list1, list2, r1, r2, rec)
+        #return output_html(list1, list2, r1, r2, rec)
+        raise web.seeother('/static/MedRec.html?json_src=/smartapp/json/%s' % json_id)
 
 header = """<!DOCTYPE html>
 <html>
