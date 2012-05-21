@@ -18,6 +18,7 @@ import os.path
 import random
 import cPickle as pickle
 import bz2
+from collections import defaultdict
 
 def display_count(count, dot_threshold=1000, pipe_threshold=10000, 
                   newline_threshold=50000, output_stream=sys.stderr):
@@ -56,12 +57,50 @@ conso_file=open(conso_filename, "rU")
 concepts={}
 count=0
 
+ttys = ('PN', 'MIN', 'SCD', 'SBD', 'SY', 'SCDF', 'SBDF', 'SCDC', 'DF', 
+        'SBDC', 'BN', 'PIN', 'IN', 'BPCK', 'GPCK', 'TMSY', 'OCD',
+        ('S', 'OCD'))
+CUI = 0
+TS  = 2
+SAB = 11
+TTY = 12
+STR = 14
+
+candidateLines = defaultdict(dict)
+actualLines = {}
+cuis = set()
+
+# Select the candidate lines for creating the Drug concepts
 for line in conso_file:
-    if 'RXNORM' not in line:
-       continue
+    if 'RXNORM' not in line and 'MTH' not in line:
+        continue
+    lineAry = line.strip().split('|')
+    cui = lineAry[CUI]
+    ts  = lineAry[TS]
+    tty = lineAry[TTY]
+    sab = lineAry[SAB]
+    if sab == 'RXNORM':
+        cuis.add(cui)
+    if sab == 'RXNORM' and ts == 'P':
+        candidateLines[cui][tty] = line
+    elif sab == 'MTH' and ts == 'P' and tty == 'PN':
+        candidateLines[cui][tty] = line
+    elif sab == 'RXNORM' and ts == 'S' and tty == 'OCD':
+        candidateLines[cui][(ts,tty)] = line
+# From the candidate lines select the ones we will actually use
+for cui, ttyDict in candidateLines.items():
+    for tty in ttys:
+        if cui in cuis:
+            s = ttyDict.get(tty, None)
+            if s:
+                actualLines[cui] = s
+                break
+# Produce the drug concepts
+for line in actualLines.values():
     c=rxnorm.Drug(line)
     c.semtypes=types[c.CUI]
     concepts[c.CUI]=c
+    cuis.remove(c.CUI)
     count+=1
     display_count(count)
 
