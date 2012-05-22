@@ -13,11 +13,8 @@ UTHealth SBMI, 2011
 """
 
 import web, urllib
-import datetime
-import smart_client_python
 from smart_client_python import oauth
 from smart_client_python.smart import SmartClient
-from smart_client_python.common.util import serialize_rdf
 from reconcile import reconcile_parsed_lists
 import bz2
 import cPickle as pickle

@@ -12,7 +12,6 @@ Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserve
 """
 
 import re
-from decimal import *
 import copy
 import logging
 import operator

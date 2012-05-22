@@ -7,8 +7,6 @@ Created by Jorge Herskovic on 2011-09-19.
 Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
 """
 
-import sys
-import os
 import json
 
 def serialize_sets_as_lists(thing):
