@@ -10,28 +10,10 @@ import unittest
 import cPickle as pickle
 import bz2
 from mapping_context import MappingContext
+from mappings_for_testing import mappings
 #import logging
 
 #logging.basicConfig(filename='test_match.log', level=logging.DEBUG)
-
-#if os.path.isfile('rxnorm.pickle.bz2'):
-#    rxnorm = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
-#else:
-#    rxnorm = None
-#if os.path.isfile('treats.pickle.bz2'):
-#    treats = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
-#else:
-#    treats = None
-#if os.path.isfile('drug_problem_relations.pickle.bz2'):
-#    drug_problem_relations = pickle.load(bz2.BZ2File('drug_problem_relations.pickle.bz2', 'r'))
-#else:
-#    drug_problem_relations = None
-#if rxnorm is not None:
-#    mappings = MappingContext(rxnorm, treats, drug_problem_relations)
-#else:
-#    mappings = None
-
-from mappings_for_testing import mappings
 
 
 class TestMappingContext(unittest.TestCase):

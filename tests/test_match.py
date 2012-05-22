@@ -17,27 +17,10 @@ import cPickle as pickle
 import bz2
 from mapping_context import MappingContext
 import logging
+from mappings_for_testing import mappings
 
 logging.basicConfig(filename='test_match.log', level=logging.INFO)
 
-#if os.path.isfile('rxnorm.pickle.bz2'):
-#    rxnorm = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
-#else:
-#    rxnorm = None
-#if os.path.isfile('treats.pickle.bz2'):
-#    treats = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
-#else:
-#    treats = None
-#if os.path.isfile('drug_problem_relations.pickle.bz2'):
-#    drug_problem_relations = pickle.load(bz2.BZ2File('drug_problem_relations.pickle.bz2', 'r'))
-#else:
-#    drug_problem_relations = None
-#if rxnorm is not None:
-#    mappings = MappingContext(rxnorm, treats, drug_problem_relations)
-#else:
-#    mappings = None
-
-from mappings_for_testing import mappings
 
 if os.path.isfile('test_match.pickle.bz2'):
     test_match_objects = pickle.load(bz2.BZ2File('test_match.pickle.bz2', 'r'))
@@ -169,8 +152,8 @@ class TestFunctions(unittest.TestCase):
     pMed2bTradenames = []
     medString3 = 'Warfarin Sodium 2.5 MG Tablet;TAKE AS DIRECTED.; Rx'
     pMed3 = ParsedMedication(medString3, mappings)
-    pMed3CUIs = set(['C0981139', 'C0981138', 'C0779882', 'C1276897', 'C0376218'])
-    pMed3Tradenames = ['C0710779']
+    pMed3CUIs = set(['C0376218'])
+    pMed3Tradenames = []
     medString4 = 'Protonix 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
     pMed4 = ParsedMedication(medString4, mappings)
     medString5 = 'Pantoprazole Sodium 40 MG Tablet Delayed Release;TAKE 1 TABLET DAILY.; Rx'
@@ -245,7 +228,6 @@ class TestFunctions(unittest.TestCase):
     def test_medication_list_CUIs(self):
         "Test the operation of match.medication_list_CUIs()"
         cuis = match.medication_list_CUIs(self.list1 + self.list2 + self.list3)
-        import pdb; pdb.set_trace()
         self.assertEqual(cuis, self.medication_list_test_CUIs)
 
     @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')
@@ -253,7 +235,6 @@ class TestFunctions(unittest.TestCase):
     def test_medication_list_tradenames(self):
         "Test the operation of match.medication_list_tradenames()"
         tradenames = match.medication_list_tradenames(self.list1 + self.list2 + self.list3)
-        import pdb; pdb.set_trace()
         self.assertEqual(tradenames, self.medication_list_test_tradenames)
 
     @unittest.skipUnless(mappings, 'missing MappingContext with RXNORM data')

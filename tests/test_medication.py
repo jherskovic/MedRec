@@ -14,6 +14,7 @@ import medication
 from mapping_context import MappingContext
 from drug_problem_kb import problem_relation_factory
 from mappings_for_testing import rxnormFname, drugProbFname
+from mappings_for_testing import mappings
 
 parsedDemoMeds = (
   dict(
@@ -211,26 +212,6 @@ class TestMedication(unittest.TestCase):
         """Test that the provenance attribute is immutable."""
         self.assertRaises(AttributeError, self.instance.__setattr__,
           'provenance', self.original_strings[1])
-
-
-#if os.path.isfile('rxnorm.pickle.bz2'):
-#    rxnorm = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2', 'r'))
-#else:
-#    rxnorm = None
-#if os.path.isfile('treats.pickle.bz2'):
-#    treats = pickle.load(bz2.BZ2File('treats.pickle.bz2', 'r'))
-#else:
-#    treats = None
-#if os.path.isfile('drug_problem_relations.pickle.bz2'):
-#    drug_problem_relations = pickle.load(bz2.BZ2File('drug_problem_relations.pickle.bz2', 'r'))
-#else:
-#    drug_problem_relations = None
-#if rxnorm is not None:
-#    mappings = MappingContext(rxnorm, treats, drug_problem_relations)
-#else:
-#    mappings = None
-
-from mappings_for_testing import mappings
 
 
 class TestParsedMedication(unittest.TestCase):
