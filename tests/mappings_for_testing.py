@@ -3,9 +3,9 @@ import bz2
 import os
 from mapping_context import MappingContext
 
-rxnormFname = '../rxnorm.pickle.bz2.big.new'
-treatsFname = 'treats.pickle.bz2'
-drugProbFname = 'drug_problem_relations.pickle.bz2'
+rxnormFname = '../rxnorm.pickle.bz2'
+treatsFname = '../treats.pickle.bz2'
+drugProbFname = '../drug_problem_relations.pickle.bz2'
 
 if os.path.isfile(rxnormFname):
     rxnorm = pickle.load(bz2.BZ2File(rxnormFname, 'r'))
