@@ -1,6 +1,6 @@
 README.txt
 
-MedRec v0.01
+MedRec v0.02
 
 This is Dr. Herskovic's medication reconciliation algorithm. It takes two lists
 of medications and returns three lists: a reconciled list, the part of list 1 
@@ -40,3 +40,35 @@ the AMIA Symposium:
 Bozzo Silva PA, Bernstam EV, Markowitz E, Johnson TR, Zhang J, Herskovic JR. 
 Automated medication reconciliation and complexity of care transitions. 
 Proc AMIA Ann Symp 2011.
+
+----
+Basic documentation of the output format:
+
+The JSON output contains 5 key-value pairs: original_list_1, original_list_2, new_list_1, new_list_2, and reconciled.
+original_list_1 and 2 echo the input to the program.
+reconciled contains the merged list.
+new_list_1 and new_list_2 contain the items from original_list_1 and 2 that could not be reconciled.
+
+The reconciled list is a list of key-value pair stores. Each item in the list has at least four key-value pairs:
+med1, score, identical, and mechanism.
+
+mechanism describes the way in which medications were merged (if they were identical, or their ingredients matched, etc.)
+identical contains a refinement of mechanism, and specifies which fields matched between two drugs.
+score gives the quality of the match (between 0 and 1, with 1 being complete certainty)
+med1 contains a single medication. If mechanism is not "identical", there will be a med2 as well; if mechanism is "identical", you can assume that the second medication was identical to the first one, and is therefore not provided.
+
+med1 contains:
+    id: This is a sequential id generated arbitrarily by the software that uniquely identifies a medication from its input. Every medication the program sees in a single run has a different id; ids *will* repeat between runs.
+    medication_name: This is the medication's name.
+    dose:            The medication's dose (i.e. 100)
+    units:           The units of the medication's dose (i.e. mg)
+    formulation:     The physical format of the medication (tablet, capsule, etc)
+    instructions:    Whatever free-form instructions were provided for the medication.
+    original_string: The original input string
+    provenance:      Whatever provenance was specified in the input
+    normalized_dose: The dose in a normalized format for a day ("W X*Y*Z", W being dose of an individual unit, X being units, Y being the number of times per day (i.e. frequency), and Z is the number of units to be delivered simultaneously. So, for example, 2 500 mg Aspirin tid becomes 500 mg*3*2)
+    frequency:       The number of times per day the drug is administered.
+
+Route is currently not available.
+
+med2 is obviously the same as med1.
