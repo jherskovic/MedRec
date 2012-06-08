@@ -12,7 +12,7 @@ together from Josh's smart_rx_reminder demo. Be gentle.
 UTHealth SBMI, 2011
 """
 
-import web, urllib
+import web, urllib, re
 from smart_client_python import oauth
 from smart_client_python.smart import SmartClient
 from reconcile import reconcile_parsed_lists
@@ -125,6 +125,8 @@ OUTPUT_TEMPLATE="""<html>
 
 de_parenthesize=lambda x: x.replace('[', '').replace(']', '').replace('{', '').replace('}', '')
 def get_unit_name(abbr, ucum_xml=ucum):
+    if len(abbr) == 0: return "UNITS_MISSING"
+
     if abbr[0]=='{':
         return de_parenthesize(abbr)
     root=ucum.getroot()
@@ -179,22 +181,22 @@ class RxReconcile(object):
                WHERE {
                     """ + list_uri.n3() + """ sp:medication ?med.
                       ?med rdf:type sp:Medication .
-                     ?med sp:drugName ?medc.
+                      ?med sp:drugName ?medc.
                       ?medc dcterms:title ?name.
-                      ?med sp:instructions ?inst.
-                      ?med sp:quantity ?quantx.
+                      OPTIONAL {?med sp:instructions ?inst.}
                       OPTIONAL {
+                      ?med sp:quantity ?quantx.
                       ?quantx sp:value ?quant. 
                       ?quantx sp:unit ?quantunit. }
-                      ?med sp:frequency ?freqx.
                       OPTIONAL {
+                      ?med sp:frequency ?freqx.
                       ?freqx sp:value ?freq.
                       ?freqx sp:unit ?frequnit. }
-                      ?med sp:startDate ?startdate.
-                      OPTIONAL {
-                      ?med sp:provenance ?prov. }
+                      OPTIONAL {?med sp:startDate ?startdate.}
+		      OPTIONAL { ?med sp:provenance ?prov. }
                 }
             """
+            print one_list_q
             return med_lists.graph.query(one_list_q)
         
         if len(lists) < 2:
@@ -208,17 +210,18 @@ class RxReconcile(object):
         
         rdf_list_1=one_list(lists[0][0])
         rdf_list_2=one_list(lists[1][0])
+        print "LISTS", lists
         print "List 1:", len(rdf_list_1), "items"
         for x in rdf_list_1:
-            print "Med=", x[0].toPython()
-            print "Name=", x[1].toPython()
-            print "quant=", x[2].toPython()
-            print "quantunit=", x[3].toPython()
-            print "freq=",x[4].toPython()
-            print "frequnit=",x[5].toPython()
-            print "inst=",x[6].toPython()
-            print "startdate=",x[7].toPython()
-            print "provenance=", x[8].toPython() if x[8] is not None else ""
+            print "Med=", x[0]
+            print "Name=", x[1]
+            print "quant=", x[2]
+            print "quantunit=", x[3]
+            print "freq=",x[4]
+            print "frequnit=",x[5]
+            print "inst=",x[6]
+            print "startdate=",x[7]
+            print "provenance=", x[8]
             print
             
         # Find the last fulfillment date for each medication
@@ -226,22 +229,47 @@ class RxReconcile(object):
         #for pill in pills:
         #    self.update_pill_dates(pill)
         
+
+        FREQ_UNITS = {
+                'd': ['days', 'daily'],
+                'wk': ['weeks', 'weekly'],
+                'mo': ['months', 'monthly'],
+                'hr': ['hours', 'hourly'],
+                'min': ['minutes', 'every minute']
+        }
         def make_med_from_rdf(rdf_results):
             drugName=rdf_results[1].toPython()
-            quantity=rdf_results[2].toPython() if rdf_results[2] is not None else ""
-            quantity_unit=rdf_results[3].toPython() if rdf_results[3] is not None else ""
+            quantity=rdf_results[2].toPython() if rdf_results[2] is not None else "No quantity"
+            quantity_unit=rdf_results[3].toPython() if rdf_results[3] is not None else "No quantity units"
             quantity_unit=get_unit_name(quantity_unit)
-            frequency=rdf_results[4].toPython() if rdf_results[4] is not None else ""
+            frequency=rdf_results[4].toPython() if rdf_results[4] is not None else "No frequency"
             # TODO: Finish the rest of the conversion.
-            frequency_unit={'/d': 'daily', '/wk': 'weekly', '/mo': 'monthly', None: ''}[rdf_results[5].toPython()]
-            inst=rdf_results[6].toPython()
-            startdate=rdf_results[7].toPython()
-            provenance=rdf_results[8].toPython if rdf_results[8] is not None else ""
+            freq_unit_uri = rdf_results[5]
+            frequency_unit = "No frequency unit"
+
+            if freq_unit_uri:
+                (freqc, frequ) =  re.match("\/\(?(?:(\d*)\.)?(d|mo|min|hr|wk)?\)?", freq_unit_uri.toPython()).groups()
+                try:
+                    u = FREQ_UNITS[frequ]
+                    frequency_unit = u[1]
+                    if freqc:
+                        freqc = int(freqc)
+                        if freqc > 1:
+                            frequency_unit = "per %s %s"%(freqc, frequ)
+
+                except KeyError, ValueError:
+                    print "Could not parse", freq_unit_uri    
+                    pass                
+            print frequency_unit
+
+            inst=rdf_results[6].toPython() if rdf_results[6] else "No instructions"
+            startdate=rdf_results[7].toPython() if rdf_results[7] else "No startdate"
+            provenance=rdf_results[8].toPython() if rdf_results[8] is not None else ""
             med_dict={'name': drugName,
                       'units': quantity_unit,
                       'dose': quantity,
                       'instructions': inst,
-                      'formulation': quantity_unit,
+                      'formulation': quantity_unit
                       }
             med=make_medication(med_dict, mc, provenance)
             return med
@@ -278,7 +306,7 @@ def get_smart_client(authorization_header, resource_tokens=None):
                      'oauth_token_secret':oa_params['smart_oauth_token_secret']}
 
     server_params={'api_base':            oa_params['smart_container_api_base']}
-
+ 
     ret = SmartClient(SMART_SERVER_OAUTH['consumer_key'], 
                        server_params, 
                        SMART_SERVER_OAUTH, 
