@@ -212,10 +212,12 @@ class ParsedMedication(Medication):
         return copy.copy(self._generic_formula)
 
     def as_dictionary(self):
+        # Parsed=true is for backwards compatibility
         return dict(medication_name=str(self.name), dose=str(self.dose), units=str(self.units),
             formulation=str(self.formulation), instructions=str(self.instructions),
             original_string=self.original_string, provenance=self.provenance,
-            normalized_dose=self._norm_dose, frequency=self.frequency, id=self._seq_id)
+            normalized_dose=self._norm_dose, frequency=self.frequency, id=self._seq_id,
+            parsed=True)
 
     def _normalize_drug_name(self, drug_name):
         truncated = drug_name.split('@')[0].strip().upper()
