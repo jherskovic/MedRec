@@ -29,10 +29,10 @@ web.config.debug = False
 
 # Basic configuration:  the consumer key and secret we'll use
 # to OAuth-sign requests.
-SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org', 
+SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org',
                       'consumer_secret': 'smartapp-secret'}
 
-UCUM_URL='http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
+UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
 """
  A SMArt app serves at least two URLs: 
@@ -43,7 +43,7 @@ urls = ('/smartapp/bootstrap.html', 'bootstrap',
         '/smartapp/index.html', 'RxReconcile',
         '/smartapp/json/(.+)', 'jsonserver')
 
-json_data={}
+json_data = {}
 
 # Required "bootstrap.html" page just includes SMArt client library
 class bootstrap:
@@ -56,26 +56,27 @@ class bootstrap:
                     <body></body>
                    </html>"""
 
+
 class jsonserver:
     def GET(self, json_id):
         global json_data
-        my_data=json_data[json_id][:]
+        my_data = json_data[json_id][:]
         del json_data[json_id]
         return my_data
 
 print "Bootstrapping reconciliation: Reading data files"
-rxnorm=pickle.load(bz2.BZ2File('rxnorm.pickle.bz2'))
+rxnorm = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2'))
 try:
-    treats=pickle.load(bz2.BZ2File('treats.pickle.bz2'))
+    treats = pickle.load(bz2.BZ2File('treats.pickle.bz2'))
 except:
-    treats={}
+    treats = {}
 print "Building concept index"
-mc=MappingContext(rxnorm, treats)
+mc = MappingContext(rxnorm, treats)
 
 print "Loading and parsing UCUM data from", UCUM_URL
-ucum=etree.parse(UCUM_URL)
+ucum = etree.parse(UCUM_URL)
 
-OUTPUT_TEMPLATE="""<html>
+OUTPUT_TEMPLATE = """<html>
     <head>
         <title>MedRec %(filename)s</title>
         <script src="http://sample-apps.smartplatforms.org/framework/smart/scripts/smart-api-page.js"></script>
@@ -123,39 +124,42 @@ OUTPUT_TEMPLATE="""<html>
 </html>
 """
 
-de_parenthesize=lambda x: x.replace('[', '').replace(']', '').replace('{', '').replace('}', '')
+de_parenthesize = lambda x: x.replace('[', '').replace(']', '').replace('{', '').replace('}', '')
+
 def get_unit_name(abbr, ucum_xml=ucum):
     if len(abbr) == 0: return "UNITS_MISSING"
 
-    if abbr[0]=='{':
+    if abbr[0] == '{':
         return de_parenthesize(abbr)
-    root=ucum.getroot()
-    nodes=[x for x in root.findall(".//unit[@Code]") if x.attrib.get('Code', '') == abbr]
+    root = ucum.getroot()
+    nodes = [x for x in root.findall(".//unit[@Code]") if x.attrib.get('Code', '') == abbr]
     if len(nodes) != 1:
         print "Error: number of UCUM entries for %s != 1" % abbr
         return '?'
-    unitname=nodes[0].find('name')
+    unitname = nodes[0].find('name')
     return unitname.text
 
+
 def make_random_json_id(length=32):
-    source='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-    return ''.join( random.choice(source) for i in xrange(length) )
-    
+    source = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
+    return ''.join(random.choice(source) for i in xrange(length))
+
 # Exposes pages through web.py
 class RxReconcile(object):
     """An SMArt REST App start page"""
+
     def GET(self):
         global json_data
         # Fetch and use
         smart_oauth_header = web.input().oauth_header
         smart_oauth_header = urllib.unquote(smart_oauth_header)
         client = get_smart_client(smart_oauth_header)
-        oauth_data=base64.b64encode(bz2.compress(smart_oauth_header, 9))
+        oauth_data = base64.b64encode(bz2.compress(smart_oauth_header, 9))
         #client = get_smart_client(oauth_data)
 
         # Represent the list as an RDF graph
         med_lists = client.records_X_medication_lists_GET()
- 
+
         lists_q = """
             PREFIX dcterms:<http://purl.org/dc/terms/>
             PREFIX sp:<http://smartplatforms.org/terms#>
@@ -169,9 +173,9 @@ class RxReconcile(object):
                 optional { ?l dcterms:date ?d }
  
             }"""
- 
+
         lists = med_lists.graph.query(lists_q)
- 
+
         def one_list(list_uri):
             one_list_q = """
             PREFIX dcterms:<http://purl.org/dc/terms/>
@@ -198,18 +202,18 @@ class RxReconcile(object):
             """
             print one_list_q
             return med_lists.graph.query(one_list_q)
-        
+
         if len(lists) < 2:
             print "I am lame, and therefore expect exactly two lists. Besides, with less than two, what do you expect me to reconcile?"
             return "<html><head></head><body>Nothing to reconcile. There were less than two lists.</body></html>"
-            
-        if len(lists)>2:
+
+        if len(lists) > 2:
             print "*** WARNING *** There were %d lists, but I only used the first two." % len(lists)
-        
-        lists=[x for x in lists]
-        
-        rdf_list_1=one_list(lists[0][0])
-        rdf_list_2=one_list(lists[1][0])
+
+        lists = [x for x in lists]
+
+        rdf_list_1 = one_list(lists[0][0])
+        rdf_list_2 = one_list(lists[1][0])
         print "LISTS", lists
         print "List 1:", len(rdf_list_1), "items"
         for x in rdf_list_1:
@@ -217,73 +221,75 @@ class RxReconcile(object):
             print "Name=", x[1]
             print "quant=", x[2]
             print "quantunit=", x[3]
-            print "freq=",x[4]
-            print "frequnit=",x[5]
-            print "inst=",x[6]
-            print "startdate=",x[7]
+            print "freq=", x[4]
+            print "frequnit=", x[5]
+            print "inst=", x[6]
+            print "startdate=", x[7]
             print "provenance=", x[8]
             print
-            
+
         # Find the last fulfillment date for each medication
         #self.last_pill_dates = {}
         #for pill in pills:
         #    self.update_pill_dates(pill)
-        
+
 
         FREQ_UNITS = {
-                'd': ['days', 'daily'],
-                'wk': ['weeks', 'weekly'],
-                'mo': ['months', 'monthly'],
-                'hr': ['hours', 'hourly'],
-                'min': ['minutes', 'every minute']
+            'd': ['days', 'daily'],
+            'wk': ['weeks', 'weekly'],
+            'mo': ['months', 'monthly'],
+            'hr': ['hours', 'hourly'],
+            'min': ['minutes', 'every minute']
         }
+
         def make_med_from_rdf(rdf_results):
-            drugName=rdf_results[1].toPython()
-            quantity=rdf_results[2].toPython() if rdf_results[2] is not None else "No quantity"
-            quantity_unit=rdf_results[3].toPython() if rdf_results[3] is not None else "No quantity units"
-            quantity_unit=get_unit_name(quantity_unit)
-            frequency=rdf_results[4].toPython() if rdf_results[4] is not None else "No frequency"
+            drugName = str(rdf_results[1].toPython())
+            quantity = rdf_results[2].toPython() if rdf_results[2] is not None else "No quantity"
+            quantity_unit = str(rdf_results[3].toPython()) if rdf_results[3] is not None else "No quantity units"
+            quantity_unit = get_unit_name(quantity_unit)
+            frequency = rdf_results[4].toPython() if rdf_results[4] is not None else "No frequency"
             # TODO: Finish the rest of the conversion.
             freq_unit_uri = rdf_results[5]
             frequency_unit = "No frequency unit"
 
             if freq_unit_uri:
-                (freqc, frequ) =  re.match("\/\(?(?:(\d*)\.)?(d|mo|min|hr|wk)?\)?", freq_unit_uri.toPython()).groups()
+                (freqc, frequ) = re.match("\/\(?(?:(\d*)\.)?(d|mo|min|hr|wk)?\)?", freq_unit_uri.toPython()).groups()
                 try:
                     u = FREQ_UNITS[frequ]
                     frequency_unit = u[1]
                     if freqc:
                         freqc = int(freqc)
                         if freqc > 1:
-                            frequency_unit = "per %s %s"%(freqc, frequ)
+                            frequency_unit = "per %s %s" % (freqc, frequ)
 
                 except KeyError, ValueError:
-                    print "Could not parse", freq_unit_uri    
-                    pass                
+                    print "Could not parse", freq_unit_uri
+                    pass
             print frequency_unit
 
-            inst=rdf_results[6].toPython() if rdf_results[6] else "No instructions"
-            startdate=rdf_results[7].toPython() if rdf_results[7] else "No startdate"
-            provenance=rdf_results[8].toPython() if rdf_results[8] is not None else ""
-            med_dict={'name': drugName,
-                      'units': quantity_unit,
-                      'dose': quantity,
-                      'instructions': inst,
-                      'formulation': quantity_unit
-                      }
-            med=make_medication(med_dict, mc, provenance)
+            inst = str(rdf_results[6].toPython()) if rdf_results[6] else "No instructions"
+            startdate = rdf_results[7].toPython() if rdf_results[7] else "No startdate"
+            provenance = rdf_results[8].toPython() if rdf_results[8] is not None else ""
+            med_dict = {'name': drugName,
+                        'units': quantity_unit,
+                        'dose': quantity,
+                        'instructions': inst,
+                        'formulation': quantity_unit
+            }
+            print med_dict
+            med = make_medication(med_dict, mc, provenance)
             return med
-        
-        list1=[make_med_from_rdf(x) for x in rdf_list_1]
-        list2=[make_med_from_rdf(x) for x in rdf_list_2]
-        
-        r1, r2, rec=reconcile_parsed_lists(list1, list2, mc)
+
+        list1 = [make_med_from_rdf(x) for x in rdf_list_1]
+        list2 = [make_med_from_rdf(x) for x in rdf_list_2]
+
+        r1, r2, rec = reconcile_parsed_lists(list1, list2, mc)
 
         #store a formatted list
-        json_id=make_random_json_id()
+        json_id = make_random_json_id()
         while json_id in json_data:
-            json_id=make_random_json_id()
-        json_data[json_id]=output_json(list1, list2, r1, r2, rec)
+            json_id = make_random_json_id()
+        json_data[json_id] = output_json(list1, list2, r1, r2, rec)
         #return output_html(list1, list2, r1, r2, rec)
         raise web.seeother('/static/MedRec.html?json_src=/smartapp/json/%s' % json_id)
 
@@ -297,23 +303,23 @@ footer = """
 </body>
 </html>"""
 
-
 """Convenience function to initialize a new SmartClient"""
+
 def get_smart_client(authorization_header, resource_tokens=None):
     oa_params = oauth.parse_header(authorization_header)
-    
-    resource_tokens={'oauth_token':       oa_params['smart_oauth_token'],
-                     'oauth_token_secret':oa_params['smart_oauth_token_secret']}
 
-    server_params={'api_base':            oa_params['smart_container_api_base']}
- 
-    ret = SmartClient(SMART_SERVER_OAUTH['consumer_key'], 
-                       server_params, 
-                       SMART_SERVER_OAUTH, 
-                       resource_tokens)
+    resource_tokens = {'oauth_token': oa_params['smart_oauth_token'],
+                       'oauth_token_secret': oa_params['smart_oauth_token_secret']}
+
+    server_params = {'api_base': oa_params['smart_container_api_base']}
+
+    ret = SmartClient(SMART_SERVER_OAUTH['consumer_key'],
+        server_params,
+        SMART_SERVER_OAUTH,
+        resource_tokens)
     print ret
     print ret.baseURL
-    ret.record_id=oa_params['smart_record_id']
+    ret.record_id = oa_params['smart_record_id']
     return ret
 
 app = web.application(urls, globals())
