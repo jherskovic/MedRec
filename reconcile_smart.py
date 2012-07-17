@@ -34,6 +34,11 @@ SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org',
 
 UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
+# The following is for multilist
+#APP_UI='/static/multilist/MedRec.html?json_src=/smartapp/json/%s'
+# The following is for twinlist
+APP_UI='/static/twinlist/html/twinlist.html?json_src=/smartapp/json/%s'
+
 """
  A SMArt app serves at least two URLs: 
    * "bootstrap.html" page to load the client library
@@ -291,7 +296,7 @@ class RxReconcile(object):
             json_id = make_random_json_id()
         json_data[json_id] = output_json(list1, list2, r1, r2, rec)
         #return output_html(list1, list2, r1, r2, rec)
-        raise web.seeother('/static/MedRec.html?json_src=/smartapp/json/%s' % json_id)
+        raise web.seeother(APP_UI % json_id)
 
 header = """<!DOCTYPE html>
 <html>

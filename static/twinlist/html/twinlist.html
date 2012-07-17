@@ -1,0 +1,246 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>twinlist (ver. 5 col)</title>
+
+        <link rel="stylesheet" href="../css/style.css" />
+        <script src="../js/jquery-1.7.1.min.js"></script>
+        <script src="../js/jquery.effects.core.min.js"></script>
+        <script src="../js/model.js"></script>
+        <script src="../js/controller.js"></script>
+        <script src="../js/utils.js"></script>
+        <script src="../js/init.js"></script>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <ul>
+                    <li>
+                        <a href="#" id="logo">twinlist</a>
+                    </li>
+                    
+                    <li>
+                        <ul>
+                            <li>
+                                <a href="#" id="compare">compare lists</a>
+                            </li>
+                            <li>
+                                <a href="#" id="confirm">confirm choices</a>
+                            </li>
+                            <li>
+                                <a href="#" id="help">show help</a>
+                            </li>
+                            <li>
+                                <a href="#" id="options">show options</a>
+                            </li>
+                            <li>
+                                <a href="#" id="retry">start over?</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+        
+        <div class="alert-modal modal">
+            <p></p>
+            <button id="alert-close" class="close">Close</button>
+        </div>
+        
+        <div class="help-modal modal">
+            <button class="help-close close">Close</button>
+            <div class="welcome">
+                <h2>Welcome to the Twinlist demo!</h2>
+                <p>
+                    Twinlist can be used to reconcile lists of medications in
+                    a variety of situations. This particular demo is an example
+                    of what could happen when a <strong>hospital physician
+                    discharges a patient</strong>.
+                </p>
+                <p>
+                    The <strong>Intake</strong> list shows what the patient
+                    said he was taking at home (recorded during the
+                    intake interview); the <strong>Hospital</strong> list
+                    shows what he is currently taking at the hospital. The
+                    physician must compare these two lists and select all the
+                    drugs the patient should take once he returns home.
+                </p>
+            </div>
+            <h4>To get started:</h4>
+            <ul>
+                <li>
+                    To start the demo, click
+                    <strong>compare lists</strong> (at the top of the screen).
+                </li>
+                <li>
+                    To interact with a drug, click on it:
+                    <ul>
+                        <li>left-click once to <em>accept</em>;</li>
+                        <li>right-click once to <em>reject</em>;</li>
+                        <li>
+                            left- or right-click again to <em>undo</em>.
+                        </li>
+                    </ul>
+                    Repeatedly clicking on a drug will cycle through these
+                    three states.
+                </li>
+                <li>
+                    To accept or reject multiple drugs, click <strong>accept
+                    remaining</strong> or <strong>reject remaining</strong>,
+                    respectively (beneath the column headers).
+                </li>
+                <li>
+                    To submit your decisions, click
+                    <strong>confirm choices</strong>.
+                </li>
+            </ul>
+            <h4>Browser compatibility:</h4>
+            <ul>
+                <li>
+                    This demo requires HTML5, CSS3, and JS. Therefore,
+                    <strong>please ensure that you are viewing this page
+                    on an up-to-date browser</strong>. Chrome would be
+                    best; Firefox is also good. Currently, Internet Explorer 8
+                    and earlier will not work.
+                </li>
+            </ul>
+            <h4>About us:</h4>
+            <ul>
+                <li>
+                    This prototype was developed by
+                    <a href="mailto:tchao@cs.umd.edu;subject='twinlist%20demo'">
+                    Tiffany Chao</a>, at the University of Maryland's
+                    <a href="http://www.cs.umd.edu/hcil/">Human-Computer
+                    Interaction Lab</a>, under the supervision of
+                    <a href="mailto:plaisant@cs.umd.edu;subject='twinlist%20demo'">
+                    Catherine Plaisant</a> and Ben Shneiderman. It is based on
+                    an earlier
+                    <a href="https://wiki.cs.umd.edu/cmsc734_11/index.php?title=TwinList">
+                    class project</a> by Leo Claudino, Sameh Khamis, Ran Liu,
+                    Ben London, and Jay Pujara.
+                </li>
+                <li>
+                    Twinlist is also part of the greater
+                    <a href="http://www.cs.umd.edu/hcil/sharp/">SharpC</a>
+                    initiative.
+                </li>
+            </ul>
+            <div class="welcome">
+                <p>
+                    Now that that's cleared up, please close this window and
+                    click <strong>compare lists</strong> to start the demo!
+                </p>
+            </div>
+            
+            <button class="help-close close">Close</button>
+        </div>
+        
+        <div id="options-panel">
+            <table>
+                <tr>
+                    <td>
+                        Dataset:
+                    </td>
+                    <td>
+                        <select id="dataset">
+                            <option value="__DATASET_SAMPLE_JSON__">sample JSON</option>
+                        </select>
+                    </td>
+                    
+                    <td>
+                        <label for="sortBy">Sort by:</label>
+                    </td>
+                    <td>
+                        <select id="sortBy">
+                            <option value="">none</option>
+                            <option value="__ATTR_NAME__">medication_name</option>
+                            <option value="__ATTR_DOSAGE__">dosage</option>
+                        </select>
+                    </td>
+                    
+                    <td>
+                        Jump to step:
+                    </td>
+                    <td>
+                        <ul>
+                            <li>
+                                <a href="#" id="separate">separate</a>
+                            </li>
+                            <li>
+                                <a href="#" id="identical">identical</a>
+                            </li>
+                            <li>
+                                <a href="#" id="unique">unique</a>
+                            </li>
+                            <li>
+                                <a href="#" id="similar">similar</a>
+                            </li>
+                            <li>
+                                <a href="#" id="compact">compact</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Group by:
+                    </td>
+                    <td>
+                        <select id="groupBy">
+                            <option value="">none</option>
+                            <option value="__ATTR_DRUG_CLASS__">therapeutic use</option>
+                            <option value="__ATTR_ROUTE__">route</option>
+                        </select>
+                        <br />
+                        <input id="multigroup" type="checkbox" /> multigroup
+                    </td>
+                    
+                    <td>
+                        Filter on:
+                    </td>
+                    <td>
+                        <input id="filterOn" type="text">
+                    </td>
+                    
+                    <td>
+                        After action:
+                    </td>
+                    <td>
+                        <ul>
+                            <li>
+                                <a href="#" id="grayout" class="selected">
+                                    grayout
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" id="remove">remove</a>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <div id="content"></div>
+        
+        <div id="detail">
+            <table>
+                <tr>
+                    <td>Detail</td>
+                    <td>Nothing to display.</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div id="scrolltips"></div>
+        
+        <!-- branding -->
+        <footer>
+            <div>
+                <img src="../img/sharpc_logo.jpg">
+                <img src="../img/hcil_logo.jpg">
+                <img src="../img/umd_logo.gif">
+            </div>
+        </footer>
+</html>

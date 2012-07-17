@@ -1,0 +1,21 @@
+application: integrated
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /css
+  static_dir: css
+
+- url: /js
+  static_dir: js
+
+- url: /json
+  static_dir: json
+
+- url: /img
+  static_dir: img
+
+- url: /
+  static_dir: html

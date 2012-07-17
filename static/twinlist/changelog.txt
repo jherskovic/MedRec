@@ -1,0 +1,35 @@
+-- [ 0.??? ] -------------------------------------------------------------------
+
+  - migrate to Google App Engine
+  - load data from static JSON; remove hard-coded datasets
+
+-- [ 0.319 (stable)  ] ---------------------------------------------------------
+
+  - add "shadows" to support multigrouping
+  - make model.hidden + indexOf checks more sensitive to data type
+  - disable accept / reject actions on signoff screen
+  - fix jump-to strikeouts
+  - separate filter and shadow fade-in / fade-out durations
+  - remove defunct previousFilter
+  - rename "buffer" to more intelligible "animationDelay"
+  - fix item action to allow users to reject all members of related sets
+  - fix difference highlight trigger conditions
+  - fix completion check: overlapped items appear to be, thus count as, 1 item
+  - fix scrolltip positions: correctly account for options panel open / close
+  - rework item processing
+  - update sample JSON dataset + parsing
+  - fix identical item hiding on signoff
+  - add subtle "end of list" indicator
+  - tone down scrolltips
+  - fade in / out difference highlight
+  - fade in / out backdrop striping
+  - add rudimentary patient summary
+
+-- [ 0.290 (stable) ] ---------------------------------------------------------
+
+  - add hidden animation speeds
+  - fix keyframes to properly support multiple items in the same cell
+  - fix Ciprofloxacin typo
+  - correct "test" dataset <a href>
+
+== POINT OF NO RETURN =========================================================

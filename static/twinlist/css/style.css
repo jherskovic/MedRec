@@ -1,0 +1,450 @@
+body, header, footer, nav, div,
+ul, li,
+a, input, img {
+    font-family: "Lucida Grande", "Lucida Sans", Helvetica, Arial, sans-serif;
+    font-size: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+
+header {
+    background: #333333;
+    line-height: 250%;
+}
+
+header a {
+    margin: 0 0.5em;
+    font-size: 90%;
+}
+
+header a, #options-panel a {
+    padding: 0.5em;
+    color: #cccccc;
+    font-weight: bold;
+}
+
+header a:hover, #options-panel a:hover, #options-panel a.selected, .selected {
+    color: #f5f5f5;
+    background: #555555;
+    border-radius: 1em;
+}
+
+nav li {
+    display: inline;
+}
+
+nav ul ul {
+    float: right;
+    margin-right: 5%;
+}
+
+#logo {
+    padding: 0 0.5em;
+    color: #f5f5f5;
+    font-size: 175%;
+    font-weight: bold;
+    letter-spacing: 0.25em;
+    margin-left: 5%;
+}
+
+#logo:hover {
+    background: #333333;
+    color: #f5f5f5;
+}
+
+
+.modal {
+    padding: 2em;
+    border: 1px solid #999999;
+    border-bottom-left-radius: 0.5em;
+    border-bottom-right-radius: 0.5em;
+    
+    background: #f8f8f8;
+    background: -webkit-gradient(linear, left top, left bottom, from(#ffffff), to(#f8f8f8));
+    background: -webkit-linear-gradient(top, #ffffff, #f8f8f8);
+    background: -moz-linear-gradient(top, #ffffff, #f8f8f8);
+    background: -ms-linear-gradient(top, #ffffff, #f8f8f8);
+    background: -o-linear-gradient(top, #ffffff, #f8f8f8);
+    
+    color: #333333;
+ 
+    -webkit-transition: all 0.2s;
+    -webkit-backface-visibility: hidden;
+    -moz-transition: all 0.2s;
+    -ms-transition: all 0.2s;
+    -o-transition: all 0.2s;
+    
+    z-index: -100;
+    opacity: 0;
+}
+
+.modal a {
+    font-weight: bold;
+    color: #333333;
+}
+
+.modal a:hover {
+    color: #777777;
+}
+
+.alert-modal {
+    position: absolute;
+    width: 30%;
+    top: 25%;
+    left: 32.5%;
+    border-radius: 0.5em;
+    
+    -webkit-transform: translateY(-100%);
+    -moz-transform: translateY(-100%);
+    -ms-transform: translateY(-100%);
+    -o-transform: translateY(-100%);
+}
+
+.alert-modal a {
+    color: #333333;
+}
+
+.alert-modal strong {
+    color: #dd4b39;
+}
+
+.help-modal {
+    display: block;
+    position: absolute;
+    left: 12.5%;
+    top: 0;
+    width: 70%;
+    
+    -webkit-transform: translateY(-100%);
+    -moz-transform: translateY(-100%);
+    -ms-transform: translateY(-100%);
+    -o-transform: translateY(-100%);
+}
+
+.help-modal li {
+    margin-left: 2em;
+}
+
+.show {
+    -webkit-transform: translateY(0);
+    -moz-transform: translateY(0);
+    -ms-transform: translateY(0);
+    -o-transform: translateY(0);
+    
+    z-index: 500;
+    opacity: 1;
+}
+
+.close {
+    margin-top: 1em;
+    width: 5em;
+    float: right;
+}
+
+
+#options-panel {
+    background: #333333;
+    font-size: 80%;
+    color: #f5f5f5;
+    border-bottom-left-radius: 0.5em;
+    border-bottom-right-radius: 0.5em;
+    margin-left: 5%;
+}
+
+#options-panel td:nth-child(odd) {
+    padding: 0.5em 0 0.5em 2em;
+}
+
+#options-panel td:nth-child(even) {
+    padding: 0.5em 0 0.5em 0.5em;
+}
+
+#options-panel select, #options-panel input[type="text"] {
+    width: 100%;
+}
+
+#options-panel li {
+    display: inline;
+    padding: 0;
+    margin: 0;
+}
+
+#forward {
+    margin-right: 0.5em;
+}
+
+
+#content, #detail {
+    margin: 1em 5%;
+}
+
+#content {
+    position: absolute;
+    overflow-y: auto;
+    height: 70%;            /* fallback */
+    width: 90%;
+}
+
+
+#content li {
+    margin: 0 0.25em;
+}
+
+#content table {
+    border-bottom: 0.3em solid #f8f8f8;
+}
+
+#content table, #detail table {
+    border-collapse: collapse;
+    color: #333333;
+    width: 100%;
+}
+
+#content th  {
+    background: #54787d;
+    color: #f5f5f5;
+    padding: 0.75em 1em 0.5em 1em;
+    text-align: left;
+    width: 18%;
+}
+
+#content th:first-child, #detail td:first-child {
+    border-top-left-radius: 0.5em;
+}
+
+#content th:last-child, #detail td:last-child {
+    border-top-right-radius: 0.5em;
+}
+
+#content th span:first-child {
+    font-size: 100%;
+    color: #f5f5f5;
+    opacity: 1;
+}
+
+#content th span, .accept-all, .reject-all {
+    font-size: 65%;
+    color: #f5f5f5;
+    opacity: 0.6;
+}
+
+#content td, .items div {
+    /* until word wrapping is fixed */
+    white-space: nowrap;
+    overflow: hidden;
+    
+    width: 18%;
+    height: 2.5em;
+    padding: 0.4em 0.5em 0.6em 0.5em;
+    
+    -webkit-transition: background 1s ease-in-out;
+    -webkit-backface-visibility: hidden;
+    -moz-transition: background 1s ease-in-out;
+    -ms-transition: background 1s ease-in-out;
+    -o-transition: background 1s ease-in-out;
+}
+
+#content tr {
+    -webkit-transition: background 1s ease-in-out;
+    -webkit-backface-visibility: hidden;
+    -moz-transition: background 1s ease-in-out;
+    -ms-transition: background 1s ease-in-out;
+    -o-transition: background 1s ease-in-out;
+}
+
+
+.accept-all {
+    margin-right: 0.5em;
+}
+
+.reject-all {
+    margin-left: 0.5em;
+}
+
+.accept-all:hover, .reject-all:hover {
+    opacity: 1;
+}
+
+.inactive {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.header-label {
+    font-size: 60%;
+    font-style: italic;
+    position: absolute;
+    z-index: 100;
+}
+
+
+.items div {
+    position: absolute;
+    
+    -webkit-transition: -webkit-transform 0.2s ease-in-out,
+            opacity 0.2s;
+    -webkit-backface-visibility: hidden;
+    -moz-transition: -moz-transform 0.2s ease-in-out,
+            opacity 0.2s;
+    -ms-transition: -ms-transform 0.2s ease-in-out,
+            opacity 0.2s;
+    -o-transition: -o-transform 0.2s ease-in-out,
+            opacity 0.2s;
+}
+
+.items span {
+    padding: 0.5em;
+}
+
+.items .item-name {
+    font-size: 100%;
+    font-weight: bold;
+    padding: 0 0.4em;
+}
+
+.items > div > span {
+    font-size: 80%;
+    padding: 0 0.5em;
+}
+
+.items div:hover, .item-hover {
+    -webkit-transform: translateX(2%);
+    -moz-transform: translateX(2%);
+    -ms-transform: translateX(2%);
+    -o-transform: translateX(2%);
+}
+
+
+.undecided-hover {
+    color: #f5f5f5;
+    background: #555555;
+    border-radius: 0.5em;
+}
+
+.accepted {
+    background: #8fbe00;
+    border-radius: 0.5em;
+    color: #f5f5f5;
+}
+
+.rejected {
+    color: #bbbbbb;
+    text-decoration: line-through;
+}
+
+.difference {
+    -webkit-transition: background 0.5s;
+    -webkit-backface-visibility: hidden;
+    -moz-transition: background 0.5s;
+    -ms-transition: background 0.5s;
+    -o-transition: background 0.5s;
+}
+
+.highlight {
+    color: #333333;
+    background: #f2e4aC;
+    border: 1px solid #f0e0a3;
+    border-radius: 0.5em;
+}
+
+.shadow {
+    background: transparent;
+    border: dashed #bbbbbb 0.2em;
+    border-radius: 0.5em;
+    color: #bbbbbb;
+    height: 2.2em;
+}
+
+.shadow.undecided-hover {
+    background: #afafaf;
+    color: #f5f5f5;
+    border-color: #f5f5f5;
+}
+
+.shadow.accepted {
+    color: white;
+    background: #dfdfdf;
+    border-color: white;
+}
+
+.shadow.rejected {
+    color: #dfdfdf;
+    border-color: #dfdfdf;
+}
+
+
+#signoff {
+    width: 8em;
+}
+
+#detail {
+    width: 90%;
+}
+
+#detail td {
+    padding: 0.75em;
+}
+
+#detail td:first-child {
+    font-weight: bold;
+    background: #54787D;
+    color: #f5f5f5;
+    text-align: left;
+    width: 5%;
+}
+
+#detail td:last-child {
+    font-size: 95%;
+    background: #f5f5f5;
+}
+
+
+.scrolltip {
+    color: #444444;
+    font-family: "Monaco", "Andale Mono", "Lucida Sans Typewriter", monospace;
+    
+    text-align: center;
+    
+    position: absolute;
+
+    border-radius: 0.5em;
+    width: 12%;
+    
+    opacity: 0;
+    
+    -webkit-transform: translateY(50%);
+    
+    -webkit-transition: all 0.2s;
+    -webkit-backface-visibility: hidden;
+    -moz-transition: all 0.2s;
+    -ms-transition: all 0.2s;
+    -o-transition: all 0.2s;
+}
+
+.scrolltip-pop {
+    z-index: 500;
+    opacity: 1;
+    
+    -webkit-transform: translate(0, 0);
+    -moz-transform: translate(0, 0);
+    -ms-transform: translate(0, 0);
+    -o-transform: translate(0, 0);
+}
+
+
+footer {
+    margin: 0 5%;
+    float: right;
+}

@@ -1,0 +1,243 @@
+{
+    "original_list_2": [
+        "Acetaminophen 325 mg tablet; take 1 tablet po every 6 hours", 
+        "Darbepoetin 60 mg vial; inject 1 vial subcutaneously every Friday", 
+        "Folic acid 1 mg tablet; take daily", 
+        "Omeprazole 40 mg capsule; take 1 capsule po daily", 
+        "Ciprofloxacin 500 mg tablet; take 1 tablet po q24h", 
+        "Ramipril 5 mg tablet; take 1 tablet po every day", 
+        "Calcitrol 0.25 mg tablet; take 1 tablet daily", 
+        "Ferrous Gluconate 300 mg tablet; take 1 po q8h"
+    ], 
+    "reconciled": [
+        {
+            "identical": [
+                "NORMALIZED_DOSE", 
+                "UNITS", 
+                "DRUG_NAME", 
+                "FORMULATION", 
+                "SIG", 
+                "DOSE"
+            ], 
+            "med2": {
+                "normalized_dose": null, 
+                "provenance": "List 1", 
+                "formulation": "", 
+                "units": "MG", 
+                "parsed": true, 
+                "instructions": "VIAL; INJECT 1 VIAL SUBCUTANEOUSLY EVERY FRIDAY", 
+                "original_string": "Darbepoetin 60 mg vial; inject 1 vial subcutaneously every Friday", 
+                "id": 0, 
+                "medicationName": "DARBEPOETIN", 
+                "dose": "60"
+            }, 
+            "med1": {
+                "normalized_dose": null, 
+                "provenance": "List 1", 
+                "formulation": "", 
+                "units": "MG", 
+                "parsed": true, 
+                "instructions": "VIAL; INJECT 1 VIAL SUBCUTANEOUSLY EVERY FRIDAY", 
+                "original_string": "Darbepoetin 60 mg vial; inject 1 vial subcutaneously every Friday", 
+                "id": 1, 
+                "medicationName": "DARBEPOETIN", 
+                "dose": "60"
+            }, 
+            "score": 1.0, 
+            "mechanism": "Identical strings"
+        }, {
+            "identical": [
+                "NORMALIZED_DOSE", 
+                "UNITS", 
+                "DOSE"
+            ], 
+            "med2": {
+	            "normalized_dose": "1 MG*1*1", 
+	            "provenance": "List 2", 
+	            "formulation": "", 
+	            "units": "MG", 
+	            "parsed": true, 
+	            "instructions": "TABLET; TAKE DAILY", 
+	            "original_string": "Folic acid 1 mg tablet; take daily", 
+	            "id": 2, 
+	            "medicationName": "FOLIC ACID", 
+	            "dose": "1"
+            }, 
+            "med1": {
+	            "normalized_dose": "1 MG*1*1", 
+	            "provenance": "List 1", 
+	            "formulation": "", 
+	            "units": "MG", 
+	            "parsed": true, 
+	            "instructions": "TABLET; TAKE ONE DAILY", 
+	            "original_string": "Folvite 1 mg tablet; take one daily", 
+	            "id": 3, 
+	            "medicationName": "FOLVITE", 
+	            "dose": "1"
+            }, 
+            "score": 1.0, 
+            "mechanism": "Brand name"
+        }, 
+        {
+            "identical": [
+                "NORMALIZED_DOSE", 
+                "UNITS", 
+                "DRUG_NAME", 
+                "FORMULATION", 
+                "SIG", 
+                "DOSE"
+            ], 
+            "med2": {
+                "normalized_dose": null, 
+                "provenance": "List 2", 
+                "formulation": "", 
+                "units": "MG", 
+                "parsed": true, 
+                "instructions": "TABLET; TAKE 1 TABLET DAILY", 
+                "original_string": "Calcitrol 0.25 mg tablet; take 1 tablet daily", 
+                "id": 4, 
+                "medicationName": "CALCITROL", 
+                "dose": "0.25"
+            }, 
+            "med1": {
+                "normalized_dose": null, 
+                "provenance": "List 1", 
+                "formulation": "", 
+                "units": "MG", 
+                "parsed": true, 
+                "instructions": "TABLET; TAKE 1 TABLET DAILY", 
+                "original_string": "Calcitrol 0.25 mg tablet; take 1 tablet daily", 
+                "id": 5, 
+                "medicationName": "CALCITROL", 
+                "dose": "0.25"
+            }, 
+            "score": 1.0, 
+            "mechanism": "Identical strings"
+        }, 
+        {
+            "identical": [
+                "NORMALIZED_DOSE", 
+                "UNITS", 
+                "DRUG_NAME", 
+                "FORMULATION", 
+                "SIG", 
+                "DOSE"
+            ], 
+            "med2": {
+                "normalized_dose": null, 
+                "provenance": "List 1", 
+                "formulation": "", 
+                "units": "MG", 
+                "parsed": true, 
+                "instructions": "TABLET; TAKE 1 TABLET PO EVERY DAY", 
+                "original_string": "Ramipril 5 mg tablet; take 1 tablet po every day", 
+                "id": 6, 
+                "medicationName": "RAMIPRIL", 
+                "dose": "5"
+            }, 
+            "med1": {
+                "normalized_dose": null, 
+                "provenance": "List 1", 
+                "formulation": "", 
+                "units": "MG", 
+                "parsed": true, 
+                "instructions": "TABLET; TAKE 1 TABLET PO EVERY DAY", 
+                "original_string": "Ramipril 5 mg tablet; take 1 tablet po every day", 
+                "id": 7, 
+                "medicationName": "RAMIPRIL", 
+                "dose": "5"
+            }, 
+            "score": 1.0, 
+            "mechanism": "Identical strings"
+        }, 
+        {
+            "identical": [], 
+            "med2": {
+                "normalized_dose": "325 MG*1*1", 
+                "provenance": "List 2", 
+                "formulation": "", 
+                "units": "MG", 
+                "parsed": true, 
+                "instructions": "TABLET; TAKE 1 TABLET PO EVERY 6 HOURS", 
+                "original_string": "Acetaminophen 325 mg tablet; take 1 tablet po every 6 hours", 
+                "id": 8, 
+                "medicationName": "ACETAMINOPHEN", 
+                "dose": "325"
+            }, 
+            "med1": {
+                "normalized_dose": "32 MG*1*1", 
+                "provenance": "List 1", 
+                "formulation": "", 
+                "units": "MG", 
+                "parsed": true, 
+                "instructions": "TABLET; TAKE 1 TABLET PO EVERY 6 HOURS", 
+                "original_string": "Acetaminophen 32 mg tablet; take 1 tablet po every 6 hours", 
+                "id": 9, 
+                "medicationName": "ACETAMINOPHEN", 
+                "dose": "32"
+            }, 
+            "score": 0.5, 
+            "mechanism": "Similar treatment intent"
+        }
+    ], 
+    "original_list_1": [
+        "Acetaminophen 32 mg tablet; take 1 tablet po every 6 hours", 
+        "Darbepoetin 60 mg vial; inject 1 vial subcutaneously every Friday", 
+        "Calcitrol 0.25 mg tablet; take 1 tablet daily", 
+        "Ramipril 5 mg tablet; take 1 tablet po every day", 
+        "Meloxicam 7.5 mg tablet; take 1 tablet PO", 
+        "Folvite 1 mg tablet; take one daily"
+    ], 
+    "new_list_2": [
+        {
+            "normalized_dose": "40 MG*1*1", 
+            "provenance": "List 2", 
+            "formulation": "", 
+            "units": "MG", 
+            "parsed": true, 
+            "instructions": "CAPSULE; TAKE 1 CAPSULE PO DAILY", 
+            "original_string": "Omeprazole 40 mg capsule; take 1 capsule po daily", 
+            "id": 10, 
+            "medicationName": "OMEPRAZOLE", 
+            "dose": "40"
+        }, 
+        {
+            "normalized_dose": "500 MG*1*1", 
+            "provenance": "List 2", 
+            "formulation": "", 
+            "units": "MG", 
+            "parsed": true, 
+            "instructions": "TABLET; TAKE 1 TABLET PO Q24H", 
+            "original_string": "Ciprofloxacin 500 mg tablet; take 1 tablet po q24h", 
+            "id": 11, 
+            "medicationName": "CIPROFLOXACIN", 
+            "dose": "500"
+        }, 
+        {
+            "normalized_dose": "300 MG*1*1", 
+            "provenance": "List 2", 
+            "formulation": "", 
+            "units": "MG", 
+            "parsed": true, 
+            "instructions": "TABLET; TAKE 1 PO Q8H", 
+            "original_string": "Ferrous Gluconate 300 mg tablet; take 1 po q8h", 
+            "id": 12, 
+            "medicationName": "FERROUS GLUCONATE", 
+            "dose": "300"
+        }
+    ], 
+    "new_list_1": [
+        {
+            "normalized_dose": "7.5 MG*1*1", 
+            "provenance": "List 1", 
+            "formulation": "", 
+            "units": "MG", 
+            "parsed": true, 
+            "instructions": "TABLET; TAKE 1 TABLET PO", 
+            "original_string": "Meloxicam 7.5 mg tablet; take 1 tablet PO", 
+            "id": 13, 
+            "medicationName": "MELOXICAM", 
+            "dose": "7.5"
+        }
+    ]
+}
