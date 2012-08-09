@@ -37,10 +37,10 @@ SERVER_ROOT='/twinlist'
 UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
 # The following is for multilist
-#APP_UI='/static/multilist/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json/%s'
+#APP_UI='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json'
 
 # The following is for twinlist
-APP_UI='/static/twinlist/html/twinlist.html?json_src='+SERVER_ROOT+'/smartapp/json/%s'
+APP_UI='/static/twinlist/html/twinlist.html?json_src='+SERVER_ROOT+'/smartapp/json'
 
 """
  A SMArt app serves at least two URLs: 
@@ -48,7 +48,7 @@ APP_UI='/static/twinlist/html/twinlist.html?json_src='+SERVER_ROOT+'/smartapp/js
    * "index.html" page to supply the UI.
 """
 urls = ( '/smartapp/index.html', 'RxReconcile',
-        '/smartapp/json/(.+)', 'jsonserver')
+        '/smartapp/json', 'jsonserver')
 
 json_data = {}
 
