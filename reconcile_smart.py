@@ -11,6 +11,8 @@ together from Josh's smart_rx_reminder demo. Be gentle.
 
 UTHealth SBMI, 2011
 """
+import os, sys
+sys.path.append(os.path.dirname(__file__))
 
 import web, urllib, re
 from smart_client_python import oauth
@@ -24,43 +26,32 @@ import random
 from mapping_context import MappingContext
 from lxml import  etree
 from medication import make_medication
-
 web.config.debug = False
 
 # Basic configuration:  the consumer key and secret we'll use
 # to OAuth-sign requests.
-SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org',
+SMART_SERVER_OAUTH = {'consumer_key': 'twinlist@apps.smartplatforms.org',
                       'consumer_secret': 'smartapp-secret'}
+
+SERVER_ROOT='' # e.g. '/http/path/to/app'
 
 UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
 # The following is for multilist
-#APP_UI='/static/uthealth/MedRec.html?json_src=/smartapp/json'
+#APP_UI='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json'
+
 # The following is for twinlist
-APP_UI = '/static/twinlist/html/twinlist.html?json_src=/smartapp/json'
+APP_UI='/static/twinlist/html/twinlist.html?json_src='+SERVER_ROOT+'/smartapp/json'
 
 """
  A SMArt app serves at least two URLs: 
    * "bootstrap.html" page to load the client library
    * "index.html" page to supply the UI.
 """
-urls = ('/smartapp/bootstrap.html', 'bootstrap',
-        '/smartapp/index.html', 'RxReconcile',
+urls = ( '/smartapp/index.html', 'RxReconcile',
         '/smartapp/json', 'jsonserver')
 
 json_data = {}
-
-# Required "bootstrap.html" page just includes SMArt client library
-class bootstrap:
-    def GET(self):
-        return """<!DOCTYPE html>
-                   <html>
-                    <head>
-                     <script src="http://sample-apps.smartplatforms.org/framework/smart/scripts/smart-api-client.js"></script>
-                    </head>
-                    <body></body>
-                   </html>"""
-
 
 class jsonserver:
     def GET(self):
@@ -74,9 +65,12 @@ class jsonserver:
         return my_data
 
 print "Bootstrapping reconciliation: Reading data files"
-rxnorm = pickle.load(open('rxnorm2012'))
+rxnorm = os.path.join(os.path.dirname(__file__), 'rxnorm2012')
+rxnorm = pickle.load(open(rxnorm))
+
 try:
-    treats = pickle.load(bz2.BZ2File('treats.pickle.bz2'))
+    treats = os.path.join(os.path.dirname(__file__), 'treats.pickle.bz2')
+    treats = pickle.load(bz2.BZ2File(treats))
 except:
     treats = {}
 print "Building concept index"
@@ -327,8 +321,10 @@ def get_smart_client(authorization_header, resource_tokens=None):
     ret.record_id = oa_params['smart_record_id']
     return ret
 
-app = web.application(urls, globals())
-session = web.session.Session(app, web.session.DiskStore('sessions'))
+application = web.application(urls, globals())
+session = web.session.Session(application, web.session.DiskStore('sessions'))
 
 if __name__ == "__main__":
-    app.run()
+    application.run()
+else:
+    application = application.wsgifunc() 
