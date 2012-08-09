@@ -32,7 +32,8 @@ web.config.debug = False
 # to OAuth-sign requests.
 SMART_SERVER_OAUTH = {'consumer_key': 'twinlist@apps.smartplatforms.org',
                       'consumer_secret': 'smartapp-secret'}
-SERVER_ROOT='/twinlist'
+
+SERVER_ROOT='' # e.g. '/http/path/to/app'
 
 UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
