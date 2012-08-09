@@ -53,15 +53,19 @@ urls = ( '/smartapp/index.html', 'RxReconcile',
 json_data = {}
 
 class jsonserver:
-    def GET(self, json_id):
-        global json_data
-        my_data = json_data[json_id][:]
-        del json_data[json_id]
+    def GET(self):
+        try:
+            my_data = session.json_data
+        except:
+            raise Exception("Error: No data in the session.")
+
+        session.json_data = None
+
         return my_data
 
-print "Bootstrapping reconciliation: Reading data files", sys.path
-rxnorm = os.path.join(os.path.dirname(__file__), 'rxnorm.pickle.bz2')
-rxnorm = pickle.load(bz2.BZ2File(rxnorm))
+print "Bootstrapping reconciliation: Reading data files"
+rxnorm = os.path.join(os.path.dirname(__file__), 'rxnorm2012')
+rxnorm = pickle.load(open(rxnorm))
 
 try:
     treats = os.path.join(os.path.dirname(__file__), 'treats.pickle.bz2')
@@ -147,7 +151,6 @@ class RxReconcile(object):
     """An SMArt REST App start page"""
 
     def GET(self):
-        global json_data
         # Fetch and use
         smart_oauth_header = web.input().oauth_header
         smart_oauth_header = urllib.unquote(smart_oauth_header)
@@ -284,13 +287,9 @@ class RxReconcile(object):
         r1, r2, rec = reconcile_parsed_lists(list1, list2, mc)
 
         #store a formatted list
-        json_id = make_random_json_id()
-        while json_id in json_data:
-            json_id = make_random_json_id()
-        to_store = output_json(list1, list2, r1, r2, rec)
-        json_data[json_id] = to_store
+        session.json_data = output_json(list1, list2, r1, r2, rec)
         #return output_html(list1, list2, r1, r2, rec)
-        raise web.seeother(APP_UI % json_id)
+        raise web.seeother(APP_UI)
 
 header = """<!DOCTYPE html>
 <html>
