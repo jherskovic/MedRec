@@ -35,9 +35,9 @@ SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org',
 UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
 # The following is for multilist
-#APP_UI='/static/multilist/MedRec.html?json_src=/smartapp/json/%s'
+#APP_UI='/static/uthealth/MedRec.html?json_src=/smartapp/json'
 # The following is for twinlist
-APP_UI='/static/twinlist/html/twinlist.html?json_src=/smartapp/json/%s'
+APP_UI = '/static/twinlist/html/twinlist.html?json_src=/smartapp/json'
 
 """
  A SMArt app serves at least two URLs: 
@@ -46,7 +46,7 @@ APP_UI='/static/twinlist/html/twinlist.html?json_src=/smartapp/json/%s'
 """
 urls = ('/smartapp/bootstrap.html', 'bootstrap',
         '/smartapp/index.html', 'RxReconcile',
-        '/smartapp/json/(.+)', 'jsonserver')
+        '/smartapp/json', 'jsonserver')
 
 json_data = {}
 
@@ -63,14 +63,18 @@ class bootstrap:
 
 
 class jsonserver:
-    def GET(self, json_id):
-        global json_data
-        my_data = json_data[json_id][:]
-        del json_data[json_id]
+    def GET(self):
+        try:
+            my_data = session.json_data
+        except:
+            raise Exception("Error: No data in the session.")
+
+        session.json_data = None
+
         return my_data
 
 print "Bootstrapping reconciliation: Reading data files"
-rxnorm = pickle.load(bz2.BZ2File('rxnorm.pickle.bz2'))
+rxnorm = pickle.load(open('rxnorm2012'))
 try:
     treats = pickle.load(bz2.BZ2File('treats.pickle.bz2'))
 except:
@@ -154,7 +158,6 @@ class RxReconcile(object):
     """An SMArt REST App start page"""
 
     def GET(self):
-        global json_data
         # Fetch and use
         smart_oauth_header = web.input().oauth_header
         smart_oauth_header = urllib.unquote(smart_oauth_header)
@@ -291,12 +294,9 @@ class RxReconcile(object):
         r1, r2, rec = reconcile_parsed_lists(list1, list2, mc)
 
         #store a formatted list
-        json_id = make_random_json_id()
-        while json_id in json_data:
-            json_id = make_random_json_id()
-        json_data[json_id] = output_json(list1, list2, r1, r2, rec)
+        session.json_data = output_json(list1, list2, r1, r2, rec)
         #return output_html(list1, list2, r1, r2, rec)
-        raise web.seeother(APP_UI % json_id)
+        raise web.seeother(APP_UI)
 
 header = """<!DOCTYPE html>
 <html>

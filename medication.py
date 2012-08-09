@@ -280,9 +280,8 @@ class ParsedMedication(Medication):
             my_cuis = self.CUIs
             if self.CUIs is not None and len(self.CUIs) > 0:
                 self._tradenames = reduce(operator.add, [[x._concept2.CUI
-                                                          for x in mappings.rxnorm.relations
-                                                          if x.relation == 'tradename_of'
-                and x._concept1.CUI == y]
+                                                          for x in mappings.rxnorm.tradename_relations
+                                                          if x._concept1.CUI == y]
                 for y in my_cuis])
         return copy.copy(self._tradenames)
 
