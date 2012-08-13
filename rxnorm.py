@@ -138,13 +138,17 @@ class RXNORM(object):
         # by the CUI of the drug of which they are a formulation
         self.formulas = shelve.open(self._ingredients_file)
         self._tradename_relations = None
+        self._generate_code_concepts()
 
     def _generate_code_concepts(self):
-        self.code_cui=shelve.open(self._concepts_file + ".by_code")
-        for c in self.concepts:
-            self.code_cui[self.concepts[c].RxCUI]=c
-        self.code_cui.close()
-        self.code_cui=shelve.open(self._concepts_file + ".by_code", flag='r')
+        try:
+            self.code_cui=shelve.open(self._concepts_file + ".by_code", flag='r')
+        except:
+            self.code_cui=shelve.open(self._concepts_file + ".by_code")
+            for c in self.concepts:
+                self.code_cui[self.concepts[c].RxCUI]=c
+            self.code_cui.close()
+            self.code_cui=shelve.open(self._concepts_file + ".by_code", flag='r')
         return
 
     def __getstate__(self):
@@ -166,10 +170,7 @@ class RXNORM(object):
         type_kinds = state['t']
         reverse_type_kinds = state['rt']
         self._tradename_relations = None
-        try:
-            self.code_cui=shelve.open(self._concepts_file + ".by_code", flag='r')
-        except:
-            self._generate_code_concepts()
+        self._generate_code_concepts()
 
     @property
     def relations(self):

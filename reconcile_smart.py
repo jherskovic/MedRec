@@ -183,12 +183,13 @@ class RxReconcile(object):
             PREFIX dcterms:<http://purl.org/dc/terms/>
             PREFIX sp:<http://smartplatforms.org/terms#>
             PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-               SELECT  ?med  ?name ?quant ?quantunit ?freq ?frequnit ?inst ?startdate ?prov
+               SELECT  ?med  ?name ?rxcui ?quant ?quantunit ?freq ?frequnit ?inst ?startdate ?prov
                WHERE {
                     """ + list_uri.n3() + """ sp:medication ?med.
                       ?med rdf:type sp:Medication .
                       ?med sp:drugName ?medc.
                       ?medc dcterms:title ?name.
+                      ?medc dcterms:identifier ?rxcui.
                       OPTIONAL {?med sp:instructions ?inst.}
                       OPTIONAL {
                       ?med sp:quantity ?quantx.
@@ -221,13 +222,14 @@ class RxReconcile(object):
         for x in rdf_list_1:
             print "Med=", x[0]
             print "Name=", x[1]
-            print "quant=", x[2]
-            print "quantunit=", x[3]
-            print "freq=", x[4]
-            print "frequnit=", x[5]
-            print "inst=", x[6]
-            print "startdate=", x[7]
-            print "provenance=", x[8]
+            print "RxCUI=", x[2]
+            print "quant=", x[3]
+            print "quantunit=", x[4]
+            print "freq=", x[5]
+            print "frequnit=", x[6]
+            print "inst=", x[7]
+            print "startdate=", x[8]
+            print "provenance=", x[9]
             print
 
         # Find the last fulfillment date for each medication
@@ -246,12 +248,13 @@ class RxReconcile(object):
 
         def make_med_from_rdf(rdf_results):
             drugName = str(rdf_results[1].toPython())
-            quantity = rdf_results[2].toPython() if rdf_results[2] is not None else "No quantity"
-            quantity_unit = str(rdf_results[3].toPython()) if rdf_results[3] is not None else "No quantity units"
+            rxCUI = rdf_results[2].toPython() if rdf_results[2] is not None else None
+            quantity = rdf_results[3].toPython() if rdf_results[3] is not None else "No quantity"
+            quantity_unit = str(rdf_results[4].toPython()) if rdf_results[4] is not None else "No quantity units"
             quantity_unit = get_unit_name(quantity_unit)
-            frequency = rdf_results[4].toPython() if rdf_results[4] is not None else "No frequency"
+            frequency = rdf_results[5].toPython() if rdf_results[5] is not None else "No frequency"
             # TODO: Finish the rest of the conversion.
-            freq_unit_uri = rdf_results[5]
+            freq_unit_uri = rdf_results[6]
             frequency_unit = "No frequency unit"
 
             if freq_unit_uri:
@@ -269,16 +272,19 @@ class RxReconcile(object):
                     pass
             print frequency_unit
 
-            inst = str(rdf_results[6].toPython()) if rdf_results[6] else "No instructions"
-            startdate = rdf_results[7].toPython() if rdf_results[7] else "No startdate"
-            provenance = rdf_results[8].toPython() if rdf_results[8] is not None else ""
+            inst = str(rdf_results[7].toPython()) if rdf_results[7] else "No instructions"
+            startdate = rdf_results[8].toPython() if rdf_results[8] else "No startdate"
+            provenance = rdf_results[9].toPython() if rdf_results[9] is not None else ""
             med_dict = {'name': drugName,
+                        'rxCUI': rxCUI,
                         'units': quantity_unit,
                         'dose': quantity,
                         'instructions': inst,
                         'formulation': quantity_unit
             }
             print med_dict
+            if med_dict['rxCUI'] in mc._rxnorm.code_cui:
+                med_dict['cuis'] = set(mc._rxnorm.code_cui[med_dict['rxCUI']])
             med = make_medication(med_dict, mc, provenance)
             return med
 
