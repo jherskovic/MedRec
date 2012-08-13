@@ -144,7 +144,7 @@ class RXNORM(object):
         for c in self.concepts:
             self.code_concepts[c.RxCUI]=c
         self.code_concepts.close()
-        self.code_concepts=shelve.open(self._concepts_file + ".by_code")
+        self.code_concepts=shelve.open(self._concepts_file + ".by_code", flag='r')
         return
 
     def __getstate__(self):
@@ -167,7 +167,7 @@ class RXNORM(object):
         reverse_type_kinds = state['rt']
         self._tradename_relations = None
         try:
-            self.code_concepts=shelve.open(self._concepts_file + ".by_code")
+            self.code_concepts=shelve.open(self._concepts_file + ".by_code", flag='r')
         except:
             self._generate_code_concepts()
 
