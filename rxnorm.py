@@ -157,6 +157,9 @@ class RXNORM(object):
     def __setstate__(self, state):
         global type_kinds
         global reverse_type_kinds
+        self._concepts_file=state['c']
+        self._relations_file=state['r']
+        self._ingredients_file=state['f']
         self.concepts = shelve.open(state['c'])
         self._relations = shelve.open(state['r'])
         self.formulas = shelve.open(state['f'])
