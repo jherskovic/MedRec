@@ -4,7 +4,7 @@ import shelve
 class Drug(object):
     """Class to represent a drug from an MRCONSO line. Assumes that
     appropriate selection of MRCONSO lines is done prior to instantiation."""
-    __slots__ = ["_cui", "_name", "_st", "_is_brandname"]
+    __slots__ = ["_cui", "_name", "_st", "_is_brandname", '_rxcui']
     # Extract from MRCONSO by CUI - grep RXNORM MRCONSO.RRF | head
     def __init__(self, MRCONSO_LINE):
         items = MRCONSO_LINE.split('|')
@@ -12,11 +12,15 @@ class Drug(object):
         self._name = items[14]
         self._st = None
         self._is_brandname = items[12] == "BN"
-
+        self._rxcui = items[14]
     @property
     def CUI(self):
         """Property: the CUI of the drug represented by an instance of this class."""
         return self._cui
+
+    @property
+    def RxCUI(self):
+        return self._rxcui
 
     @property
     def semtypes(self):
