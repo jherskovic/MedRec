@@ -12,7 +12,7 @@ class Drug(object):
         self._name = items[14]
         self._st = None
         self._is_brandname = items[12] == "BN"
-        self._rxcui = items[14]
+        self._rxcui = items[13]
     @property
     def CUI(self):
         """Property: the CUI of the drug represented by an instance of this class."""
