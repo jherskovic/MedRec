@@ -102,6 +102,7 @@ abbreviations={'HCL': 'HYDROCHLORIDE'}
 # The first three match types imply that *everything* but the drug name matches
 # The last match type is more of a wildcard 
 MATCH_STRING="Identical strings"
+MATCH_COMPOUND="Identical compound (RxNorm)"
 MATCH_BRAND_NAME="Brand name and generic"
 MATCH_INGREDIENTS="Ingredient lists match"
 MATCH_TREATMENT_INTENT="Similar treatment intent"

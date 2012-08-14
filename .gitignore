@@ -1,0 +1,12 @@
+.idea/.name
+.idea/MedRecAlgorithm.iml
+.idea/encodings.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/vcs.xml
+.idea/workspace.xml
+.project
+.pydevproject
+*.py?

@@ -8,6 +8,7 @@ import copy
 import logging
 from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS, 
                        MATCH_STRING, MATCH_TREATMENT_INTENT,
+                       MATCH_COMPOUND,
                        MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS)
 
 class Match(object):
@@ -176,6 +177,39 @@ def medication_list_CUIs(medication_list):
     """Given a medication list, returns a list of the matching CUIs for each
     medication."""
     return [x.CUIs for x in medication_list]
+
+def match_by_cuis(list1, list2):
+    """Match medication list 1 (list1) to medication list 2 by comparing the
+    CUIs of each. This is an O(n^2) comparison, but given the average 
+    size of a medication list it's pretty fast.
+    
+    The function takes two lists and builds a third one from the common
+    elements from both lists. If an element matches to exactly the same 
+    CUIs as another element, they are pharmacologically identical 
+    courtesy of RXNorm. 
+    
+    The function returns a MatchResult containing three lists: 
+    * the first list, minus the common elements
+    * the second list, minus the common elements
+    * the list of common elements
+    """  
+    concepts_1 = medication_list_CUIs(list1)
+    concepts_2 = medication_list_CUIs(list2)
+    # We keep a list of objects separate from a list of strings, so
+    # we don't need to recompute the normalized strings over and over.
+    my_list_1=[]
+    my_list_2_of_objects = list2[:]
+    common = []
+    for i in xrange(len(concepts_1)):
+        if concepts_1[i] in concepts_2:
+            where_in_2 = concepts_2.index(concepts_1[i])
+            common.append(Match(list1[i], my_list_2_of_objects[where_in_2], 1.0, MATCH_COMPOUND))
+            del my_list_2_of_objects[where_in_2]
+            del concepts_2[i]
+        else:
+            my_list_1.append(list1[i])
+    return MatchResult(my_list_1, my_list_2_of_objects, common)
+
 
 def medication_list_tradenames(medication_list):
     """Given a medication list, returns a list of the tradenames for each

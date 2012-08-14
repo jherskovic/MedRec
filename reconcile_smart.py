@@ -30,7 +30,7 @@ web.config.debug = False
 
 # Basic configuration:  the consumer key and secret we'll use
 # to OAuth-sign requests.
-SMART_SERVER_OAUTH = {'consumer_key': 'twinlist@apps.smartplatforms.org',
+SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org',
                       'consumer_secret': 'smartapp-secret'}
 
 SERVER_ROOT='' # e.g. '/http/path/to/app'
@@ -38,10 +38,10 @@ SERVER_ROOT='' # e.g. '/http/path/to/app'
 UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
 # The following is for multilist
-#APP_UI='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json'
+APP_UI='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json'
 
 # The following is for twinlist
-APP_UI='/static/twinlist/html/twinlist.html?json_src='+SERVER_ROOT+'/smartapp/json'
+#APP_UI='/static/twinlist/html/twinlist.html?json_src='+SERVER_ROOT+'/smartapp/json'
 
 """
  A SMArt app serves at least two URLs: 
@@ -189,7 +189,8 @@ class RxReconcile(object):
                       ?med rdf:type sp:Medication .
                       ?med sp:drugName ?medc.
                       ?medc dcterms:title ?name.
-                      ?medc dcterms:identifier ?rxcui.
+                      ?medc sp:code ?code.
+                      ?code dcterms:identifier ?rxcui.
                       OPTIONAL {?med sp:instructions ?inst.}
                       OPTIONAL {
                       ?med sp:quantity ?quantx.
@@ -248,7 +249,7 @@ class RxReconcile(object):
 
         def make_med_from_rdf(rdf_results):
             drugName = str(rdf_results[1].toPython())
-            rxCUI = rdf_results[2].toPython() if rdf_results[2] is not None else None
+            rxCUI = str(rdf_results[2].toPython()) if rdf_results[2] is not None else None
             quantity = rdf_results[3].toPython() if rdf_results[3] is not None else "No quantity"
             quantity_unit = str(rdf_results[4].toPython()) if rdf_results[4] is not None else "No quantity units"
             quantity_unit = get_unit_name(quantity_unit)
@@ -284,7 +285,8 @@ class RxReconcile(object):
             }
             print med_dict
             if med_dict['rxCUI'] in mc._rxnorm.code_cui:
-                med_dict['cuis'] = set(mc._rxnorm.code_cui[med_dict['rxCUI']])
+                med_dict['cuis'] = set([mc._rxnorm.code_cui[med_dict['rxCUI']]])
+                print "The CUI for", med_dict['rxCUI'], "is", med_dict['cuis']
             med = make_medication(med_dict, mc, provenance)
             return med
 

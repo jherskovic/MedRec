@@ -18,7 +18,7 @@ from constants import *
 from medication import make_medication
 from medication import ParsedMedication
 from json_output import *
-from match import Match, match_by_strings, match_by_brand_name, match_by_ingredients, match_by_treatment
+from match import Match, match_by_strings, match_by_brand_name, match_by_ingredients, match_by_treatment, match_by_cuis
 from mapping_context import MappingContext
          
 def separate_parsed_from_unparsed(medication_list):
@@ -77,10 +77,42 @@ def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
     parsed_meds_1, unparsed_meds_1 = separate_parsed_from_unparsed(rec_list_1)
     parsed_meds_2, unparsed_meds_2 = separate_parsed_from_unparsed(rec_list_2)
     # Unpack the lists produced by the regular expression.findall,
-    # and restore missing meds if they couldn't be parsed    
+    # and restore missing meds if they couldn't be parsed
     print
     # rec_bn is a MatchResult object with the results of matching by brand name
-    rec_bn = match_by_brand_name(parsed_meds_1, parsed_meds_2)
+    rec_bn = match_by_cuis(parsed_meds_1, parsed_meds_2)
+    pb1, pb2, bnrec = rec_bn.list1, rec_bn.list2, rec_bn.reconciled
+    left1 = pb1 + unparsed_meds_1
+    left2 = pb2 + unparsed_meds_2
+    print "List 1 after concept matching=\n", '\n'.join([str(x) for x in left1])
+    print
+    print "List 2 after concept matching=\n", '\n'.join([str(x) for x in left2])
+    print
+    print "Reconciled after brand name matching=\n", '\n'.join([str(x) for x in bnrec])
+    print
+    if stats is not None:
+        stats['reconciled_brand_name'] = len(bnrec)
+    already_reconciled = [x for x in bnrec] + rec.reconciled
+    print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
+    print "**********     END OF STEP 2     **********"
+    return dict(
+        rec_list_1=pb1,
+        rec_list_2=pb2,
+        unparsed_meds_1=unparsed_meds_1,
+        unparsed_meds_2=unparsed_meds_2,
+        rec=already_reconciled,
+        stats=stats
+    )
+
+
+def reconciliation_step_3(rec_list_1=[], rec_list_2=[], unparsed_meds_1=[], unparsed_meds_2=[], rec=[], stats={}):
+    """Helper function to handle matching by brand names."""
+    print "********** RECONCILIATION STEP 3 **********"
+    print
+    # Unpack the lists produced by the regular expression.findall,
+    # and restore missing meds if they couldn't be parsed    
+    # rec_bn is a MatchResult object with the results of matching by brand name
+    rec_bn = match_by_brand_name(rec_list_1, rec_list_2)
     pb1, pb2, bnrec = rec_bn.list1, rec_bn.list2, rec_bn.reconciled
     left1 = pb1 + unparsed_meds_1
     left2 = pb2 + unparsed_meds_2
@@ -92,9 +124,9 @@ def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
     print 
     if stats is not None:
         stats['reconciled_brand_name'] = len(bnrec)
-    already_reconciled = [x for x in bnrec] + rec.reconciled
+    already_reconciled = [x for x in bnrec] + rec
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
-    print "**********     END OF STEP 2     **********"
+    print "**********     END OF STEP 3     **********"
     return dict(
       pb1=pb1,
       pb2=pb2,
@@ -104,9 +136,9 @@ def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
       stats=stats
     )
 
-def reconciliation_step_3(pb1=[], pb2=[], unparsed_meds_1=[], unparsed_meds_2=[], already_reconciled=[], stats={}):
+def reconciliation_step_4(pb1=[], pb2=[], unparsed_meds_1=[], unparsed_meds_2=[], already_reconciled=[], stats={}):
     """Helper function to handle matching by ingredients."""
-    print "********** RECONCILIATION STEP 3 **********"
+    print "********** RECONCILIATION STEP 4 **********"
     # rec_ing is a MatchResult object with the results of matching by ingredients
     rec_ing = match_by_ingredients(pb1, pb2)
     pm1, pm2, pmrec = rec_ing.list1, rec_ing.list2, rec_ing.reconciled
@@ -122,12 +154,12 @@ def reconciliation_step_3(pb1=[], pb2=[], unparsed_meds_1=[], unparsed_meds_2=[]
         stats['reconciled_generics'] = len(pmrec)
     already_reconciled = [x for x in already_reconciled] + pmrec
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
-    print "**********     END OF STEP 3     **********"
+    print "**********     END OF STEP 4     **********"
     return dict(pm1=pm1, pm2=pm2, already_reconciled=already_reconciled, stats=stats)
 
-def reconciliation_step_4(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[], already_reconciled=[], mappings=None, stats={}):
+def reconciliation_step_5(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[], already_reconciled=[], mappings=None, stats={}):
     """Helper function to handle matching by treatment intent."""
-    print "********** RECONCILIATION STEP 4 **********"
+    print "********** RECONCILIATION STEP 5 **********"
     print
     # rec_treat is a MatchResult object with the results of matching by treatment intent
     rec_treat = match_by_treatment(pm1, pm2, mappings,
@@ -145,7 +177,7 @@ def reconciliation_step_4(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[]
     if stats is not None:
         stats['reconciled_therapeutic_intent'] = len(ptrec)
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
-    print "**********     END OF STEP 4     **********"    
+    print "**********     END OF STEP 5     **********"
     return left1, left2, already_reconciled, stats
 
 # If you pass a dictionary as the "stats" parameter to this function, you'll
@@ -155,17 +187,20 @@ def reconcile_parsed_lists(meds_list_1, meds_list_2, mappings, stats=None):
     # By strings
     step1 = reconciliation_step_1(meds_list_1, meds_list_2, mappings, stats)
     print
-    # By brand names
+    # By concepts
     step2 = reconciliation_step_2(**step1)
     print
-    # By ingredients
+    # By brand names
     step3 = reconciliation_step_3(**step2)
-    step3['unparsed_meds_1'] = step2['unparsed_meds_1']
-    step3['unparsed_meds_2'] = step2['unparsed_meds_2']
-    step3['mappings'] = mappings
+    print
+    # By ingredients
+    step4 = reconciliation_step_4(**step3)
+    step4['unparsed_meds_1'] = step3['unparsed_meds_1']
+    step4['unparsed_meds_2'] = step3['unparsed_meds_2']
+    step4['mappings'] = mappings
     print
     # By treatment intent
-    left1, left2, already_reconciled, stats = reconciliation_step_4(**step3)
+    left1, left2, already_reconciled, stats = reconciliation_step_5(**step4)
     return (left1, left2, already_reconciled)
 
 # Call this function if you want the algorithm to parse the lists for you
