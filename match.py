@@ -203,7 +203,8 @@ def match_by_rxcuis(list1, list2):
     for i in xrange(len(concepts_1)):
         if concepts_1[i] in concepts_2:
             where_in_2 = concepts_2.index(concepts_1[i])
-            common.append(Match(list1[i], my_list_2_of_objects[where_in_2], 1.0, MATCH_COMPOUND))
+            med2 = my_list_2_of_objects[i]
+            common.append(Match(list1[i], my_list_2_of_objects[where_in_2], 1.0 if med2.normalized_dose==list1[i].normalized_dose else 0.5, MATCH_COMPOUND))
             del my_list_2_of_objects[where_in_2]
             del concepts_2[where_in_2]
         else:
@@ -290,7 +291,6 @@ def match_by_brand_name(list1, list2):
                     # If the dosages are equal, we have a match
                     if dose_1 == dose_2:
                         common.append(Match(list1[y], my_list_2_of_objects[matches], 1.0, MATCH_BRAND_NAME))
-
                         brand_name_match_bookkeeping(my_list_2_of_objects, tradenames_of_c2, concepts_2, matches)
                         break
                     else:
