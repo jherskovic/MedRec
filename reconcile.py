@@ -18,7 +18,7 @@ from constants import *
 from medication import make_medication
 from medication import ParsedMedication
 from json_output import *
-from match import Match, match_by_strings, match_by_brand_name, match_by_ingredients, match_by_treatment, match_by_cuis
+from match import Match, match_by_strings, match_by_brand_name, match_by_ingredients, match_by_treatment, match_by_rxcuis
 from mapping_context import MappingContext
          
 def separate_parsed_from_unparsed(medication_list):
@@ -80,7 +80,7 @@ def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
     # and restore missing meds if they couldn't be parsed
     print
     # rec_bn is a MatchResult object with the results of matching by brand name
-    rec_bn = match_by_cuis(parsed_meds_1, parsed_meds_2)
+    rec_bn = match_by_rxcuis(parsed_meds_1, parsed_meds_2)
     pb1, pb2, bnrec = rec_bn.list1, rec_bn.list2, rec_bn.reconciled
     left1 = pb1 + unparsed_meds_1
     left2 = pb2 + unparsed_meds_2

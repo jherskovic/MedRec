@@ -178,7 +178,7 @@ def medication_list_CUIs(medication_list):
     medication."""
     return [x.CUIs for x in medication_list]
 
-def match_by_cuis(list1, list2):
+def match_by_rxcuis(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by comparing the
     CUIs of each. This is an O(n^2) comparison, but given the average 
     size of a medication list it's pretty fast.
@@ -192,9 +192,9 @@ def match_by_cuis(list1, list2):
     * the first list, minus the common elements
     * the second list, minus the common elements
     * the list of common elements
-    """  
-    concepts_1 = medication_list_CUIs(list1)
-    concepts_2 = medication_list_CUIs(list2)
+    """
+    concepts_1 = [x.RxCUIs for x in list1]
+    concepts_2 = [x.RxCUIs for x in list2]
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
     my_list_1=[]
@@ -205,7 +205,7 @@ def match_by_cuis(list1, list2):
             where_in_2 = concepts_2.index(concepts_1[i])
             common.append(Match(list1[i], my_list_2_of_objects[where_in_2], 1.0, MATCH_COMPOUND))
             del my_list_2_of_objects[where_in_2]
-            del concepts_2[i]
+            del concepts_2[where_in_2]
         else:
             my_list_1.append(list1[i])
     return MatchResult(my_list_1, my_list_2_of_objects, common)

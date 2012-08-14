@@ -125,6 +125,7 @@ class ParsedMedication(Medication):
         self._generic_formula = None
         self._norm_dose = None
         self._cuis = None
+        self._rxcuis = None
         self._tradenames = None
         self._problems = None
         self._mappings = context
@@ -160,6 +161,7 @@ class ParsedMedication(Medication):
         self._formulation = self._normalize_field(med_dict['formulation'])
         self._instructions = self._normalize_field(med_dict['instructions'])
         self._cuis = med_dict.get('cuis', None)
+        self._rxcuis = med_dict.get('rxCUI', None)
         self._norm_dose = self._normalize_dose()
 
     def __repr__(self):
@@ -270,6 +272,10 @@ class ParsedMedication(Medication):
             else:
                 self._cuis = set()
         return copy.copy(self._cuis)
+
+    @property
+    def RxCUIs(self):
+        return self._rxcuis
 
     @property
     def tradenames(self):
