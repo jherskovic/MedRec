@@ -58,10 +58,18 @@ h1 {
 	text-align: left;
 }
 
+.big-label-selected {
+	background-color: #fbe4a0;
+}
+
 .TableDesign {
 	border-collapse: collapse;
 	table-layout: auto;
 	width: 95%;
+}
+
+.TableDesign-selected {
+	background-color: #fbe4a0;
 }
 
 .TableHeading {

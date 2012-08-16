@@ -11,6 +11,7 @@ together from Josh's smart_rx_reminder demo. Be gentle.
 
 UTHealth SBMI, 2011
 """
+import json
 import os, sys
 sys.path.append(os.path.dirname(__file__))
 
@@ -38,9 +39,14 @@ SERVER_ROOT='' # e.g. '/http/path/to/app'
 UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
 # The following is for multilist
-APP_UI='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json'
+MULTIPLE_LIST_SUPPORT=True
+APP_UI='/static/uthealth/MedRec.html?'
+JSON_SRC='json_src='+SERVER_ROOT+'/smartapp/json'
+NO_SUMMARY="no_summary"
+LIST_CHOOSER='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json&choose_list='+SERVER_ROOT+'/smartapp/choose_lists'
 
 # The following is for twinlist
+#MULTIPLE_LIST_SUPPORT=False
 #APP_UI='/static/twinlist/html/twinlist.html?json_src='+SERVER_ROOT+'/smartapp/json'
 
 """
@@ -49,7 +55,8 @@ APP_UI='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json'
    * "index.html" page to supply the UI.
 """
 urls = ( '/smartapp/index.html', 'RxReconcile',
-        '/smartapp/json', 'jsonserver')
+        '/smartapp/json', 'jsonserver',
+        '/smartapp/choose_lists', 'ListChooser')
 
 json_data = {}
 
@@ -61,8 +68,17 @@ class jsonserver:
             raise Exception("Error: No data in the session.")
 
         session.json_data = None
-
+        print "Passing the following JSON to the front end:"
+        print my_data
         return my_data
+
+class ListChooser:
+    def GET(self):
+        list1=web.input().list1
+        list2=web.input().list2
+        session.chosen_lists=(list1, list2)
+        print "Received", session.chosen_lists, "from the frontend."
+        return SERVER_ROOT+'/smartapp/index.html'
 
 print "Bootstrapping reconciliation: Reading data files"
 rxnorm = os.path.join(os.path.dirname(__file__), 'rxnorm2012')
@@ -153,7 +169,12 @@ class RxReconcile(object):
 
     def GET(self):
         # Fetch and use
-        smart_oauth_header = web.input().oauth_header
+        try:
+            smart_oauth_header = web.input().oauth_header
+        except:
+            smart_oauth_header = session.oauth_header
+            del session.oauth_header
+
         smart_oauth_header = urllib.unquote(smart_oauth_header)
         client = get_smart_client(smart_oauth_header)
         oauth_data = base64.b64encode(bz2.compress(smart_oauth_header, 9))
@@ -185,7 +206,7 @@ class RxReconcile(object):
             PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                SELECT  ?med  ?name ?rxcui ?quant ?quantunit ?freq ?frequnit ?inst ?startdate ?prov
                WHERE {
-                    """ + list_uri.n3() + """ sp:medication ?med.
+                    <""" + list_uri + """> sp:medication ?med.
                       ?med rdf:type sp:Medication .
                       ?med sp:drugName ?medc.
                       ?medc dcterms:title ?name.
@@ -211,13 +232,41 @@ class RxReconcile(object):
             print "I am lame, and therefore expect exactly two lists. Besides, with less than two, what do you expect me to reconcile?"
             return "<html><head></head><body>Nothing to reconcile. There were less than two lists.</body></html>"
 
-        if len(lists) > 2:
-            print "*** WARNING *** There were %d lists, but I only used the first two." % len(lists)
 
         lists = [x for x in lists]
+        my_app_ui=APP_UI
+        my_app_params=[]
+        if len(lists) > 2:
+            print "*** WARNING *** There were %d lists. Looking for user-chosen lists." % len(lists)
+            try:
+                # Chosen_lists should contain URIs
+                chosen_lists=session.chosen_lists
+                if chosen_lists is None:
+                    raise AttributeError
+                session.chosen_lists=None
 
-        rdf_list_1 = one_list(lists[0][0])
-        rdf_list_2 = one_list(lists[1][0])
+                # If we are here, it's because the user chose lists already
+                my_app_params.append(NO_SUMMARY)
+            except AttributeError:
+                # No chosen lists; make the user choose.
+                list_metadata=[dict(
+                                    URL=str(x[0].toPython()),
+                                    source=str(x[1].toPython()),
+                                    name=str(x[2].toPython()),
+                                    date=str(x[3].toPython()) if x[3] is not None else "") for x in lists]
+                lists=[one_list(x['URL']) for x in list_metadata]
+                list_info=[]
+                for i in range(len(lists)):
+                    list_info.append({'meta': list_metadata[i], 'meds': [str(x[1]) for x in lists[i]]})
+                session.json_data=json.dumps(list_info)
+                session.oauth_header=web.input().oauth_header
+                print session.json_data
+                raise web.redirect(LIST_CHOOSER)
+        else:
+            chosen_lists = (lists[0][0], lists[1][0])
+
+        rdf_list_1 = one_list(chosen_lists[0])
+        rdf_list_2 = one_list(chosen_lists[1])
         print "LISTS", lists
         print "List 1:", len(rdf_list_1), "items"
         for x in rdf_list_1:
@@ -298,7 +347,10 @@ class RxReconcile(object):
         #store a formatted list
         session.json_data = output_json(list1, list2, r1, r2, rec)
         #return output_html(list1, list2, r1, r2, rec)
-        raise web.seeother(APP_UI)
+        my_app_params.append(JSON_SRC)
+        my_app_ui+='&'.join(my_app_params)
+        print "Redirecting to", my_app_ui
+        raise web.seeother(my_app_ui)
 
 header = """<!DOCTYPE html>
 <html>
