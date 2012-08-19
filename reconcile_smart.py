@@ -13,6 +13,7 @@ UTHealth SBMI, 2011
 """
 import json
 import os, sys
+import os.path
 sys.path.append(os.path.dirname(__file__))
 
 import web, urllib, re
@@ -31,7 +32,7 @@ web.config.debug = False
 
 # Basic configuration:  the consumer key and secret we'll use
 # to OAuth-sign requests.
-SMART_SERVER_OAUTH = {'consumer_key': 'my-app@apps.smartplatforms.org',
+SMART_SERVER_OAUTH = {'consumer_key': 'pansharpml@apps.smartplatforms.org',
                       'consumer_secret': 'smartapp-secret'}
 
 SERVER_ROOT='' # e.g. '/http/path/to/app'
@@ -56,9 +57,14 @@ LIST_CHOOSER='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/jso
 """
 urls = ( '/smartapp/index.html', 'RxReconcile',
         '/smartapp/json', 'jsonserver',
-        '/smartapp/choose_lists', 'ListChooser')
+        '/smartapp/choose_lists', 'ListChooser',
+        '/', 'DummyIndex')
 
 json_data = {}
+
+class DummyIndex:
+    def GET(self):
+        return "This is the Pan-SHARP Medication Reconciliation smartapp. Please load it from within a SMART container."
 
 class jsonserver:
     def GET(self):
@@ -381,10 +387,11 @@ def get_smart_client(authorization_header, resource_tokens=None):
     ret.record_id = oa_params['smart_record_id']
     return ret
 
-application = web.application(urls, globals())
-session = web.session.Session(application, web.session.DiskStore('sessions'))
+app = web.application(urls, globals())
+curdir = os.path.dirname(__file__)
+session = web.session.Session(app, web.session.DiskStore(os.path.join(curdir,'sessions')),)
 
 if __name__ == "__main__":
-    application.run()
+    app.run()
 else:
-    application = application.wsgifunc() 
+    application = app.wsgifunc() 

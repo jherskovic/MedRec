@@ -1,0 +1,13 @@
+{
+    "name" : "Pan-SHARP (Multilist)",
+    "description" : "Demo Medication Reconciliation app",
+    "author" : "Jorge Herskovic",
+    "id" : "pansharpml@apps.smartplatforms.org",
+    "version" : "0.1",
+
+    "mode" : "ui",
+    "scope": "record",
+
+    "index" : "http://medrec.jorgeherskovic.net/smartapp/index.html",
+    "icon" : "http://medrec.jorgeherskovic.net/static/pill_bottle.png"
+  }

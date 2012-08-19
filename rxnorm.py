@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import shelve
+import os.path
 
 class Drug(object):
     """Class to represent a drug from an MRCONSO line. Assumes that
@@ -161,12 +162,29 @@ class RXNORM(object):
     def __setstate__(self, state):
         global type_kinds
         global reverse_type_kinds
+        curdir=os.path.dirname(__file__)
         self._concepts_file=state['c']
         self._relations_file=state['r']
         self._ingredients_file=state['f']
-        self.concepts = shelve.open(state['c'])
-        self._relations = shelve.open(state['r'])
-        self.formulas = shelve.open(state['f'])
+        try:
+            self.concepts = shelve.open(self._concepts_file, flag='r')
+        except:
+            # If the file wasn't found, try the current directory (necessary for the WSGI version).
+            self._concepts_file=os.path.join(curdir, self._concepts_file)
+            self.concepts = shelve.open(self._concepts_file, flag='r')
+            
+        try:
+            self._relations = shelve.open(self._relations_file, flag='r')
+        except:
+            self._relations_file = os.path.join(curdir, self._relations_file)
+            self._relations = shelve.open(self._relations_file, flag='r')
+            
+        try:
+            self.formulas = shelve.open(self._ingredients_file, flag='r')
+        except:
+            self._ingredients_file=os.path.join(curdir, self._ingredients_file)
+            self.formulas=shelve.open(self._ingredients_file, flag='r')
+            
         type_kinds = state['t']
         reverse_type_kinds = state['rt']
         self._tradename_relations = None
