@@ -141,10 +141,10 @@ def load_ucum():
     print >> sys.stderr, "Loading and parsing UCUM data from", UCUM_URL
     global ucum
     try:
-        ucum = pickle.load(open('ucum.cache', 'rb'))
+        # Try a local copy first.
+        ucum = etree.parse('ucum-essence.xml')
     except:
         ucum = etree.parse(UCUM_URL)
-        pickle.dump(ucum, open('ucum.cache', 'wb'), pickle.HIGHEST_PROTOCOL)
 
 ucum_loader = Thread(target=load_ucum)
 ucum_loader.start()
