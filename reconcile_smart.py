@@ -65,7 +65,7 @@ json_data = {}
 
 class DummyIndex:
     def GET(self):
-        web.header('Content-Type', 'text/text')
+        #web.header('Content-Type', 'text/text')
         return "This is the Pan-SHARP Medication Reconciliation smartapp. Please load it from within a SMART container."
 
 
@@ -140,7 +140,11 @@ ucum = None
 def load_ucum():
     print >> sys.stderr, "Loading and parsing UCUM data from", UCUM_URL
     global ucum
-    ucum = etree.parse(UCUM_URL)
+    try:
+        ucum = pickle.load(open('ucum.cache', 'rb'))
+    except:
+        ucum = etree.parse(UCUM_URL)
+        pickle.dump(ucum, open('ucum.cache', 'wb'), pickle.HIGHEST_PROTOCOL)
 
 ucum_loader = Thread(target=load_ucum)
 ucum_loader.start()
@@ -368,7 +372,7 @@ class RxReconcile(object):
                 except KeyError, ValueError:
                     print >> sys.stderr, "Could not parse", freq_unit_uri
                     pass
-                #print frequency_unit
+                    #print frequency_unit
 
             inst = str(rdf_results[7].toPython()) if rdf_results[7] else "No instructions"
             startdate = rdf_results[8].toPython() if rdf_results[8] else "No startdate"
