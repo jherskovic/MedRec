@@ -13,7 +13,7 @@ UTHealth SBMI, 2011
 """
 import json
 import os, sys
-import os.path
+
 sys.path.append(os.path.dirname(__file__))
 
 import web, urllib, re
@@ -28,6 +28,8 @@ import random
 from mapping_context import MappingContext
 from lxml import  etree
 from medication import make_medication
+from threading import Thread
+
 web.config.debug = False
 
 # Basic configuration:  the consumer key and secret we'll use
@@ -35,16 +37,16 @@ web.config.debug = False
 SMART_SERVER_OAUTH = {'consumer_key': 'pansharpml@apps.smartplatforms.org',
                       'consumer_secret': 'smartapp-secret'}
 
-SERVER_ROOT='' # e.g. '/http/path/to/app'
+SERVER_ROOT = '' # e.g. '/http/path/to/app'
 
 UCUM_URL = 'http://aurora.regenstrief.org/~ucum/ucum-essence.xml'
 
 # The following is for multilist
-MULTIPLE_LIST_SUPPORT=True
-APP_UI='/static/uthealth/MedRec.html?'
-JSON_SRC='json_src='+SERVER_ROOT+'/smartapp/json'
-NO_SUMMARY="no_summary"
-LIST_CHOOSER='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/json&choose_list='+SERVER_ROOT+'/smartapp/choose_lists'
+MULTIPLE_LIST_SUPPORT = True
+APP_UI = '/static/uthealth/MedRec.html?'
+JSON_SRC = 'json_src=' + SERVER_ROOT + '/smartapp/json'
+NO_SUMMARY = "no_summary"
+LIST_CHOOSER = '/static/uthealth/MedRec.html?json_src=' + SERVER_ROOT + '/smartapp/json&choose_list=' + SERVER_ROOT + '/smartapp/choose_lists'
 
 # The following is for twinlist
 #MULTIPLE_LIST_SUPPORT=False
@@ -56,15 +58,16 @@ LIST_CHOOSER='/static/uthealth/MedRec.html?json_src='+SERVER_ROOT+'/smartapp/jso
    * "index.html" page to supply the UI.
 """
 urls = ( '/smartapp/index.html', 'RxReconcile',
-        '/smartapp/json', 'jsonserver',
-        '/smartapp/choose_lists', 'ListChooser',
-        '/', 'DummyIndex')
+         '/smartapp/json', 'jsonserver',
+         '/smartapp/choose_lists', 'ListChooser',
+         '/', 'DummyIndex')
 
 json_data = {}
 
 class DummyIndex:
     def GET(self):
         return "This is the Pan-SHARP Medication Reconciliation smartapp. Please load it from within a SMART container."
+
 
 class jsonserver:
     def GET(self):
@@ -80,28 +83,65 @@ class jsonserver:
         web.header('Content-Type', 'application/json')
         return my_data
 
+
 class ListChooser:
     def GET(self):
-        list1=web.input().list1
-        list2=web.input().list2
-        session.chosen_lists=(list1, list2)
+        list1 = web.input().list1
+        list2 = web.input().list2
+        session.chosen_lists = (list1, list2)
         #print "Received", session.chosen_lists, "from the frontend."
-        return SERVER_ROOT+'/smartapp/index.html'
+        return SERVER_ROOT + '/smartapp/index.html'
 
-print "Bootstrapping reconciliation: Reading data files"
-rxnorm = os.path.join(os.path.dirname(__file__), 'rxnorm2012')
-rxnorm = pickle.load(open(rxnorm))
+print >> sys.stderr, "Starting background resource loaders"
 
-try:
-    treats = os.path.join(os.path.dirname(__file__), 'treats.pickle.bz2')
-    treats = pickle.load(bz2.BZ2File(treats))
-except:
-    treats = {}
-print "Building concept index"
-mc = MappingContext(rxnorm, treats)
+rxnorm = None
 
-print "Loading and parsing UCUM data from", UCUM_URL
-ucum = etree.parse(UCUM_URL)
+def load_rxnorm():
+    global rxnorm
+    print >> sys.stderr, "Reading RXNorm"
+    rxnorm = os.path.join(os.path.dirname(__file__), 'rxnorm2012')
+    rxnorm = pickle.load(open(rxnorm))
+
+rxnorm_loader = Thread(target=load_rxnorm)
+rxnorm_loader.start()
+
+treats = None
+
+def load_treats():
+    global treats
+    print >> sys.stderr, "Loading treatment relationship dictionary"
+    try:
+        treats = os.path.join(os.path.dirname(__file__), 'treats.pickle.bz2')
+        treats = pickle.load(bz2.BZ2File(treats))
+    except:
+        treats = {}
+
+treats_loader = Thread(target=load_treats)
+treats_loader.start()
+
+mc = None
+
+def build_index():
+    print >> sys.stderr, "Building concept index"
+    global mc
+    global rxnorm_loader
+    global treats_loader
+    rxnorm_loader.join()
+    treats_loader.join()
+    mc = MappingContext(rxnorm, treats)
+
+index_builder = Thread(target=build_index)
+index_builder.start()
+
+ucum = None
+
+def load_ucum():
+    print >> sys.stderr, "Loading and parsing UCUM data from", UCUM_URL
+    global ucum
+    ucum = etree.parse(UCUM_URL)
+
+ucum_loader = Thread(target=load_ucum)
+ucum_loader.start()
 
 OUTPUT_TEMPLATE = """<html>
     <head>
@@ -158,6 +198,9 @@ def get_unit_name(abbr, ucum_xml=ucum):
 
     if abbr[0] == '{':
         return de_parenthesize(abbr)
+    global ucum
+    global ucum_loader
+    ucum_loader.join()
     root = ucum.getroot()
     nodes = [x for x in root.findall(".//unit[@Code]") if x.attrib.get('Code', '') == abbr]
     if len(nodes) != 1:
@@ -241,36 +284,35 @@ class RxReconcile(object):
             web.header('Content-Type', 'text/html')
             return "<html><head></head><body>Nothing to reconcile. There were less than two lists.</body></html>"
 
-
         lists = [x for x in lists]
-        my_app_ui=APP_UI
-        my_app_params=[]
+        my_app_ui = APP_UI
+        my_app_params = []
         if len(lists) > 2:
             print "*** WARNING *** There were %d lists. Looking for user-chosen lists." % len(lists)
             try:
                 # Chosen_lists should contain URIs
-                chosen_lists=session.chosen_lists
+                chosen_lists = session.chosen_lists
                 if chosen_lists is None:
                     raise AttributeError
-                session.chosen_lists=None
+                session.chosen_lists = None
 
                 # If we are here, it's because the user chose lists already
                 my_app_params.append(NO_SUMMARY)
             except AttributeError:
                 # No chosen lists; make the user choose.
-                list_metadata=[dict(
-                                    URL=str(x[0].toPython()),
-                                    source=str(x[1].toPython()),
-                                    name=str(x[2].toPython()),
-                                    date=str(x[3].toPython()) if x[3] is not None else "") for x in lists]
-                lists=[one_list(x['URL']) for x in list_metadata]
-                list_info=[]
+                list_metadata = [dict(
+                    URL=str(x[0].toPython()),
+                    source=str(x[1].toPython()),
+                    name=str(x[2].toPython()),
+                    date=str(x[3].toPython()) if x[3] is not None else "") for x in lists]
+                lists = [one_list(x['URL']) for x in list_metadata]
+                list_info = []
                 for i in range(len(lists)):
                     list_info.append({'meta': list_metadata[i], 'meds': [str(x[1]) for x in lists[i]]})
-                session.json_data=json.dumps(list_info)
-                session.oauth_header=web.input().oauth_header
+                session.json_data = json.dumps(list_info)
+                session.oauth_header = web.input().oauth_header
                 #print session.json_data
-                print >>sys.stderr, "Session contents:", session.keys()
+                print >> sys.stderr, "Session contents:", session.keys()
                 raise web.seeother(LIST_CHOOSER)
         else:
             chosen_lists = (lists[0][0], lists[1][0])
@@ -291,7 +333,7 @@ class RxReconcile(object):
         #             print "startdate=", x[8]
         #             print "provenance=", x[9]
         #             print
-        
+
         # Find the last fulfillment date for each medication
         #self.last_pill_dates = {}
         #for pill in pills:
@@ -342,12 +384,17 @@ class RxReconcile(object):
                         'formulation': quantity_unit
             }
             #print med_dict
+
             if med_dict['rxCUI'] in mc._rxnorm.code_cui:
                 med_dict['cuis'] = set([mc._rxnorm.code_cui[med_dict['rxCUI']]])
                 #print "The CUI for", med_dict['rxCUI'], "is", med_dict['cuis']
             med = make_medication(med_dict, mc, provenance)
             return med
 
+        global mc
+        global index_builder
+        # Make_med_from_rdf requires the mapping context to be ready.
+        index_builder.join()
         list1 = [make_med_from_rdf(x) for x in rdf_list_1]
         list2 = [make_med_from_rdf(x) for x in rdf_list_2]
 
@@ -357,7 +404,7 @@ class RxReconcile(object):
         session.json_data = output_json(list1, list2, r1, r2, rec)
         #return output_html(list1, list2, r1, r2, rec)
         my_app_params.append(JSON_SRC)
-        my_app_ui+='&'.join(my_app_params)
+        my_app_ui += '&'.join(my_app_params)
         #print "Redirecting to", my_app_ui
         raise web.seeother(my_app_ui)
 
@@ -387,15 +434,16 @@ def get_smart_client(authorization_header, resource_tokens=None):
             resource_tokens)
     except:
         import traceback
-        print >>sys.stderr, traceback.format_exc()
+
+        print >> sys.stderr, traceback.format_exc()
         raise
     ret.record_id = oa_params['smart_record_id']
     return ret
 
 app = web.application(urls, globals())
 curdir = os.path.dirname(__file__)
-session = web.session.Session(app, web.session.DiskStore(os.path.join(curdir,'sessions')),)
-print >>sys.stderr, session, session.keys()
+session = web.session.Session(app, web.session.DiskStore(os.path.join(curdir, 'sessions')), )
+#print >>sys.stderr, session, session.keys()
 
 if __name__ == "__main__":
     app.run()
