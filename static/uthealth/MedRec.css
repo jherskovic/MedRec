@@ -62,6 +62,10 @@ h1 {
 	background-color: #fbe4a0;
 }
 
+.big-label-unselected {
+	background-color: none;
+}
+
 .TableDesign {
 	border-collapse: collapse;
 	table-layout: auto;
@@ -70,6 +74,10 @@ h1 {
 
 .TableDesign-selected {
 	background-color: #fbe4a0;
+}
+
+.TableDesign-unselected {
+	background-color: none;
 }
 
 .TableHeading {

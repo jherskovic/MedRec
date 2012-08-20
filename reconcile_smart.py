@@ -68,14 +68,16 @@ class DummyIndex:
 
 class jsonserver:
     def GET(self):
+        print "jsonserver session contains:", session.keys()
         try:
             my_data = session.json_data
         except:
             raise Exception("Error: No data in the session.")
 
         session.json_data = None
-        print "Passing the following JSON to the front end:"
-        print my_data
+        #print "Passing the following JSON to the front end:"
+        #print my_data
+        web.header('Content-Type', 'application/json')
         return my_data
 
 class ListChooser:
@@ -83,7 +85,7 @@ class ListChooser:
         list1=web.input().list1
         list2=web.input().list2
         session.chosen_lists=(list1, list2)
-        print "Received", session.chosen_lists, "from the frontend."
+        #print "Received", session.chosen_lists, "from the frontend."
         return SERVER_ROOT+'/smartapp/index.html'
 
 print "Bootstrapping reconciliation: Reading data files"
@@ -236,6 +238,7 @@ class RxReconcile(object):
 
         if len(lists) < 2:
             print "I am lame, and therefore expect exactly two lists. Besides, with less than two, what do you expect me to reconcile?"
+            web.header('Content-Type', 'text/html')
             return "<html><head></head><body>Nothing to reconcile. There were less than two lists.</body></html>"
 
 
@@ -266,33 +269,33 @@ class RxReconcile(object):
                     list_info.append({'meta': list_metadata[i], 'meds': [str(x[1]) for x in lists[i]]})
                 session.json_data=json.dumps(list_info)
                 session.oauth_header=web.input().oauth_header
-                print session.json_data
-                raise web.redirect(LIST_CHOOSER)
+                #print session.json_data
+                print >>sys.stderr, "Session contents:", session.keys()
+                raise web.seeother(LIST_CHOOSER)
         else:
             chosen_lists = (lists[0][0], lists[1][0])
 
         rdf_list_1 = one_list(chosen_lists[0])
         rdf_list_2 = one_list(chosen_lists[1])
-        print "LISTS", lists
-        print "List 1:", len(rdf_list_1), "items"
-        for x in rdf_list_1:
-            print "Med=", x[0]
-            print "Name=", x[1]
-            print "RxCUI=", x[2]
-            print "quant=", x[3]
-            print "quantunit=", x[4]
-            print "freq=", x[5]
-            print "frequnit=", x[6]
-            print "inst=", x[7]
-            print "startdate=", x[8]
-            print "provenance=", x[9]
-            print
-
+        # print "LISTS", lists
+        #         print "List 1:", len(rdf_list_1), "items"
+        #         for x in rdf_list_1:
+        #             print "Med=", x[0]
+        #             print "Name=", x[1]
+        #             print "RxCUI=", x[2]
+        #             print "quant=", x[3]
+        #             print "quantunit=", x[4]
+        #             print "freq=", x[5]
+        #             print "frequnit=", x[6]
+        #             print "inst=", x[7]
+        #             print "startdate=", x[8]
+        #             print "provenance=", x[9]
+        #             print
+        
         # Find the last fulfillment date for each medication
         #self.last_pill_dates = {}
         #for pill in pills:
         #    self.update_pill_dates(pill)
-
 
         FREQ_UNITS = {
             'd': ['days', 'daily'],
@@ -338,10 +341,10 @@ class RxReconcile(object):
                         'instructions': inst,
                         'formulation': quantity_unit
             }
-            print med_dict
+            #print med_dict
             if med_dict['rxCUI'] in mc._rxnorm.code_cui:
                 med_dict['cuis'] = set([mc._rxnorm.code_cui[med_dict['rxCUI']]])
-                print "The CUI for", med_dict['rxCUI'], "is", med_dict['cuis']
+                #print "The CUI for", med_dict['rxCUI'], "is", med_dict['cuis']
             med = make_medication(med_dict, mc, provenance)
             return med
 
@@ -355,7 +358,7 @@ class RxReconcile(object):
         #return output_html(list1, list2, r1, r2, rec)
         my_app_params.append(JSON_SRC)
         my_app_ui+='&'.join(my_app_params)
-        print "Redirecting to", my_app_ui
+        #print "Redirecting to", my_app_ui
         raise web.seeother(my_app_ui)
 
 header = """<!DOCTYPE html>
@@ -377,19 +380,22 @@ def get_smart_client(authorization_header, resource_tokens=None):
                        'oauth_token_secret': oa_params['smart_oauth_token_secret']}
 
     server_params = {'api_base': oa_params['smart_container_api_base']}
-
-    ret = SmartClient(SMART_SERVER_OAUTH['consumer_key'],
-        server_params,
-        SMART_SERVER_OAUTH,
-        resource_tokens)
-    print ret
-    print ret.baseURL
+    try:
+        ret = SmartClient(SMART_SERVER_OAUTH['consumer_key'],
+            server_params,
+            SMART_SERVER_OAUTH,
+            resource_tokens)
+    except:
+        import traceback
+        print >>sys.stderr, traceback.format_exc()
+        raise
     ret.record_id = oa_params['smart_record_id']
     return ret
 
 app = web.application(urls, globals())
 curdir = os.path.dirname(__file__)
 session = web.session.Session(app, web.session.DiskStore(os.path.join(curdir,'sessions')),)
+print >>sys.stderr, session, session.keys()
 
 if __name__ == "__main__":
     app.run()
