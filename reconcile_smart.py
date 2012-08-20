@@ -24,7 +24,6 @@ import bz2
 import cPickle as pickle
 import base64
 from json_output import output_json
-import random
 from mapping_context import MappingContext
 from lxml import  etree
 from medication import make_medication
@@ -66,12 +65,13 @@ json_data = {}
 
 class DummyIndex:
     def GET(self):
+        web.header('Content-Type', 'text/text')
         return "This is the Pan-SHARP Medication Reconciliation smartapp. Please load it from within a SMART container."
 
 
 class jsonserver:
     def GET(self):
-        print "jsonserver session contains:", session.keys()
+        #print "jsonserver session contains:", session.keys()
         try:
             my_data = session.json_data
         except:
@@ -128,7 +128,9 @@ def build_index():
     global treats_loader
     rxnorm_loader.join()
     treats_loader.join()
-    mc = MappingContext(rxnorm, treats)
+    # Request use of a shelf for the index for better performance.
+    mc = MappingContext(rxnorm, treats,
+        concept_name_index=os.path.join(os.path.dirname(__file__), "concept_names.rxnorm2012"))
 
 index_builder = Thread(target=build_index)
 index_builder.start()
@@ -209,11 +211,6 @@ def get_unit_name(abbr, ucum_xml=ucum):
     unitname = nodes[0].find('name')
     return unitname.text
 
-
-def make_random_json_id(length=32):
-    source = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890'
-    return ''.join(random.choice(source) for i in xrange(length))
-
 # Exposes pages through web.py
 class RxReconcile(object):
     """An SMArt REST App start page"""
@@ -276,11 +273,11 @@ class RxReconcile(object):
 		      OPTIONAL { ?med sp:provenance ?prov. }
                 }
             """
-            print one_list_q
+            #print one_list_q
             return med_lists.graph.query(one_list_q)
 
         if len(lists) < 2:
-            print "I am lame, and therefore expect exactly two lists. Besides, with less than two, what do you expect me to reconcile?"
+            #print "I am lame, and therefore expect exactly two lists. Besides, with less than two, what do you expect me to reconcile?"
             web.header('Content-Type', 'text/html')
             return "<html><head></head><body>Nothing to reconcile. There were less than two lists.</body></html>"
 
@@ -288,7 +285,7 @@ class RxReconcile(object):
         my_app_ui = APP_UI
         my_app_params = []
         if len(lists) > 2:
-            print "*** WARNING *** There were %d lists. Looking for user-chosen lists." % len(lists)
+            #print "*** WARNING *** There were %d lists. Looking for user-chosen lists." % len(lists)
             try:
                 # Chosen_lists should contain URIs
                 chosen_lists = session.chosen_lists
@@ -312,7 +309,7 @@ class RxReconcile(object):
                 session.json_data = json.dumps(list_info)
                 session.oauth_header = web.input().oauth_header
                 #print session.json_data
-                print >> sys.stderr, "Session contents:", session.keys()
+                #print >> sys.stderr, "Session contents:", session.keys()
                 raise web.seeother(LIST_CHOOSER)
         else:
             chosen_lists = (lists[0][0], lists[1][0])
@@ -369,9 +366,9 @@ class RxReconcile(object):
                             frequency_unit = "per %s %s" % (freqc, frequ)
 
                 except KeyError, ValueError:
-                    print "Could not parse", freq_unit_uri
+                    print >> sys.stderr, "Could not parse", freq_unit_uri
                     pass
-            print frequency_unit
+                #print frequency_unit
 
             inst = str(rdf_results[7].toPython()) if rdf_results[7] else "No instructions"
             startdate = rdf_results[8].toPython() if rdf_results[8] else "No startdate"
