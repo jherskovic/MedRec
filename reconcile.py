@@ -20,7 +20,8 @@ from medication import ParsedMedication
 from json_output import *
 from match import Match, match_by_strings, match_by_brand_name, match_by_ingredients, match_by_treatment, match_by_rxcuis
 from mapping_context import MappingContext
-         
+
+
 def separate_parsed_from_unparsed(medication_list):
     """Returns a tuple of two lists. The first one contains the medications with
     the 'parsed' flag set, the second one contains the rest."""
@@ -44,7 +45,7 @@ def reconciliation_setup(list1, list2, mappings, stats):
     meds_list_2 = [x for x in meds_list_2 if not x.is_empty()]
     if stats is not None:
         stats['size_parsed_list_1'] = len(meds_list_1)
-        stats['size_parsed_list_2'] = len(meds_list_2)        
+        stats['size_parsed_list_2'] = len(meds_list_2)
     print
     print "Parsed list 1=\n", '\n'.join(str(x) for x in meds_list_1)
     print
@@ -110,7 +111,7 @@ def reconciliation_step_3(rec_list_1=[], rec_list_2=[], unparsed_meds_1=[], unpa
     print "********** RECONCILIATION STEP 3 **********"
     print
     # Unpack the lists produced by the regular expression.findall,
-    # and restore missing meds if they couldn't be parsed    
+    # and restore missing meds if they couldn't be parsed
     # rec_bn is a MatchResult object with the results of matching by brand name
     rec_bn = match_by_brand_name(rec_list_1, rec_list_2)
     pb1, pb2, bnrec = rec_bn.list1, rec_bn.list2, rec_bn.reconciled
@@ -121,7 +122,7 @@ def reconciliation_step_3(rec_list_1=[], rec_list_2=[], unparsed_meds_1=[], unpa
     print "List 2 after brand name matching=\n", '\n'.join([str(x) for x in left2])
     print
     print "Reconciled after brand name matching=\n", '\n'.join([str(x) for x in bnrec])
-    print 
+    print
     if stats is not None:
         stats['reconciled_brand_name'] = len(bnrec)
     already_reconciled = [x for x in bnrec] + rec
@@ -149,7 +150,7 @@ def reconciliation_step_4(pb1=[], pb2=[], unparsed_meds_1=[], unparsed_meds_2=[]
     print "List 2 after pharma matching=\n", '\n'.join([str(x) for x in left2])
     print
     print "Reconciled after pharma matching=\n", '\n'.join([str(x) for x in pmrec])
-    print 
+    print
     if stats is not None:
         stats['reconciled_generics'] = len(pmrec)
     already_reconciled = [x for x in already_reconciled] + pmrec
@@ -166,13 +167,13 @@ def reconciliation_step_5(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[]
                                            match_acceptance_threshold=0.3)
     pt1, pt2, ptrec = rec_treat.list1, rec_treat.list2, rec_treat.reconciled
     left1 = pt1 + unparsed_meds_1
-    left2 = pt2 + unparsed_meds_2    
+    left2 = pt2 + unparsed_meds_2
     print "List 1 after therapeutic intent matching=\n", '\n'.join([str(x) for x in left1])
     print
     print "List 2 after therapeutic intent matching=\n", '\n'.join([str(x) for x in left2])
     print
     print "Reconciled after therapeutic intent matching=\n", '\n'.join([str(x) for x in ptrec])
-    print 
+    print
     already_reconciled = [x for x in already_reconciled] + ptrec
     if stats is not None:
         stats['reconciled_therapeutic_intent'] = len(ptrec)
@@ -223,42 +224,42 @@ from optparse import OptionParser
 def main():
     usage = """Usage: %prog [options] [file_to_process] [output_directory]""" + \
     """
-    Reconciles two or more successive medication lists (i.e. assumes that all 
+    Reconciles two or more successive medication lists (i.e. assumes that all
     lists belong to the same patient, and if given many lists L1, L2, L3,..., Ln
-    it will reconcile L1 with L2, then L2 with L3, then L3 with L4, etc.). 
-    
+    it will reconcile L1 with L2, then L2 with L3, then L3 with L4, etc.).
+
     Each list of medications contained in the same text file should have one
-    medication per line and should end with a line consisting solely of 
+    medication per line and should end with a line consisting solely of
     %(separator)s, i.e.
-    
-    Penicillin 100 ucg 
+
+    Penicillin 100 ucg
     %(separator)s
-    Penicillin 200 ucg 
+    Penicillin 200 ucg
     Aspirin 81 mg po
     %(separator)s
-    Penicillin 100 ucg 
+    Penicillin 100 ucg
     %(separator)s
-    
-    defines three lists: 
-        1. Penicillin 100 ucg, 
+
+    defines three lists:
+        1. Penicillin 100 ucg,
         2. Penicillin 200 ucg and Aspirin 81 mg po,
         3. Penicillin 100 ucg
-    
-    if no [file_to_process] is given, the program will perform a demo by 
-    reconciling two demonstration lists and quit. 
-    
+
+    if no [file_to_process] is given, the program will perform a demo by
+    reconciling two demonstration lists and quit.
+
     If [file_to_process] is specified, the program will output an HTML table for
-    each reconciliation it performs. If you don't specify [output_directory], 
+    each reconciliation it performs. If you don't specify [output_directory],
     the current directory is assumed.
     """ % {'separator': MEDLIST_SEPARATOR}
-    
+
     options_parser = OptionParser(usage=usage)
     options_parser.add_option("-v", "--verbose", dest="verbose", default=False,
                       help="Show debugging information as the script runs.",
                       action="store_true")
     options_parser.add_option("-r", "--rxnorm", dest="rxnorm", metavar="FILE",
-                      default="rxnorm.pickle.bz2",
-                      help="Read a pickled instance of RXNorm from FILE")
+                              default="rxnorm.pickle",
+                              help="Read a pickled instance of RXNorm from FILE")
     options_parser.add_option("-t", "--treatment", dest="treatment",
                       metavar="FILE", default='treats.pickle.bz2',
                       help="Read a pickled instance of treatment sets from FILE")
@@ -270,7 +271,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG if options.verbose else logging.INFO,
                         format='%(asctime)s %(levelname)s ' \
                         '%(module)s. %(funcName)s: %(message)s')
-    rx = pickle.load(bz2.BZ2File(options.rxnorm, 'r'))
+    rx = pickle.load(open(options.rxnorm, 'r'))
     print "Loading treatment sets"
     try:
         ts = pickle.load(bz2.BZ2File(options.treatment, 'r'))
@@ -279,7 +280,7 @@ def main():
         ts = {}
     print "Indexing concepts"
     mc = MappingContext(rx, ts)
-    
+
     if len(args) == 0:
         # Demo run with no parameters
         l1, l2, rec = reconcile_lists(demo_list_1, demo_list_2, mc)

@@ -3,13 +3,13 @@
 generate_rxnorm_file.py
 
 Extracts RXNORM from the UMLS and converts it to a format that is usable by the
-medication reconciliation algorithm. 
+medication reconciliation algorithm.
 
-Pass your Metathesaurus directory (the one containing .RRF files) as the first 
-argument and the output filename as the second parameter (recommended: 
+Pass your Metathesaurus directory (the one containing .RRF files) as the first
+argument and the output filename as the second parameter (recommended:
 rxnorm.pickle.bz2)
 
-Created by Jorge Herskovic 
+Created by Jorge Herskovic
 Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
 """
 import shelve
@@ -19,6 +19,7 @@ import os.path
 import random
 import cPickle as pickle
 from collections import defaultdict
+
 
 def display_count(count, dot_threshold=1000, pipe_threshold=10000,
                   newline_threshold=50000, output_stream=sys.stderr):
@@ -31,6 +32,7 @@ def display_count(count, dot_threshold=1000, pipe_threshold=10000,
     if count % newline_threshold == 0:
         print >> output_stream, " %d" % count
         output_stream.flush()
+
 
 rrf_dir = sys.argv[1]
 save_file = sys.argv[2]
@@ -51,7 +53,7 @@ for line in sty_file:
 
 print >> sys.stderr
 
-print  >> sys.stderr, "Reading concepts"
+print >> sys.stderr, "Reading concepts"
 conso_filename = os.path.join(sys.argv[1], "MRCONSO.RRF")
 conso_file = open(conso_filename, "rU")
 concepts = {}
