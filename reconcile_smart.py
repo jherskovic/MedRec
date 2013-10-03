@@ -6,7 +6,7 @@ will need to be refilled soon (based on dispense day's supply + date).
 Josh Mandel
 Children's Hospital Boston, 2010
 
-Modified by J Herskovic to create the MedRec SMART App. This is badly cobbled 
+Modified by J Herskovic to create the MedRec SMART App. This is badly cobbled
 together from Josh's smart_rx_reminder demo. Be gentle.
 
 UTHealth SBMI, 2011
@@ -25,7 +25,7 @@ import cPickle as pickle
 import base64
 from json_output import output_json
 from mapping_context import MappingContext
-from lxml import  etree
+from lxml import etree
 from medication import make_medication
 from threading import Thread
 
@@ -52,7 +52,7 @@ LIST_CHOOSER = '/static/uthealth/MedRec.html?json_src=' + SERVER_ROOT + '/smarta
 #APP_UI='/static/twinlist/html/twinlist.html?json_src='+SERVER_ROOT+'/smartapp/json'
 
 """
- A SMArt app serves at least two URLs: 
+ A SMArt app serves at least two URLs:
    * "bootstrap.html" page to load the client library
    * "index.html" page to supply the UI.
 """
@@ -62,6 +62,7 @@ urls = ( '/smartapp/index.html', 'RxReconcile',
          '/', 'DummyIndex')
 
 json_data = {}
+
 
 class DummyIndex:
     def GET(self):
@@ -92,20 +93,24 @@ class ListChooser:
         #print "Received", session.chosen_lists, "from the frontend."
         return SERVER_ROOT + '/smartapp/index.html'
 
+
 print >> sys.stderr, "Starting background resource loaders"
 
 rxnorm = None
+
 
 def load_rxnorm():
     global rxnorm
     print >> sys.stderr, "Reading RXNorm"
     rxnorm = os.path.join(os.path.dirname(__file__), 'rxnorm2012')
-    rxnorm = pickle.load(open(rxnorm))
+    rxnorm = pickle.load(open(rxnorm, 'rb'))
+
 
 rxnorm_loader = Thread(target=load_rxnorm)
 rxnorm_loader.start()
 
 treats = None
+
 
 def load_treats():
     global treats
@@ -116,10 +121,12 @@ def load_treats():
     except:
         treats = {}
 
+
 treats_loader = Thread(target=load_treats)
 treats_loader.start()
 
 mc = None
+
 
 def build_index():
     print >> sys.stderr, "Building concept index"
@@ -130,12 +137,14 @@ def build_index():
     treats_loader.join()
     # Request use of a shelf for the index for better performance.
     mc = MappingContext(rxnorm, treats,
-        concept_name_index=os.path.join(os.path.dirname(__file__), "concept_names.rxnorm2012"))
+                        concept_name_index=os.path.join(os.path.dirname(__file__), "concept_names.rxnorm2012"))
+
 
 index_builder = Thread(target=build_index)
 index_builder.start()
 
 ucum = None
+
 
 def load_ucum():
     print >> sys.stderr, "Loading and parsing UCUM data from", UCUM_URL
@@ -145,6 +154,7 @@ def load_ucum():
         ucum = etree.parse('ucum-essence.xml')
     except:
         ucum = etree.parse(UCUM_URL)
+
 
 ucum_loader = Thread(target=load_ucum)
 ucum_loader.start()
@@ -199,6 +209,7 @@ OUTPUT_TEMPLATE = """<html>
 
 de_parenthesize = lambda x: x.replace('[', '').replace(']', '').replace('{', '').replace('}', '')
 
+
 def get_unit_name(abbr, ucum_xml=ucum):
     if len(abbr) == 0: return "UNITS_MISSING"
 
@@ -239,14 +250,14 @@ class RxReconcile(object):
             PREFIX dcterms:<http://purl.org/dc/terms/>
             PREFIX sp:<http://smartplatforms.org/terms#>
             PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            select ?l ?s ?sname ?d 
+            select ?l ?s ?sname ?d
             where {
                 ?l a sp:MedicationList.
                 ?l sp:medListSource ?s.
                 ?s dcterms:title ?sname.
-              
+
                 optional { ?l dcterms:date ?d }
- 
+
             }"""
 
         lists = med_lists.graph.query(lists_q)
@@ -267,7 +278,7 @@ class RxReconcile(object):
                       OPTIONAL {?med sp:instructions ?inst.}
                       OPTIONAL {
                       ?med sp:quantity ?quantx.
-                      ?quantx sp:value ?quant. 
+                      ?quantx sp:value ?quant.
                       ?quantx sp:unit ?quantunit. }
                       OPTIONAL {
                       ?med sp:frequency ?freqx.
@@ -409,6 +420,7 @@ class RxReconcile(object):
         #print "Redirecting to", my_app_ui
         raise web.seeother(my_app_ui)
 
+
 header = """<!DOCTYPE html>
 <html>
   <head>                     <script src="http://sample-apps.smartplatforms.org/framework/smart/scripts/smart-api-page.js"></script></head>
@@ -421,6 +433,7 @@ footer = """
 
 """Convenience function to initialize a new SmartClient"""
 
+
 def get_smart_client(authorization_header, resource_tokens=None):
     oa_params = oauth.parse_header(authorization_header)
 
@@ -430,9 +443,9 @@ def get_smart_client(authorization_header, resource_tokens=None):
     server_params = {'api_base': oa_params['smart_container_api_base']}
     try:
         ret = SmartClient(SMART_SERVER_OAUTH['consumer_key'],
-            server_params,
-            SMART_SERVER_OAUTH,
-            resource_tokens)
+                          server_params,
+                          SMART_SERVER_OAUTH,
+                          resource_tokens)
     except:
         import traceback
 
@@ -440,6 +453,7 @@ def get_smart_client(authorization_header, resource_tokens=None):
         raise
     ret.record_id = oa_params['smart_record_id']
     return ret
+
 
 app = web.application(urls, globals())
 curdir = os.path.dirname(__file__)
@@ -449,4 +463,4 @@ session = web.session.Session(app, web.session.DiskStore(os.path.join(curdir, 's
 if __name__ == "__main__":
     app.run()
 else:
-    application = app.wsgifunc() 
+    application = app.wsgifunc()

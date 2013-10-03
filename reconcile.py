@@ -271,7 +271,7 @@ def main():
     logging.basicConfig(level=logging.DEBUG if options.verbose else logging.INFO,
                         format='%(asctime)s %(levelname)s ' \
                         '%(module)s. %(funcName)s: %(message)s')
-    rx = pickle.load(open(options.rxnorm, 'r'))
+    rx = pickle.load(open(options.rxnorm, 'rb'))
     print "Loading treatment sets"
     try:
         ts = pickle.load(bz2.BZ2File(options.treatment, 'r'))
