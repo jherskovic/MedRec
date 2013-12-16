@@ -1,5 +1,9 @@
 v0.04
+* v0.03 is broken. DO NOT USE IT.
 * Fixed a bug where only precomputed RxCUIs were used, leading to incorrect reconciliations when used without precomputed RxCUIs
+* The use of semidbm is now mandatory
+* Implemented a small "shelve" equivalent based on semidbm
+
 
 v0.03
 
