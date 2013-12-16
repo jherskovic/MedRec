@@ -1,4 +1,7 @@
-v0.02 to v0.03
+v0.04
+* Fixed a bug where only precomputed RxCUIs were used, leading to incorrect reconciliations when used without precomputed RxCUIs
+
+v0.03
 
 * Fixed incorrect labeling for the concept-matching stage and renamed the stats (they were previously overwritten by brand-name matching)
 * generate_rxnorm_file.py will now use the semidbm library if it's installed, as it handles large databases much, much better. This fixes a crashing bug when generating files from a default UMLS2013AB installation, at least on Mac OS X 10.9

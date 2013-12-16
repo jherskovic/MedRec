@@ -3,7 +3,8 @@ Created on Oct 29, 2011
 
 @author: jherskovic
 '''
-import shelve
+
+from myshelf import shelve
 
 
 class MappingContextError(Exception): pass

@@ -18,7 +18,8 @@ from constants import *
 from medication import make_medication
 from medication import ParsedMedication
 from json_output import *
-from match import Match, match_by_strings, match_by_brand_name, match_by_ingredients, match_by_treatment, match_by_rxcuis
+from match import Match, match_by_strings, match_by_brand_name, match_by_ingredients, match_by_treatment, \
+    match_by_rxcuis
 from mapping_context import MappingContext
 
 
@@ -27,6 +28,7 @@ def separate_parsed_from_unparsed(medication_list):
     the 'parsed' flag set, the second one contains the rest."""
     return ([x for x in medication_list if isinstance(x, ParsedMedication)],
             [x for x in medication_list if not isinstance(x, ParsedMedication)])
+
 
 def reconciliation_setup(list1, list2, mappings, stats):
     print "********** BEFORE RECONCILIATION **********"
@@ -52,6 +54,7 @@ def reconciliation_setup(list1, list2, mappings, stats):
     print "Parsed list 2=\n", '\n'.join(str(x) for x in meds_list_2)
     return meds_list_1, meds_list_2, stats
 
+
 def reconciliation_step_1(list1, list2, mappings, stats):
     """Helper function to handle matching by strings."""
     print "********** RECONCILIATION STEP 1 **********"
@@ -69,6 +72,7 @@ def reconciliation_step_1(list1, list2, mappings, stats):
         stats['reconciled_strings'] = len(rec.reconciled)
     print "**********     END OF STEP 1     **********"
     return dict(rec_list_1=rec_list_1, rec_list_2=rec_list_2, rec=rec, stats=stats)
+
 
 def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
     """Helper function to handle matching by matching concepts."""
@@ -129,13 +133,14 @@ def reconciliation_step_3(rec_list_1=[], rec_list_2=[], unparsed_meds_1=[], unpa
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
     print "**********     END OF STEP 3     **********"
     return dict(
-      pb1=pb1,
-      pb2=pb2,
-      unparsed_meds_1=unparsed_meds_1,
-      unparsed_meds_2=unparsed_meds_2,
-      already_reconciled=already_reconciled,
-      stats=stats
+        pb1=pb1,
+        pb2=pb2,
+        unparsed_meds_1=unparsed_meds_1,
+        unparsed_meds_2=unparsed_meds_2,
+        already_reconciled=already_reconciled,
+        stats=stats
     )
+
 
 def reconciliation_step_4(pb1=[], pb2=[], unparsed_meds_1=[], unparsed_meds_2=[], already_reconciled=[], stats={}):
     """Helper function to handle matching by ingredients."""
@@ -158,13 +163,15 @@ def reconciliation_step_4(pb1=[], pb2=[], unparsed_meds_1=[], unparsed_meds_2=[]
     print "**********     END OF STEP 4     **********"
     return dict(pm1=pm1, pm2=pm2, already_reconciled=already_reconciled, stats=stats)
 
-def reconciliation_step_5(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[], already_reconciled=[], mappings=None, stats={}):
+
+def reconciliation_step_5(pm1=[], pm2=[], unparsed_meds_1=[], unparsed_meds_2=[], already_reconciled=[], mappings=None,
+                          stats={}):
     """Helper function to handle matching by treatment intent."""
     print "********** RECONCILIATION STEP 5 **********"
     print
     # rec_treat is a MatchResult object with the results of matching by treatment intent
     rec_treat = match_by_treatment(pm1, pm2, mappings,
-                                           match_acceptance_threshold=0.3)
+                                   match_acceptance_threshold=0.3)
     pt1, pt2, ptrec = rec_treat.list1, rec_treat.list2, rec_treat.reconciled
     left1 = pt1 + unparsed_meds_1
     left2 = pt2 + unparsed_meds_2
@@ -209,6 +216,7 @@ def reconcile_lists(list1, list2, mappings, stats=None):
     meds_list_1, meds_list_2, stats = reconciliation_setup(list1, list2, mappings, stats)
     return reconcile_parsed_lists(meds_list_1, meds_list_2, mappings, stats)
 
+
 ITERATION_TEMPLATE = """
 ########################################################
 
@@ -221,48 +229,49 @@ ITERATION_TEMPLATE = """
 from html_output import output_html
 from optparse import OptionParser
 
+
 def main():
     usage = """Usage: %prog [options] [file_to_process] [output_directory]""" + \
-    """
-    Reconciles two or more successive medication lists (i.e. assumes that all
-    lists belong to the same patient, and if given many lists L1, L2, L3,..., Ln
-    it will reconcile L1 with L2, then L2 with L3, then L3 with L4, etc.).
+            """
+            Reconciles two or more successive medication lists (i.e. assumes that all
+            lists belong to the same patient, and if given many lists L1, L2, L3,..., Ln
+            it will reconcile L1 with L2, then L2 with L3, then L3 with L4, etc.).
 
-    Each list of medications contained in the same text file should have one
-    medication per line and should end with a line consisting solely of
-    %(separator)s, i.e.
+            Each list of medications contained in the same text file should have one
+            medication per line and should end with a line consisting solely of
+            %(separator)s, i.e.
 
-    Penicillin 100 ucg
-    %(separator)s
-    Penicillin 200 ucg
-    Aspirin 81 mg po
-    %(separator)s
-    Penicillin 100 ucg
-    %(separator)s
+            Penicillin 100 ucg
+            %(separator)s
+            Penicillin 200 ucg
+            Aspirin 81 mg po
+            %(separator)s
+            Penicillin 100 ucg
+            %(separator)s
 
-    defines three lists:
-        1. Penicillin 100 ucg,
-        2. Penicillin 200 ucg and Aspirin 81 mg po,
-        3. Penicillin 100 ucg
+            defines three lists:
+                1. Penicillin 100 ucg,
+                2. Penicillin 200 ucg and Aspirin 81 mg po,
+                3. Penicillin 100 ucg
 
-    if no [file_to_process] is given, the program will perform a demo by
-    reconciling two demonstration lists and quit.
+            if no [file_to_process] is given, the program will perform a demo by
+            reconciling two demonstration lists and quit.
 
-    If [file_to_process] is specified, the program will output an HTML table for
-    each reconciliation it performs. If you don't specify [output_directory],
-    the current directory is assumed.
-    """ % {'separator': MEDLIST_SEPARATOR}
+            If [file_to_process] is specified, the program will output an HTML table for
+            each reconciliation it performs. If you don't specify [output_directory],
+            the current directory is assumed.
+            """ % {'separator': MEDLIST_SEPARATOR}
 
     options_parser = OptionParser(usage=usage)
     options_parser.add_option("-v", "--verbose", dest="verbose", default=False,
-                      help="Show debugging information as the script runs.",
-                      action="store_true")
+                              help="Show debugging information as the script runs.",
+                              action="store_true")
     options_parser.add_option("-r", "--rxnorm", dest="rxnorm", metavar="FILE",
                               default="rxnorm.pickle",
                               help="Read a pickled instance of RXNorm from FILE")
     options_parser.add_option("-t", "--treatment", dest="treatment",
-                      metavar="FILE", default='treats.pickle.bz2',
-                      help="Read a pickled instance of treatment sets from FILE")
+                              metavar="FILE", default='treats.pickle.bz2',
+                              help="Read a pickled instance of treatment sets from FILE")
     options_parser.add_option("-j", "--json", dest="json",
                               default=False, action="store_true",
                               help="Output JSON instead of HTML.")
@@ -270,13 +279,13 @@ def main():
     print "Loading RXNorm"
     logging.basicConfig(level=logging.DEBUG if options.verbose else logging.INFO,
                         format='%(asctime)s %(levelname)s ' \
-                        '%(module)s. %(funcName)s: %(message)s')
+                               '%(module)s. %(funcName)s: %(message)s')
     rx = pickle.load(open(options.rxnorm, 'rb'))
     print "Loading treatment sets"
     try:
         ts = pickle.load(bz2.BZ2File(options.treatment, 'r'))
     except:
-        print "No treatment sets available. Fourth reconciliation step will be a null op."
+        print "No treatment sets available. The last reconciliation step will be a null op."
         ts = {}
     print "Indexing concepts"
     mc = MappingContext(rx, ts)
@@ -305,7 +314,7 @@ def main():
             if current_l1 is not None:
                 count += 1
                 print ITERATION_TEMPLATE % count
-                output_extension=".json" if options.json else ".html"
+                output_extension = ".json" if options.json else ".html"
                 output_filename = os.path.join(output_path, ("rec_%05d" + output_extension) % count)
                 l1, l2, rec = reconcile_lists(current_l1, current_l2, mc)
                 if options.json:
@@ -314,6 +323,7 @@ def main():
                     output_html(current_l1, current_l2, l1, l2, rec, output_filename)
         else:
             current_list.append(l)
+
 
 if __name__ == '__main__':
     main()

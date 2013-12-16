@@ -12,13 +12,7 @@ rxnorm.pickle.bz2)
 Created by Jorge Herskovic
 Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
 """
-try:
-    import semidbm as dbmaccess
-except ImportError:
-    print "semidbm not available. I'll try to use anydbm instead, but depending on the size " \
-          "of your UMLS installation, this script may crash."
-    import anydbm as dbmaccess
-    
+from myshelf import shelve
 import rxnorm
 import sys
 import os.path
@@ -176,10 +170,10 @@ for z in zoloft:
 conc_file = "concepts." + save_file
 print >> sys.stderr, "Shelving concepts to", conc_file
 #conc_shelf = dbmaccess.open(conc_file, protocol=pickle.HIGHEST_PROTOCOL)
-conc_shelf = dbmaccess.open(conc_file, 'c')
+conc_shelf = shelve.open(conc_file, protocol=pickle.HIGHEST_PROTOCOL)
 count = 0
 for c in concepts:
-    conc_shelf[c] = pickle.dumps(concepts[c], pickle.HIGHEST_PROTOCOL)
+    conc_shelf[c] = concepts[c]
     count += 1
     display_count(count)
 
@@ -188,11 +182,10 @@ print >> sys.stderr
 
 ing_file = "ingredients." + save_file
 print >> sys.stderr, "Shelving ingredients to", ing_file
-#ing_shelf = dbmaccess.open(ing_file, protocol=pickle.HIGHEST_PROTOCOL)
-ing_shelf = dbmaccess.open(ing_file, 'c')
+ing_shelf = shelve.open(ing_file, protocol=pickle.HIGHEST_PROTOCOL)
 count = 0
 for i in ingredients:
-    ing_shelf[i] = pickle.dumps(ingredients[i], pickle.HIGHEST_PROTOCOL)
+    ing_shelf[i] = ingredients[i]
     count += 1
     display_count(count)
 
@@ -215,11 +208,10 @@ print >> sys.stderr
 
 del relations
 print >> sys.stderr, "Now actually shelving it."
-#rel_shelf = dbmaccess.open(rels_file, protocol=pickle.HIGHEST_PROTOCOL)
-rel_shelf = dbmaccess.open(rels_file, 'c')
+rel_shelf = shelve.open(rels_file, protocol=pickle.HIGHEST_PROTOCOL)
 count = 0
 for r in rel_dict:
-    rel_shelf[r] = pickle.dumps(rel_dict[r], pickle.HIGHEST_PROTOCOL)
+    rel_shelf[r] = rel_dict[r]
     count += 1
     display_count(count)
 rel_shelf.close()

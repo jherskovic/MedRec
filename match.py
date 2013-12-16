@@ -6,14 +6,16 @@ Created on Oct 28, 2011
 
 import copy
 import logging
-from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS, 
+from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS,
                        MATCH_STRING, MATCH_TREATMENT_INTENT,
                        MATCH_COMPOUND,
                        MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS)
 
+
 class Match(object):
-    """Represents a pair of reconciled meds (or potentially-reconciled 
+    """Represents a pair of reconciled meds (or potentially-reconciled
     meds); 'med1' and 'med2' are medication.ParsedMedication objects."""
+
     def __init__(self, med1, med2, strength=1.0, reconciliation_mechanism="unspecified"):
         super(Match, self).__init__()
         if med1 < med2:
@@ -24,43 +26,49 @@ class Match(object):
             self.med2 = med1
         self.strength = strength
         self.mechanism = reconciliation_mechanism
+
     def as_dictionary(self):
-        """Return a dictionary representing attributes of this match that 
+        """Return a dictionary representing attributes of this match that
         are used by interfaces."""
         my_dict = {'med1': self.med1.as_dictionary(),
                    'score': self.strength,
                    'mechanism': str(self.mechanism)
-                }
+        }
         if KNOWN_MATCHING_FIELDS.get(self.mechanism, None) is None:
             try:
-                similarity=self.med1.fieldwise_comparison(self.med2)
+                similarity = self.med1.fieldwise_comparison(self.med2)
             except:
                 # catchall for not both being ParsedMedications, or one being None
-                similarity=set()
+                similarity = set()
         else:
-            similarity=KNOWN_MATCHING_FIELDS[self.mechanism]
-        my_dict['identical']=similarity
-        
+            similarity = KNOWN_MATCHING_FIELDS[self.mechanism]
+        my_dict['identical'] = similarity
+
         if self.med2 is not None:
             my_dict['med2'] = self.med2.as_dictionary()
-        return my_dict 
+        return my_dict
+
     def __repr__(self):
         if self.med1.normalized_string == self.med2.normalized_string:
             return "<Identical reconciliation (%s): %r @ 0x%x>" % (self.mechanism,
-                                                                     self.med1,
-                                                                     id(self))
+                                                                   self.med1,
+                                                                   id(self))
         return "<Potential reconciliation (%1.2f%% certainty; %s) %r <-> %r @ 0x%x>" % \
                (self.strength * 100.0, self.mechanism,
                 self.med1, self.med2, id(self))
+
     def _is_eq(self, other):
         return ((self.med1 == other.med1 and self.med2 == other.med2) or \
                 (self.med1 == other.med2 and self.med2 == other.med1)) and \
-                 self.strength == other.strength and \
-                 self.mechanism == other.mechanism
+               self.strength == other.strength and \
+               self.mechanism == other.mechanism
+
     def __eq__(self, other):
         return self._is_eq(other)
+
     def __ne__(self, other):
         return not self._is_eq(other)
+
     def _is_lt(self, other):
         if self.med1 < other.med1:
             return True
@@ -78,18 +86,21 @@ class Match(object):
             return True
         elif self.strength < other.strength:
             return False
+
     def __lt__(self, other):
         return self._is_lt(other)
+
     def __gt__(self, other):
         return not self._is_lt(other)
 
-    
+
 class MatchResult(object):
     """Represents the results of medication reconciliation: the two
-    lists of medications to be reconciled minus the medications they 
-    have in common removed, along with a list of medications common 
+    lists of medications to be reconciled minus the medications they
+    have in common removed, along with a list of medications common
     to both lists.
     """
+
     def __init__(self, new_list_1, new_list_2, reconciled_list):
         self._list1 = new_list_1
         self._list1_sorted = None
@@ -98,22 +109,27 @@ class MatchResult(object):
         self._reconciled = reconciled_list
         self._reconciled_sorted = None
         self._sort_lists()
+
     @property
     def list1(self):
         "First input list minus the medications that were reconciled."
         return copy.copy(self._list1)
+
     @property
     def list2(self):
         "Second input list minus the medications that were reconciled."
         return copy.copy(self._list2)
+
     @property
     def reconciled(self):
         "List of medications that were reconciled."
         return copy.copy(self._reconciled)
+
     def _sort_list(self, liszt):
         sorted_list = copy.copy(liszt)
         sorted_list.sort()
         return sorted_list
+
     def _sort_lists(self):
         self._list1_sorted = self.list1[:]
         self._list1_sorted.sort()
@@ -121,42 +137,46 @@ class MatchResult(object):
         self._list2_sorted.sort()
         self._reconciled_sorted = self.reconciled[:]
         self._reconciled_sorted.sort()
+
     def _lists_comparison(self, other):
         if self._list1_sorted == other._list1_sorted and \
-          self._list2_sorted == other._list2_sorted and \
-          self._reconciled_sorted == other._reconciled_sorted:
+                        self._list2_sorted == other._list2_sorted and \
+                        self._reconciled_sorted == other._reconciled_sorted:
             return True
         return False
+
     def __eq__(self, other):
         areSame = self._lists_comparison(other)
         if areSame:
             return True
         return False
+
     def __ne__(self, other):
         areSame = self._lists_comparison(other)
         if areSame:
             return False
         return True
+
     def __repr__(self):
         return "<MatchResult list 1: %d; list 2: %d; reconciled: %d; 0x%x>" % \
-            (len(self._list1), len(self._list2), len(self._reconciled), id(self),)
+               (len(self._list1), len(self._list2), len(self._reconciled), id(self),)
 
 
 def match_by_strings(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by comparing the
-    strings one by one. This is an O(n^2) comparison, but given the average 
+    strings one by one. This is an O(n^2) comparison, but given the average
     size of a medication list it's pretty fast.
-    
+
     The function takes two lists and builds a third one from the common
     elements from both lists. If two elements in a list (say list1) are
     identical to one element in the other list (list2), only the first
-    identical element in list1 will be removed.  
-    
-    The function returns a MatchResult containing three lists: 
+    identical element in list1 will be removed.
+
+    The function returns a MatchResult containing three lists:
     * the first list, minus the common elements
     * the second list, minus the common elements
     * the list of common elements
-    """  
+    """
     my_list_1 = []
     my_list_2 = [x.normalized_string for x in list2]
     # We keep a list of objects separate from a list of strings, so
@@ -173,22 +193,24 @@ def match_by_strings(list1, list2):
             my_list_1.append(item)
     return MatchResult(my_list_1, my_list_2_of_objects, common)
 
+
 def medication_list_CUIs(medication_list):
     """Given a medication list, returns a list of the matching CUIs for each
     medication."""
     return [x.CUIs for x in medication_list]
 
+
 def match_by_rxcuis(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by comparing the
-    CUIs of each. This is an O(n^2) comparison, but given the average 
+    CUIs of each. This is an O(n^2) comparison, but given the average
     size of a medication list it's pretty fast.
-    
+
     The function takes two lists and builds a third one from the common
-    elements from both lists. If an element matches to exactly the same 
-    CUIs as another element, they are pharmacologically identical 
-    courtesy of RXNorm. 
-    
-    The function returns a MatchResult containing three lists: 
+    elements from both lists. If an element matches to exactly the same
+    CUIs as another element, they are pharmacologically identical
+    courtesy of RXNorm.
+
+    The function returns a MatchResult containing three lists:
     * the first list, minus the common elements
     * the second list, minus the common elements
     * the list of common elements
@@ -197,14 +219,16 @@ def match_by_rxcuis(list1, list2):
     concepts_2 = [x.RxCUIs for x in list2]
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
-    my_list_1=[]
+    my_list_1 = []
     my_list_2_of_objects = list2[:]
     common = []
     for i in xrange(len(concepts_1)):
         if concepts_1[i] in concepts_2:
             where_in_2 = concepts_2.index(concepts_1[i])
             med2 = my_list_2_of_objects[where_in_2]
-            common.append(Match(list1[i], my_list_2_of_objects[where_in_2], 1.0 if med2.normalized_dose==list1[i].normalized_dose else 0.5, MATCH_COMPOUND))
+            common.append(Match(list1[i], my_list_2_of_objects[where_in_2],
+                                1.0 if med2.normalized_dose == list1[i].normalized_dose else 0.5,
+                                MATCH_COMPOUND))
             del my_list_2_of_objects[where_in_2]
             del concepts_2[where_in_2]
         else:
@@ -218,38 +242,41 @@ def medication_list_tradenames(medication_list):
     new lists have the same indices)."""
     return [x.tradenames for x in medication_list]
 
+
 def find_brand_name_matches(c1, concepts_of_c2):
     logging.debug("Testing %r against %r", c1, concepts_of_c2)
     potential_matches = [c1 in t for t in concepts_of_c2 if t is not None]
     logging.debug("Result: %r", potential_matches)
     matches = potential_matches.index(True) \
-            if True in potential_matches \
-            else None
+        if True in potential_matches \
+        else None
     return matches
+
 
 def brand_name_match_bookkeeping(list_2, tradenames_c2, concepts_2, matches):
     del list_2[matches]
     del tradenames_c2[matches]
     del concepts_2[matches]
 
+
 def match_by_brand_name(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by checking whether
     elements in list1 are brand names of elements in list2, and viceversa.
-    
+
     The function takes two lists and builds a third one from the common
     elements from both lists. If two elements of list1 are brand names for
-    elements in list2, only the first matching element in list1 will be 
-    removed.  
-    
-    The function returns a MatchResult containing three lists: 
+    elements in list2, only the first matching element in list1 will be
+    removed.
+
+    The function returns a MatchResult containing three lists:
     * the first list, minus the common elements
     * the second list, minus the common elements
     * the list of common elements
-    """  
+    """
     logging.debug("Determining CUIs for %r", list1)
     concepts_1 = medication_list_CUIs(list1)
     logging.debug("Concepts for %r: %r", list1, concepts_1)
-    
+
     logging.debug("Computing tradenames for %r", list1)
     tradenames_of_c1 = medication_list_tradenames(list1)
     logging.debug("Tradenames for %r: %r", list1, tradenames_of_c1)
@@ -257,7 +284,7 @@ def match_by_brand_name(list1, list2):
     logging.debug("Determining CUIs for %r", list2)
     concepts_2 = medication_list_CUIs(list2)
     logging.debug("Concepts for %r: %r", list2, concepts_2)
-    
+
     logging.debug("Computing tradenames for %r", list2)
     tradenames_of_c2 = medication_list_tradenames(list2)
     logging.debug("Tradenames for %r: %r", list2, tradenames_of_c2)
@@ -268,14 +295,14 @@ def match_by_brand_name(list1, list2):
     if (concepts_1 == [] or tradenames_of_c2 == []) \
         and (concepts_2 == [] or tradenames_of_c1 == []):
         return MatchResult(list1, list2, [])
-    
+
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
     my_list_1 = []
     my_list_2_of_objects = list2[:]
     common = []
     logging.debug("Length of concepts_1: %d", len(concepts_1))
-    
+
     for y in xrange(len(list1)):
         logging.debug("y=%d", y)
         matches = None
@@ -289,7 +316,7 @@ def match_by_brand_name(list1, list2):
                 if matches is not None:
                     dose_2 = my_list_2_of_objects[matches].normalized_dose
                     # If the dosages are equal, we have a match
-                    match_score=1.0 if dose_1 == dose_2 else 0.5
+                    match_score = 1.0 if dose_1 == dose_2 else 0.5
                     common.append(Match(list1[y], my_list_2_of_objects[matches], match_score, MATCH_BRAND_NAME))
                     brand_name_match_bookkeeping(my_list_2_of_objects, tradenames_of_c2, concepts_2, matches)
                     break
@@ -302,7 +329,7 @@ def match_by_brand_name(list1, list2):
                     if matches is not None:
                         dose_2 = my_list_2_of_objects[matches].normalized_dose
                         # If the dosages are equal, we have a match
-                        match_score=1.0 if dose_1 == dose_2 else 0.5
+                        match_score = 1.0 if dose_1 == dose_2 else 0.5
                         common.append(Match(list1[y], my_list_2_of_objects[matches], match_score, MATCH_BRAND_NAME))
                         brand_name_match_bookkeeping(my_list_2_of_objects, tradenames_of_c2, concepts_2, matches)
                         break
@@ -310,6 +337,7 @@ def match_by_brand_name(list1, list2):
         if matches is None:
             my_list_1.append(list1[y])
     return MatchResult(my_list_1, my_list_2_of_objects, common)
+
 
 def match_by_ingredients(list1, list2, min_match_threshold=0.3):
     """Computes equivalence between two lists of medications by comparing their
@@ -320,13 +348,13 @@ def match_by_ingredients(list1, list2, min_match_threshold=0.3):
     my_list_2 = [x.generic_formula for x in list2]
     my_list_2_of_objects = list2[:]
     common = []
-    
+
     for item in list1:
         ph1 = (item.generic_formula, item.normalized_dose)
         match = [0.0] * len(my_list_2)
         for item2 in xrange(len(my_list_2)):
             ph2 = (my_list_2[item2],
-                 my_list_2_of_objects[item2].normalized_dose)
+                   my_list_2_of_objects[item2].normalized_dose)
             logging.debug("Comparing %r against %r", ph1, ph2)
             for p in ph1[0]:
                 if p in ph2[0]:
@@ -338,7 +366,7 @@ def match_by_ingredients(list1, list2, min_match_threshold=0.3):
                         match[item2] = match[item2] + 1.0
             match[item2] = match[item2] / float((len(ph2[0]) + len(ph1[0])) / 2.0)
         matched_items = [(match[x], my_list_2[x]) for x in xrange(len(my_list_2))]
-        # We choose the highest-ranking match 
+        # We choose the highest-ranking match
         matched_items.sort(reverse=True)
         if len(matched_items) > 0 and matched_items[0][0] > min_match_threshold:
             where_in_2 = my_list_2.index(matched_items[0][1])
@@ -346,7 +374,7 @@ def match_by_ingredients(list1, list2, min_match_threshold=0.3):
                           item, my_list_2_of_objects[where_in_2],
                           matched_items[0][0])
             common.append(Match(item, my_list_2_of_objects[where_in_2],
-                                               matched_items[0][0], MATCH_INGREDIENTS))
+                                matched_items[0][0], MATCH_INGREDIENTS))
             del my_list_2[where_in_2]
             del my_list_2_of_objects[where_in_2]
         else:
@@ -354,6 +382,7 @@ def match_by_ingredients(list1, list2, min_match_threshold=0.3):
         if len(matched_items) > 0:
             logging.debug("The best match for %r is %r", ph1, matched_items[0])
     return MatchResult(my_list_1, my_list_2_of_objects, common)
+
 
 def build_treatment_lists(concepts, mappings):
     treats = []
@@ -366,6 +395,7 @@ def build_treatment_lists(concepts, mappings):
         treats.append(this_treats)
     return treats
 
+
 def match_by_treatment(list1, list2, mappings,
                        highest_possible_match=0.5,
                        match_acceptance_threshold=0.5):
@@ -377,7 +407,7 @@ def match_by_treatment(list1, list2, mappings,
             return 0.0
         len_common = len(set1 & set2)
         return float(len_common) / float(len_1 + len_2 - len_common)
-     
+
     logging.debug("Determining CUIs for %r", list1)
     concepts_1 = medication_list_CUIs(list1)
     logging.debug("Concepts for %r: %r", list1, concepts_1)
@@ -389,20 +419,20 @@ def match_by_treatment(list1, list2, mappings,
     if (concepts_1 == [] or concepts_2 == []):
         # Without CUIs there's nothing to do here.
         return MatchResult(list1, list2, [])
-    
+
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
     my_list_1 = []
     my_list_2_of_objects = list2[:]
     common = []
-    
+
     # Build lists of potential treatments
     treats_1 = build_treatment_lists(concepts_1, mappings)
     logging.debug("Treatment list for medication list 1: %r", treats_1)
-    
+
     treats_2 = build_treatment_lists(concepts_2, mappings)
     logging.debug("Treatment list for medication list 2: %r", treats_2)
-    
+
     for y in xrange(len(concepts_1)):
         # Compare the "treatment sphere" of each medication in list 1 to the
         # "treatment sphere" of each medication in list 2
@@ -416,9 +446,9 @@ def match_by_treatment(list1, list2, mappings,
             score = comparison[0][0] * highest_possible_match
             matched_item = comparison[0][1]
             common.append(Match(list1[y],
-                                         my_list_2_of_objects[matched_item],
-                                         score,
-                                         MATCH_TREATMENT_INTENT))
+                                my_list_2_of_objects[matched_item],
+                                score,
+                                MATCH_TREATMENT_INTENT))
             del my_list_2_of_objects[matched_item]
             del treats_2[matched_item]
         else:

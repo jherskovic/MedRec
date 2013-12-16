@@ -2,12 +2,12 @@
 """
 medication.py
 
-Defines the Medication and ParsedMedication classes. Medication represents a 
-single line from the medication lists to reconcile; ParsedMedication is a 
+Defines the Medication and ParsedMedication classes. Medication represents a
+single line from the medication lists to reconcile; ParsedMedication is a
 subclass of Medication that decomposes a line according to regexps (see
 constants.py)
 
-Created by Jorge Herskovic 
+Created by Jorge Herskovic
 Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
 """
 
@@ -24,14 +24,17 @@ medication_parser = re.compile(r"""^\s*(?P<name>.*?)
                                   \s*(?P<formulation>.*?)
                                   ;
                                   \s*?(?P<instructions>.*)""",
-    re.IGNORECASE | re.VERBOSE)
+                               re.IGNORECASE | re.VERBOSE)
+
 
 def _sequential_id_gen(starting=0):
     while True:
         yield starting
         starting += 1
 
+
 _sequential_id = _sequential_id_gen()
+
 
 def normalize_field(field):
     """Remove leading & trailing whitespace and undesirable punctuation;
@@ -104,9 +107,9 @@ class ParsedMedication(Medication):
     times_regexp_cache = {}
 
     def __init__(self, med_info, context=None, provenance=""):
-        """ParsedMedication constructor. It attempts to parse the med_line 
+        """ParsedMedication constructor. It attempts to parse the med_line
         arg into its components using the from_text() method. Pass
-        a MappingContext as part of the context parameter to provide 
+        a MappingContext as part of the context parameter to provide
         a version of rxnorm to perform computations. Pass a provenance
         to assist in reconciling several lists of medications."""
         if isinstance(med_info, dict):
@@ -217,10 +220,10 @@ class ParsedMedication(Medication):
     def as_dictionary(self):
         # Parsed=true is for backwards compatibility
         return dict(medication_name=str(self.name), dose=str(self.dose), units=str(self.units),
-            formulation=str(self.formulation), instructions=str(self.instructions),
-            original_string=self.original_string, provenance=self.provenance,
-            normalized_dose=self._norm_dose, frequency=self.frequency, id=self._seq_id,
-            parsed=True)
+                    formulation=str(self.formulation), instructions=str(self.instructions),
+                    original_string=self.original_string, provenance=self.provenance,
+                    normalized_dose=self._norm_dose, frequency=self.frequency, id=self._seq_id,
+                    parsed=True)
 
     def _normalize_drug_name(self, drug_name):
         truncated = drug_name.split('@')[0].strip().upper()
@@ -275,6 +278,18 @@ class ParsedMedication(Medication):
 
     @property
     def RxCUIs(self):
+        mappings = self._mappings
+        if mappings is None:
+            raise MappingContextError, "Requires an instance initialized with a MappingContext object."
+        if self._rxcuis is None:
+            self._rxcuis = []
+            for c in self.CUIs:
+                try:
+                    rxcui = mappings.rxnorm.concepts[c].RxCUI
+                except:
+                    continue
+                else:
+                    self._rxcuis.append(rxcui)
         return self._rxcuis
 
     @property
@@ -289,7 +304,7 @@ class ParsedMedication(Medication):
                 self._tradenames = reduce(operator.add, [[x._concept2.CUI
                                                           for x in mappings.rxnorm.tradename_relations
                                                           if x._concept1.CUI == y]
-                for y in my_cuis])
+                                                         for y in my_cuis])
         return copy.copy(self._tradenames)
 
     @property
@@ -314,14 +329,14 @@ class ParsedMedication(Medication):
         return copy.copy(self._problems)
 
     def _normalize_dose(self):
-        """Takes a drug tuple (i.e. the output of the regular expression listed 
-        above) and returns the total number of units a day the patient is 
+        """Takes a drug tuple (i.e. the output of the regular expression listed
+        above) and returns the total number of units a day the patient is
         receiving"""
-        # Assume that (if not mentioned) there is 
+        # Assume that (if not mentioned) there is
         # one tablet/capsule/whatever per unit of time
         number_of_units = None
         form = self.formulation
-        # Make sure that we have a formulation we know about! Replace formulations 
+        # Make sure that we have a formulation we know about! Replace formulations
         # with standard names.
         for known_formulation in physical_forms:
             if known_formulation in form:
@@ -332,7 +347,7 @@ class ParsedMedication(Medication):
             regexps = ParsedMedication.formulation_regexp_cache[form]
         else:
             # Keep a cache of the regular expressions we build; doing so is
-            # much faster than building them for each and every medication 
+            # much faster than building them for each and every medication
             regexps = build_regular_expressions(known_number_of_doses, form)
             logging.debug("Regexps for form %s=%r", form, regexps)
             ParsedMedication.formulation_regexp_cache[form] = regexps
@@ -371,7 +386,7 @@ class ParsedMedication(Medication):
             times_per_day = 1
             # else:
             #print drug_tuple, "is taken %d times a day" % times_per_day
-        #logging.debug("The total quantity of %r is %1.2f %s a day", 
+        #logging.debug("The total quantity of %r is %1.2f %s a day",
         #    self.name, self.dose*times_per_day*number_of_units, self.units)
         try:
             return '%s %s*%d*%d' % (
@@ -393,7 +408,7 @@ class ParsedMedication(Medication):
             return None
 
     def fieldwise_comparison(self, other):
-        """Compares two medication objects field by field, based on the 
+        """Compares two medication objects field by field, based on the
         contents of the MEDICATION_FIELDS constant. Returns a set containing
         the identical fields."""
         result = set()
@@ -405,10 +420,10 @@ class ParsedMedication(Medication):
     def _is_eq(self, other):
         """We test equality on name, dose, units, formulation, and
         instructions; be ridiculously conservative in matching."""
-        if self._name == other._name and self._dose == other._dose and\
-           self._units == other._units and\
-           self._formulation == other._formulation and\
-           self._instructions == other._instructions:
+        if self._name == other._name and self._dose == other._dose and \
+                        self._units == other._units and \
+                        self._formulation == other._formulation and \
+                        self._instructions == other._instructions:
             return True
         return False
 

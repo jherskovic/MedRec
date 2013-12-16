@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import shelve
+from myshelf import shelve
 import os.path
 
 class Drug(object):
@@ -25,13 +25,13 @@ class Drug(object):
 
     @property
     def semtypes(self):
-        """Property: a set of semantic type abbreviations for the drug 
+        """Property: a set of semantic type abbreviations for the drug
             represented by an instance of this class."""
         return set([type_kinds[x] for x in self._st])
 
     @semtypes.setter
     def semtypes(self, st):
-        """Setter: given a sequence of semantic type names, set their 
+        """Setter: given a sequence of semantic type names, set their
             abbreviations on this Drug object."""
         self._st = set([reverse_type_kinds[x] for x in st])
 
@@ -172,19 +172,19 @@ class RXNORM(object):
             # If the file wasn't found, try the current directory (necessary for the WSGI version).
             self._concepts_file=os.path.join(curdir, self._concepts_file)
             self.concepts = shelve.open(self._concepts_file, flag='r')
-            
+
         try:
             self._relations = shelve.open(self._relations_file, flag='r')
         except:
             self._relations_file = os.path.join(curdir, self._relations_file)
             self._relations = shelve.open(self._relations_file, flag='r')
-            
+
         try:
             self.formulas = shelve.open(self._ingredients_file, flag='r')
         except:
             self._ingredients_file=os.path.join(curdir, self._ingredients_file)
             self.formulas=shelve.open(self._ingredients_file, flag='r')
-            
+
         type_kinds = state['t']
         reverse_type_kinds = state['rt']
         self._tradename_relations = None
