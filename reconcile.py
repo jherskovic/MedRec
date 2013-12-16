@@ -71,7 +71,7 @@ def reconciliation_step_1(list1, list2, mappings, stats):
     return dict(rec_list_1=rec_list_1, rec_list_2=rec_list_2, rec=rec, stats=stats)
 
 def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
-    """Helper function to handle matching by brand names."""
+    """Helper function to handle matching by matching concepts."""
     print "********** RECONCILIATION STEP 2 **********"
     print
     # Separate parsed and unparsed medications
@@ -89,10 +89,10 @@ def reconciliation_step_2(rec_list_1=[], rec_list_2=[], rec=[], stats={}):
     print
     print "List 2 after concept matching=\n", '\n'.join([str(x) for x in left2])
     print
-    print "Reconciled after brand name matching=\n", '\n'.join([str(x) for x in bnrec])
+    print "Reconciled after concept matching=\n", '\n'.join([str(x) for x in bnrec])
     print
     if stats is not None:
-        stats['reconciled_brand_name'] = len(bnrec)
+        stats['reconciled_concepts'] = len(bnrec)
     already_reconciled = [x for x in bnrec] + rec.reconciled
     print "All reconciled=\n", '\n'.join([str(x) for x in already_reconciled])
     print "**********     END OF STEP 2     **********"
