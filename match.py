@@ -223,7 +223,9 @@ def match_by_rxcuis(list1, list2):
     my_list_2_of_objects = list2[:]
     common = []
     for i in xrange(len(concepts_1)):
-        if concepts_1[i] in concepts_2:
+        if concepts_1[i] == ['NOCODE']:
+            my_list_1.append(list1[i])
+        elif concepts_1[i] in concepts_2:
             where_in_2 = concepts_2.index(concepts_1[i])
             med2 = my_list_2_of_objects[where_in_2]
             common.append(Match(list1[i], my_list_2_of_objects[where_in_2],
