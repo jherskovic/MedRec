@@ -2,10 +2,10 @@
 """
 constants.py
 
-Defines the strings used to build regular expressions and parse medication 
+Defines the strings used to build regular expressions and parse medication
 strings.
 
-Created by Jorge Herskovic 
+Created by Jorge Herskovic
 Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserved.
 """
 
@@ -13,47 +13,47 @@ Copyright (c) 2011 UTHealth School of Biomedical Informatics. All rights reserve
 # the regular expressions that detect administration frequency
 # Second element of each tuple indicates frequency per day, or, if -1,
 # that the first element is to be treated as a regexp that captures the frequency.
-known_times_per_day=[
-               ('%FORM% DAILY', 1),
-               ('%FORM%S DAILY', 1),
-               ('%FORM%S A DAY', 1),
-               ('%FORM% TWICE A DAY', 2),
-               ('%FORM% TWICE DAILY', 2),
-               ('%FORM% THREE TIMES DAILY', 3),
-               ('%FORM% THREE TIMES A DAY', 3),
-               (r'(\d+) TIME[S]? PER DAY', -1),
-               (r'(\d+) TIME[S]? DAILY', -1),
-               (r'(\d+) TIME[S]? A DAY', -1),
-               ('QD', 1),
-               ('Q.D.', 1),
-               ('Q.D', 1),
-               ('BID', 2),
-               ('TID', 3),
-               ('QID', 4),
-               ('T.I.D.', 3),
-               ('T.I.D', 3),               
-               ('B.I.D.', 2),
-               ('B.I.D', 2),
-               ('Q.I.D.', 4),
-               ('Q.I.D', 4),
-               ('A DAY', 1),
-               ('AT NIGHT', 1),
-              ]
+known_times_per_day = [
+    ('%FORM% DAILY', 1),
+    ('%FORM%S DAILY', 1),
+    ('%FORM%S A DAY', 1),
+    ('%FORM% TWICE A DAY', 2),
+    ('%FORM% TWICE DAILY', 2),
+    ('%FORM% THREE TIMES DAILY', 3),
+    ('%FORM% THREE TIMES A DAY', 3),
+    (r'(\d+) TIME[S]? PER DAY', -1),
+    (r'(\d+) TIME[S]? DAILY', -1),
+    (r'(\d+) TIME[S]? A DAY', -1),
+    ('QD', 1),
+    ('Q.D.', 1),
+    ('Q.D', 1),
+    ('BID', 2),
+    ('TID', 3),
+    ('QID', 4),
+    ('T.I.D.', 3),
+    ('T.I.D', 3),
+    ('B.I.D.', 2),
+    ('B.I.D', 2),
+    ('Q.I.D.', 4),
+    ('Q.I.D', 4),
+    ('A DAY', 1),
+    ('AT NIGHT', 1),
+]
 
 # Second element of each tuple, if -1, indicates that the first element
 # is a regular expression; otherwise, the first element is a literal
-# string to be matched.                
-known_number_of_doses=[
-               (r'TAKE (\d+) %FORM%[S]?', -1),
-               ('TAKE %FORM%', 1),
-               (r'(\d+) %FORM%[S]?', -1),
-              ]
+# string to be matched.
+known_number_of_doses = [
+    (r'TAKE (\d+) %FORM%[S]?', -1),
+    ('TAKE %FORM%', 1),
+    (r'(\d+) %FORM%[S]?', -1),
+]
 
-MEDLIST_SEPARATOR="******"
-UNDESIRABLE_PUNCTUATION=".,;:!?@#$%^&*()"
+MEDLIST_SEPARATOR = "******"
+UNDESIRABLE_PUNCTUATION = ".,;:!?@#$%^&*()"
 
 # Physical forms extracted from SNOMED-CT and augmented by JRH
-physical_forms="""Drop - unit of product usage (qualifier value)
+physical_forms = """Drop - unit of product usage (qualifier value)
 Suppository - unit of product usage (qualifier value)
 Puff - unit of product usage (qualifier value)
 Base - unit of product usage (qualifier value)
@@ -95,36 +95,39 @@ Tablet delayed release -
 Gelcaps -
 Gel caps -""".split('\n')
 # Extract everything before the hyphen, uppercase it, and strip whitespace
-physical_forms=[x.split('-')[0].upper().strip() for x in physical_forms]
+physical_forms = [x.split('-')[0].upper().strip() for x in physical_forms]
 
-abbreviations={'HCL': 'HYDROCHLORIDE'}
+abbreviations = {'HCL': 'HYDROCHLORIDE'}
 
 # The first three match types imply that *everything* but the drug name matches
-# The last match type is more of a wildcard 
-MATCH_STRING="Identical strings"
-MATCH_COMPOUND="Identical compound (RxNorm)"
-MATCH_BRAND_NAME="Brand name and generic"
-MATCH_INGREDIENTS="Ingredient lists match"
-MATCH_TREATMENT_INTENT="Similar treatment intent"
+# The last match type is more of a wildcard
+MATCH_STRING = "Identical strings"
+MATCH_COMPOUND = "Identical compound (RxNorm)"
+MATCH_MULTIPLE_COMPOUNDS = "Contains all compounds (RxNorm)"
+MATCH_BRAND_NAME = "Brand name and generic"
+MATCH_INGREDIENTS = "Ingredient lists match"
+MATCH_TREATMENT_INTENT = "Similar treatment intent"
 
-MEDICATION_FIELDS={"_name":         "DRUG_NAME",
-                   "_dose":         "DOSE",
-                   "_units":        "UNITS",
-                   "_formulation":  "FORMULATION",
-                   "_instructions": "SIG",
-                   "_norm_dose":    "NORMALIZED_DOSE",
-                   }
+MEDICATION_FIELDS = {"_name": "DRUG_NAME",
+                     "_dose": "DOSE",
+                     "_units": "UNITS",
+                     "_formulation": "FORMULATION",
+                     "_instructions": "SIG",
+                     "_norm_dose": "NORMALIZED_DOSE",
+}
 
-# 
-KNOWN_MATCHING_FIELDS={MATCH_STRING:          [x for x in 
-                                               MEDICATION_FIELDS.itervalues()],  
-                       MATCH_BRAND_NAME:      [x for x in
-                                               MEDICATION_FIELDS.itervalues() 
-                                               if x != "DRUG_NAME"],
-                       MATCH_INGREDIENTS:     [x for x in 
-                                               MEDICATION_FIELDS.itervalues()
-                                               if x != "DRUG_NAME"],
-                       MATCH_TREATMENT_INTENT: None}
+#
+KNOWN_MATCHING_FIELDS = {MATCH_STRING: [x for x in
+                                        MEDICATION_FIELDS.itervalues()],
+                         MATCH_BRAND_NAME: [x for x in
+                                            MEDICATION_FIELDS.itervalues()
+                                            if x != "DRUG_NAME"],
+                         MATCH_INGREDIENTS: [x for x in
+                                             MEDICATION_FIELDS.itervalues()
+                                             if x != "DRUG_NAME"],
+                         MATCH_TREATMENT_INTENT: None,
+                         MATCH_MULTIPLE_COMPOUNDS: [MEDICATION_FIELDS["_formulation"]],
+}
 
 # Test lists of medications
 demo_list_1 = """Zoloft 50 MG Tablet;TAKE 1 TABLET DAILY.; RPT

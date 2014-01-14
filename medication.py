@@ -15,8 +15,10 @@ import re
 import copy
 import logging
 import operator
+
 from constants import *
 from mapping_context import MappingContextError
+
 
 medication_parser = re.compile(r"""^\s*(?P<name>.*?)
                                   \s+(?P<dose>[0-9\.\/]+)

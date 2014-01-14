@@ -139,11 +139,13 @@ ingredient_rel = set(["ingredient_of",
 
 count = 0
 for r in relations:
+    # Extract "ingredients" relationships
     if r.relation in ingredient_rel:
         if r._concept1.CUI in ingredients:
             ingredients[r._concept1.CUI].add(r._concept2)
         else:
             ingredients[r._concept1.CUI] = set([r._concept2])
+
     count += 1
     display_count(count)
 print >> sys.stderr

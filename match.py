@@ -6,9 +6,10 @@ Created on Oct 28, 2011
 
 import copy
 import logging
+import operator
 from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS,
                        MATCH_STRING, MATCH_TREATMENT_INTENT,
-                       MATCH_COMPOUND,
+                       MATCH_COMPOUND, MATCH_MULTIPLE_COMPOUNDS,
                        MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS)
 
 
@@ -19,18 +20,24 @@ class Match(object):
     def __init__(self, med1, med2, strength=1.0, reconciliation_mechanism="unspecified"):
         super(Match, self).__init__()
         if med1 < med2:
-            self.med1 = med1
-            self.med2 = med2
+            self.meds = [med1, med2]
         else:
-            self.med1 = med2
-            self.med2 = med1
+            self.meds = [med2, med1]
         self.strength = strength
         self.mechanism = reconciliation_mechanism
+
+    @property
+    def med1(self):
+        return self.meds[0]
+
+    @property
+    def med2(self):
+        return self.meds[1]
 
     def as_dictionary(self):
         """Return a dictionary representing attributes of this match that
         are used by interfaces."""
-        my_dict = {'med1': self.med1.as_dictionary(),
+        my_dict = {'med1': self.meds[0].as_dictionary(),
                    'score': self.strength,
                    'mechanism': str(self.mechanism)
         }
@@ -44,18 +51,18 @@ class Match(object):
             similarity = KNOWN_MATCHING_FIELDS[self.mechanism]
         my_dict['identical'] = similarity
 
-        if self.med2 is not None:
-            my_dict['med2'] = self.med2.as_dictionary()
+        if self.meds[1] is not None:
+            my_dict['med2'] = self.meds[1].as_dictionary()
         return my_dict
 
     def __repr__(self):
-        if self.med1.normalized_string == self.med2.normalized_string:
+        if self.meds[0].normalized_string == self.meds[1].normalized_string:
             return "<Identical reconciliation (%s): %r @ 0x%x>" % (self.mechanism,
-                                                                   self.med1,
+                                                                   self.meds[0],
                                                                    id(self))
         return "<Potential reconciliation (%1.2f%% certainty; %s) %r <-> %r @ 0x%x>" % \
                (self.strength * 100.0, self.mechanism,
-                self.med1, self.med2, id(self))
+                self.meds[0], self.meds[1], id(self))
 
     def _is_eq(self, other):
         return ((self.med1 == other.med1 and self.med2 == other.med2) or \
@@ -92,6 +99,39 @@ class Match(object):
 
     def __gt__(self, other):
         return not self._is_lt(other)
+
+
+class CompoundMatch(Match):
+    def __init__(self, single_med, multiple_meds, strength=1.0, reconciliation_mechanism="unspecified"):
+        self.meds = [single_med, multiple_meds]
+        self.strength = strength
+        self.mechanism = reconciliation_mechanism
+
+    def as_dictionary(self):
+        """Return a dictionary representing attributes of this match that
+        are used by interfaces."""
+        my_dict = {'single_med': self.med1.as_dictionary(),
+                   'score': self.strength,
+                   'mechanism': str(self.mechanism)
+        }
+        if KNOWN_MATCHING_FIELDS.get(self.mechanism, None) is None:
+            try:
+                similarity = self.med1.fieldwise_comparison(self.med2)
+            except:
+                # catchall for not both being ParsedMedications, or one being None
+                similarity = set()
+        else:
+            similarity = KNOWN_MATCHING_FIELDS[self.mechanism]
+        my_dict['identical'] = similarity
+
+        if self.med2 is not None:
+            my_dict['compound'] = [x.as_dictionary() for x in self.med2]
+        return my_dict
+
+    def __repr__(self):
+        return "<Compound reconciliation (%1.2f%% certainty; %s) %r <-> %r @ 0x%x>" % \
+               (self.strength * 100.0, self.mechanism,
+                self.med1, [repr(x) for x in self.med2], id(self))
 
 
 class MatchResult(object):
@@ -223,9 +263,7 @@ def match_by_rxcuis(list1, list2):
     my_list_2_of_objects = list2[:]
     common = []
     for i in xrange(len(concepts_1)):
-        if concepts_1[i] == ['NOCODE']:
-            my_list_1.append(list1[i])
-        elif concepts_1[i] in concepts_2:
+        if concepts_1[i] != ['NOCODE'] and concepts_1[i] in concepts_2:
             where_in_2 = concepts_2.index(concepts_1[i])
             med2 = my_list_2_of_objects[where_in_2]
             common.append(Match(list1[i], my_list_2_of_objects[where_in_2],
@@ -339,6 +377,75 @@ def match_by_brand_name(list1, list2):
         if matches is None:
             my_list_1.append(list1[y])
     return MatchResult(my_list_1, my_list_2_of_objects, common)
+
+
+def match_compounds(list1, list2):
+    # """Since the operation is unidirectional, we'll hide the internal implementation and
+    # run through it twice before returning."""
+    # def _match_compounds(_list1, _list2):
+    #     """Look for medications in list1 that have their known components in SEPARATE medications in list 2.
+    #     """
+    #     concepts_1 = [x.RxCUIs for x in _list1]
+    #     concepts_2 = [x.RxCUIs for x in _list2]
+    #
+    #     my_list_1 = []
+    #     my_list_2_of_objects = _list2[:]
+    #     common = []
+    #     for i in xrange(len(concepts_1)):
+    #         # At this moment, we are only interested
+    #         if concepts_1[i] != ['NOCODE']:
+    #             these_matching_concepts = []
+    #             target=set(concepts_1[i])
+    #             for j in xrange(len(concepts_2)):
+    #                 candidate=concepts_2[j]
+    #                 if candidate == ['NOCODE']:
+    #                     continue
+    #                 # Check if all the RxCUIs in concepts_2[j] are contained in concepts_1[i]
+    #                 found_in_candidate = [x in target for x in candidate]
+    #                 if len(found_in_candidate) > 0 and reduce(operator.and_, found_in_candidate):
+    #                     # Temporarily store all the concepts and the positions at which they
+    #                     # occur
+    #                     these_matching_concepts.append((j, candidate))
+    #
+    #             # Ok, we've taken ALL the concepts in _2 that match into the ones in
+    #             # concepts_1[i]. Let's see if they cover the exact same thing with no
+    #             # leftovers
+    #             # We're only interested in matches of two or more.
+    #             if len(these_matching_concepts) <= 1:
+    #                 my_list_1.append(_list1[i])
+    #                 continue
+    #
+    #             all_matching_concepts=reduce(operator.add, (x[1] for x in these_matching_concepts))
+    #             # Ignoring order, of course, so we need to compare:
+    #             # Whether the contents are the same, regardless of order, and
+    #             # whether the sizes are the same.
+    #             if len(concepts_1[i]) == len(all_matching_concepts) and \
+    #                 set(all_matching_concepts) == target:
+    #                 # Yes, it matches. Remove them from both lists.
+    #                 matched_positions=set([x[0] for x in these_matching_concepts])
+    #                 matched_items=[my_list_2_of_objects[x] for x in matched_positions]
+    #                 # Recreate the second list skipping over the matched positions
+    #                 my_list_2_of_objects=[my_list_2_of_objects[x]
+    #                                       for x in xrange(len(my_list_2_of_objects))
+    #                                       if x not in matched_positions]
+    #                 concepts_2=[concepts_2[x]
+    #                             for x in xrange(len(concepts_2))
+    #                             if x not in matched_positions]
+    #                 # TODO: COMPUTE A STRENGTH FOR THIS MATCH!!!
+    #                 common.append(CompoundMatch(_list1[i], matched_items, 0.5, MATCH_MULTIPLE_COMPOUNDS))
+    #             else:
+    #                 my_list_1.append(_list1[i])
+    #         else:
+    #             my_list_1.append(_list1[i])
+    #     return (my_list_1, my_list_2_of_objects, common)
+
+    # first_pass_1, first_pass_2, first_pass_common = _match_compounds(list1, list2)
+    # final_2, final_1, second_pass_common = _match_compounds(first_pass_2, first_pass_1)
+
+    # return MatchResult(final_1, final_2, first_pass_common + second_pass_common)
+
+    # NOP for now
+    return MatchResult(list1, list2, [])
 
 
 def match_by_ingredients(list1, list2, min_match_threshold=0.3):
