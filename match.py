@@ -6,6 +6,7 @@ Created on Oct 28, 2011
 
 import copy
 import logging
+from collections import namedtuple
 from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS,
                        MATCH_STRING, MATCH_TREATMENT_INTENT,
                        MATCH_COMPOUND,
@@ -192,6 +193,9 @@ class ComparableMedicationList(object):
     def __contains__(self, item):
         return item in self._interesting_attribute
 
+    def __len__(self):
+        return len(self._original)
+
     @property
     def objects(self):
         return self._original
@@ -205,6 +209,10 @@ class ComparableMedicationList(object):
         for i in xrange(len(self._interesting_attribute)):
             yield (self._interesting_attribute[i], self._original[i])
         return
+
+    def __getitem__(self, item):
+        return self._original[item]
+
 
 def match_by_strings(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by comparing the
@@ -293,12 +301,6 @@ def find_brand_name_matches(c1, concepts_of_c2):
     return matches
 
 
-def brand_name_match_bookkeeping(list_2, tradenames_c2, concepts_2, matches):
-    del list_2[matches]
-    del tradenames_c2[matches]
-    del concepts_2[matches]
-
-
 def match_by_brand_name(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by checking whether
     elements in list1 are brand names of elements in list2, and viceversa.
@@ -313,70 +315,62 @@ def match_by_brand_name(list1, list2):
     * the second list, minus the common elements
     * the list of common elements
     """
-    logging.debug("Determining CUIs for %r", list1)
-    concepts_1 = medication_list_CUIs(list1)
-    logging.debug("Concepts for %r: %r", list1, concepts_1)
+    cuis_tradenames = namedtuple("cuis_tradenames", ['cuis', 'tradenames'])
+    concepts_and_tradenames = lambda x: cuis_tradenames(x.CUIs, x.tradenames)
 
-    logging.debug("Computing tradenames for %r", list1)
-    tradenames_of_c1 = medication_list_tradenames(list1)
-    logging.debug("Tradenames for %r: %r", list1, tradenames_of_c1)
+    original_1 = ComparableMedicationList(list1, concepts_and_tradenames)
+    new_list_1 = []
+    new_list_2 = ComparableMedicationList(list2, concepts_and_tradenames)
 
-    logging.debug("Determining CUIs for %r", list2)
-    concepts_2 = medication_list_CUIs(list2)
-    logging.debug("Concepts for %r: %r", list2, concepts_2)
-
-    logging.debug("Computing tradenames for %r", list2)
-    tradenames_of_c2 = medication_list_tradenames(list2)
-    logging.debug("Tradenames for %r: %r", list2, tradenames_of_c2)
+    # Handlers to unpack the attributes for performing checks
+    just_concepts = lambda x: [y.cuis for y in x.iterattributes()]
+    just_tradenames = lambda x: [y.tradenames for y in x.iterattributes()]
 
     # If one of the lists is empty, or there are no known tradenames for
     # any medications, the entire analysis is useless, so we stop analyzing
     # and just return the input.
-    if (concepts_1 == [] or tradenames_of_c2 == []) \
-        and (concepts_2 == [] or tradenames_of_c1 == []):
+    if (just_concepts(original_1) == [] or just_tradenames(new_list_2) == []) \
+            and (just_concepts(new_list_2) == [] or just_tradenames(original_1) == []):
         return MatchResult(list1, list2, [])
 
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
-    my_list_1 = []
-    my_list_2_of_objects = list2[:]
     common = []
-    logging.debug("Length of concepts_1: %d", len(concepts_1))
+    logging.debug("Length of concepts_1: %d", len(original_1))
 
-    for y in xrange(len(list1)):
-        logging.debug("y=%d", y)
+    for attr, med1 in original_1.iteritems():
         matches = None
-        dose_1 = list1[y].normalized_dose
-        logging.debug("Testing %r", concepts_1[y])
-        if concepts_1[y] is not None:
+        dose_1 = med1.normalized_dose
+        concepts_1 = attr.cuis
+        if concepts_1 is not None:
             # Test to see if any concept in concepts_1 is one of the tradenames of c2
-            for c1 in concepts_1[y]:
+            for c1 in concepts_1:
                 # Find the index of the first medication in list 2 one of whose tradenames c1 matches
-                matches = find_brand_name_matches(c1, tradenames_of_c2)
+                matches = find_brand_name_matches(c1, just_tradenames(new_list_2))
                 if matches is not None:
-                    dose_2 = my_list_2_of_objects[matches].normalized_dose
+                    med2 = new_list_2.pop(matches)
+                    dose_2 = med2.normalized_dose
                     # If the dosages are equal, we have a match
                     match_score = 1.0 if dose_1 == dose_2 else 0.5
-                    common.append(Match(list1[y], my_list_2_of_objects[matches], match_score, MATCH_BRAND_NAME))
-                    brand_name_match_bookkeeping(my_list_2_of_objects, tradenames_of_c2, concepts_2, matches)
+                    common.append(Match(med1, med2, match_score, MATCH_BRAND_NAME))
                     break
         if matches is None:
-            if tradenames_of_c1[y] is not None:
+            if med1.tradenames is not None:
                 # Test to see if any concept in tradenames_of_c1 is one of the concepts of c2
-                for t1 in tradenames_of_c1[y]:
+                for t1 in med1.tradenames:
                     # Find the index of the first medication in list 2 whose concept matches a tradename of a med in list 1
-                    matches = find_brand_name_matches(t1, concepts_2)
+                    matches = find_brand_name_matches(t1, just_concepts(new_list_2))
                     if matches is not None:
-                        dose_2 = my_list_2_of_objects[matches].normalized_dose
+                        med2 = new_list_2.pop(matches)
+                        dose_2 = med2.normalized_dose
                         # If the dosages are equal, we have a match
                         match_score = 1.0 if dose_1 == dose_2 else 0.5
-                        common.append(Match(list1[y], my_list_2_of_objects[matches], match_score, MATCH_BRAND_NAME))
-                        brand_name_match_bookkeeping(my_list_2_of_objects, tradenames_of_c2, concepts_2, matches)
+                        common.append(Match(med1, med2, match_score, MATCH_BRAND_NAME))
                         break
 
         if matches is None:
-            my_list_1.append(list1[y])
-    return MatchResult(my_list_1, my_list_2_of_objects, common)
+            new_list_1.append(med1)
+    return MatchResult(new_list_1, new_list_2.objects, common)
 
 
 def match_by_ingredients(list1, list2, min_match_threshold=0.3):
