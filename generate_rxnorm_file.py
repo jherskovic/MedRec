@@ -21,8 +21,8 @@ import cPickle as pickle
 from collections import defaultdict
 
 
-def display_count(count, dot_threshold=1000, pipe_threshold=10000,
-                  newline_threshold=50000, output_stream=sys.stderr):
+def display_count(count, dot_threshold=10000, pipe_threshold=100000,
+                  newline_threshold=500000, output_stream=sys.stderr):
     if count % dot_threshold == 0:
         output_stream.write(".")
         output_stream.flush()
@@ -36,8 +36,9 @@ def display_count(count, dot_threshold=1000, pipe_threshold=10000,
 
 rrf_dir = sys.argv[1]
 save_file = sys.argv[2]
+verbose = '-v' in sys.argv
 
-print >> sys.stderr, "Reading Semantic Types"
+if verbose: print >> sys.stderr, "Reading Semantic Types"
 sty_filename = os.path.join(rrf_dir, "MRSTY.RRF")
 sty_file = open(sty_filename, 'rU')
 types = {}
@@ -51,9 +52,9 @@ for line in sty_file:
     count += 1
     display_count(count)
 
-print >> sys.stderr
+if verbose: print >> sys.stderr
 
-print >> sys.stderr, "Reading concepts"
+if verbose: print >> sys.stderr, "Reading concepts"
 conso_filename = os.path.join(sys.argv[1], "MRCONSO.RRF")
 conso_file = open(conso_filename, "rU")
 concepts = {}
@@ -106,10 +107,10 @@ for line in actualLines.values():
     count += 1
     display_count(count)
 
-print >> sys.stderr, "\nForgetting semantic type db"
+if verbose: print >> sys.stderr, "\nForgetting semantic type db"
 del types
 
-print >> sys.stderr, "Reading relations"
+if verbose: print >> sys.stderr, "Reading relations"
 rel_filename = os.path.join(sys.argv[1], "MRREL.RRF")
 rel_file = open(rel_filename, "rU")
 count = 0
@@ -121,16 +122,16 @@ for line in rel_file:
     try:
         r = rxnorm.Relation(line, concepts)
     except:
-        sys.stderr.write("!")
+        if verbose: sys.stderr.write("!")
         continue
     if r.relation is not None:
         relations.append(r)
     count += 1
     display_count(count)
-print >> sys.stderr
+if verbose: print >> sys.stderr
 
-print >> sys.stderr, len(concepts), "concepts and", len(relations), "relations."
-print >> sys.stderr, 'Building indices.'
+if verbose: print >> sys.stderr, len(concepts), "concepts and", len(relations), "relations."
+if verbose: print >> sys.stderr, 'Building indices.'
 ingredients = {}
 ingredient_rel = set(["ingredient_of",
                       "precise_ingredient_of",
@@ -146,7 +147,7 @@ for r in relations:
             ingredients[r._concept1.CUI] = set([r._concept2])
     count += 1
     display_count(count)
-print >> sys.stderr
+if verbose: print >> sys.stderr
 
 concept_names = {}
 for c in concepts:
@@ -156,19 +157,19 @@ for c in concepts:
     else:
         concept_names[cn] = set([c])
 
-print >> sys.stderr, "Ingredients for 10 random drugs:"
+if verbose: print >> sys.stderr, "Ingredients for 10 random drugs:"
 for x in [random.choice(ingredients.keys()) for x in xrange(10)]:
-    print >> sys.stderr, "Ingredients for", concepts[x]._name, ":", [y for y in ingredients[x]]
-    print >> sys.stderr, "Ingredients that are Pharmacologic Substances for", concepts[x]._name, ":", ', '.join(
+    if verbose: print >> sys.stderr, "Ingredients for", concepts[x]._name, ":", [y for y in ingredients[x]]
+    if verbose: print >> sys.stderr, "Ingredients that are Pharmacologic Substances for", concepts[x]._name, ":", ', '.join(
         y._name for y in ingredients[x] if 'Pharmacologic Substance' in y.semtypes)
     print
 
 zoloft = concept_names['zoloft']
 for z in zoloft:
-    print >> sys.stderr, "Ingredients for", concepts[z]._name, ":", [y for y in ingredients[z]]
+    if verbose: print >> sys.stderr, "Ingredients for", concepts[z]._name, ":", [y for y in ingredients[z]]
 
 conc_file = "concepts." + save_file
-print >> sys.stderr, "Shelving concepts to", conc_file
+if verbose: print >> sys.stderr, "Shelving concepts to", conc_file
 #conc_shelf = dbmaccess.open(conc_file, protocol=pickle.HIGHEST_PROTOCOL)
 conc_shelf = shelve.open(conc_file, protocol=pickle.HIGHEST_PROTOCOL)
 count = 0
@@ -178,10 +179,10 @@ for c in concepts:
     display_count(count)
 
 conc_shelf.close()
-print >> sys.stderr
+if verbose: print >> sys.stderr
 
 ing_file = "ingredients." + save_file
-print >> sys.stderr, "Shelving ingredients to", ing_file
+if verbose: print >> sys.stderr, "Shelving ingredients to", ing_file
 ing_shelf = shelve.open(ing_file, protocol=pickle.HIGHEST_PROTOCOL)
 count = 0
 for i in ingredients:
@@ -190,11 +191,11 @@ for i in ingredients:
     display_count(count)
 
 ing_shelf.close()
-print >> sys.stderr
+if verbose: print >> sys.stderr
 
 rels_file = "relationships." + save_file
-print >> sys.stderr, "Shelving relationships to", rels_file
-print >> sys.stderr, "First, building a relationship dictionary."
+if verbose: print >> sys.stderr, "Shelving relationships to", rels_file
+if verbose: print >> sys.stderr, "First, building a relationship dictionary."
 rel_dict = {}
 count = 0
 for r in relations:
@@ -204,10 +205,10 @@ for r in relations:
     rel_dict[rel_id].append(r)
     count += 1
     display_count(count)
-print >> sys.stderr
+if verbose: print >> sys.stderr
 
 del relations
-print >> sys.stderr, "Now actually shelving it."
+if verbose: print >> sys.stderr, "Now actually shelving it."
 rel_shelf = shelve.open(rels_file, protocol=pickle.HIGHEST_PROTOCOL)
 count = 0
 for r in rel_dict:
@@ -215,9 +216,9 @@ for r in rel_dict:
     count += 1
     display_count(count)
 rel_shelf.close()
-print >> sys.stderr
+if verbose: print >> sys.stderr
 
-print >> sys.stderr, "Saving to", save_file
+if verbose: print >> sys.stderr, "Saving to", save_file
 r = rxnorm.RXNORM(conc_file, rels_file, ing_file)
 pickle.dump(r, open(save_file, 'wb'), pickle.HIGHEST_PROTOCOL)
 

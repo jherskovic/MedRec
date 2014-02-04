@@ -162,6 +162,50 @@ class MatchResult(object):
                (len(self._list1), len(self._list2), len(self._reconciled), id(self),)
 
 
+class ComparableMedicationList(object):
+    """Bookkeeping class to handle the maintenance tasks of comparing different medication attributes
+     and manage the addition and removal of items simultaneously to several lists."""
+    def __init__(self, original_list, comparable):
+        """'Comparable' should be a function or lambda that, given an item of a medication list,
+        returns the value of interest."""
+        self._interesting_attribute=[comparable(x) for x in original_list]
+        self._original = original_list[:]
+
+    def index(self, interesting):
+        """Returns the position of an item of interest in the list."""
+        return self._interesting_attribute.index(interesting)
+
+    def pop(self, position):
+        """Removes an item at a certain position from the list and returns it."""
+        del self._interesting_attribute[position]
+        item = self._original[position]
+        del self._original[position]
+        return item
+
+    def popitem(self, item):
+        return self.pop(self.index(item))
+
+    def __delitem__(self, key):
+        del self._interesting_attribute[key]
+        del self._original[key]
+
+    def __contains__(self, item):
+        return item in self._interesting_attribute
+
+    @property
+    def objects(self):
+        return self._original
+
+    def iterattributes(self):
+        for a in self._interesting_attribute:
+            yield a
+        return
+
+    def iteritems(self):
+        for i in xrange(len(self._interesting_attribute)):
+            yield (self._interesting_attribute[i], self._original[i])
+        return
+
 def match_by_strings(list1, list2):
     """Match medication list 1 (list1) to medication list 2 by comparing the
     strings one by one. This is an O(n^2) comparison, but given the average
@@ -177,27 +221,19 @@ def match_by_strings(list1, list2):
     * the second list, minus the common elements
     * the list of common elements
     """
-    my_list_1 = []
-    my_list_2 = [x.normalized_string for x in list2]
+    original_1 = ComparableMedicationList(list1, lambda x: x.normalized_string)
+    new_list_1 = []
+    new_list_2 = ComparableMedicationList(list2, lambda x: x.normalized_string)
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
-    my_list_2_of_objects = list2[:]
     common = []
-    for item in list1:
-        if item.normalized_string in my_list_2:
-            where_in_2 = my_list_2.index(item.normalized_string)
-            common.append(Match(item, my_list_2_of_objects[where_in_2], 1.0, MATCH_STRING))
-            del my_list_2[where_in_2]
-            del my_list_2_of_objects[where_in_2]
+    for normstring, med1 in original_1.iteritems():
+        if normstring in new_list_2:
+            common.append(Match(med1, new_list_2.popitem(normstring), 1.0, MATCH_STRING))
         else:
-            my_list_1.append(item)
-    return MatchResult(my_list_1, my_list_2_of_objects, common)
+            new_list_1.append(med1)
 
-
-def medication_list_CUIs(medication_list):
-    """Given a medication list, returns a list of the matching CUIs for each
-    medication."""
-    return [x.CUIs for x in medication_list]
+    return MatchResult(new_list_1, new_list_2.objects, common)
 
 
 def match_by_rxcuis(list1, list2):
@@ -215,27 +251,23 @@ def match_by_rxcuis(list1, list2):
     * the second list, minus the common elements
     * the list of common elements
     """
-    concepts_1 = [x.RxCUIs for x in list1]
-    concepts_2 = [x.RxCUIs for x in list2]
+    original_1 = ComparableMedicationList(list1, lambda x: x.RxCUIs)
+    new_list_1 = []
+    new_list_2 = ComparableMedicationList(list2, lambda x: x.RxCUIs)
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
-    my_list_1 = []
-    my_list_2_of_objects = list2[:]
     common = []
-    for i in xrange(len(concepts_1)):
-        if concepts_1[i] == ['NOCODE']:
-            my_list_1.append(list1[i])
-        elif concepts_1[i] in concepts_2:
-            where_in_2 = concepts_2.index(concepts_1[i])
-            med2 = my_list_2_of_objects[where_in_2]
-            common.append(Match(list1[i], my_list_2_of_objects[where_in_2],
-                                1.0 if med2.normalized_dose == list1[i].normalized_dose else 0.5,
+    for concept, med1 in original_1.iteritems():
+        if concept == ['NOCODE']:
+            new_list_1.append(med1)
+        elif concept in new_list_2:
+            med2=new_list_2.popitem(concept)
+            common.append(Match(med1, med2,
+                                1.0 if med2.normalized_dose == med1.normalized_dose else 0.5,
                                 MATCH_COMPOUND))
-            del my_list_2_of_objects[where_in_2]
-            del concepts_2[where_in_2]
         else:
-            my_list_1.append(list1[i])
-    return MatchResult(my_list_1, my_list_2_of_objects, common)
+            new_list_1.append(med1)
+    return MatchResult(new_list_1, new_list_2.objects, common)
 
 
 def medication_list_tradenames(medication_list):
@@ -243,6 +275,12 @@ def medication_list_tradenames(medication_list):
     element (respecting the original order, so both the original and the
     new lists have the same indices)."""
     return [x.tradenames for x in medication_list]
+
+
+def medication_list_CUIs(medication_list):
+    """Given a medication list, returns a list of the matching CUIs for each
+    medication."""
+    return [x.CUIs for x in medication_list]
 
 
 def find_brand_name_matches(c1, concepts_of_c2):

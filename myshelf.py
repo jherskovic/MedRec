@@ -7,13 +7,12 @@ to support the MedRec package."""
 
 __author__ = 'Jorge R. Herskovic <jherskovic@gmail.com>'
 
-import semidbm
 import cPickle as pickle
-
+from sqlite_dict import SQLiteDict
 
 class shelve(object):
-    def __init__(self, filename, flag='c', protocol=pickle.HIGHEST_PROTOCOL):
-        self._my_file = semidbm.open(filename, flag=flag)
+    def __init__(self, filename, flag, protocol):
+        self._my_file = SQLiteDict(filename, threadsafe=False)
         self._protocol = protocol
 
     def __iter__(self):

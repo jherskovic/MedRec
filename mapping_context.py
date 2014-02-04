@@ -4,7 +4,7 @@ Created on Oct 29, 2011
 @author: jherskovic
 '''
 
-from myshelf import shelve
+from sqlite_dict import SQLiteDict
 
 
 class MappingContextError(Exception): pass
@@ -20,7 +20,7 @@ class MappingContext(object):
         self._drug_problem = drug_problem
         concept_names = {}
         if concept_name_index is not None:
-            self._concept_names = shelve.open(concept_name_index, flag='r')
+            self._concept_names = SQLiteDict(concept_name_index)
             return
         for c in rxnorm.concepts:
             cn = rxnorm.concepts[c]._name.lower()
