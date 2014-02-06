@@ -376,46 +376,46 @@ def match_by_brand_name(list1, list2):
 def match_by_ingredients(list1, list2, min_match_threshold=0.3):
     """Computes equivalence between two lists of medications by comparing their
     lists of ingredients."""
-    # We keep a list of objects separate from a list of strings, so
-    # we don't need to recompute the normalized strings over and over.
-    my_list_1 = []
-    my_list_2 = [x.generic_formula for x in list2]
-    my_list_2_of_objects = list2[:]
+    formula_dose = namedtuple("formula_dose", ["formula", "normalized_dose"])
+    formulas_and_doses = lambda x: formula_dose(x.generic_formula, x.normalized_dose)
+
+    original_1 = ComparableMedicationList(list1, formulas_and_doses)
+    new_list_1 = []
+    new_list_2 = ComparableMedicationList(list2, formulas_and_doses)
     common = []
 
-    for item in list1:
-        ph1 = (item.generic_formula, item.normalized_dose)
-        match = [0.0] * len(my_list_2)
-        for item2 in xrange(len(my_list_2)):
-            ph2 = (my_list_2[item2],
-                   my_list_2_of_objects[item2].normalized_dose)
+    for ph1, item in original_1.iteritems():
+        match = [0.0] * len(new_list_2)
+        match_index = 0
+        for ph2, item2 in new_list_2.iteritems():
             logging.debug("Comparing %r against %r", ph1, ph2)
-            for p in ph1[0]:
-                if p in ph2[0]:
-                    if ph1[1] != ph2[1]:
+            for p in ph1.formula:
+                if p in ph2.formula:
+                    if ph1.normalized_dose != ph2.normalized_dose:
                         # If the daily total dose doesn't match, penalize it
-                        match[item2] = 0.5
+                        match[match_index] = 0.5
                         break
                     else:
-                        match[item2] = match[item2] + 1.0
-            match[item2] = match[item2] / float((len(ph2[0]) + len(ph1[0])) / 2.0)
-        matched_items = [(match[x], my_list_2[x]) for x in xrange(len(my_list_2))]
-        # We choose the highest-ranking match
-        matched_items.sort(reverse=True)
-        if len(matched_items) > 0 and matched_items[0][0] > min_match_threshold:
-            where_in_2 = my_list_2.index(matched_items[0][1])
+                        match[match_index] += 1.0
+            # The match score is the average of dose matches
+            match[match_index] = match[match_index] / float((len(ph2.formula) + len(ph1.formula)) / 2.0)
+            match_index += 1
+
+        # After reverse-sorting the list by score, item [0] is the highest-scoring match.
+        top_match_score = -1 if len(match) == 0 else max(match)
+        if top_match_score > min_match_threshold:
+            top_match_position = match.index(top_match_score)
+            med2 = new_list_2.pop(top_match_position)
+
             logging.debug("Matched %r to %r by generics with score %r",
-                          item, my_list_2_of_objects[where_in_2],
-                          matched_items[0][0])
-            common.append(Match(item, my_list_2_of_objects[where_in_2],
-                                matched_items[0][0], MATCH_INGREDIENTS))
-            del my_list_2[where_in_2]
-            del my_list_2_of_objects[where_in_2]
+                          item, med2,
+                          top_match_score)
+            common.append(Match(item, med2, top_match_score,
+                                MATCH_INGREDIENTS))
         else:
-            my_list_1.append(item)
-        if len(matched_items) > 0:
-            logging.debug("The best match for %r is %r", ph1, matched_items[0])
-    return MatchResult(my_list_1, my_list_2_of_objects, common)
+            new_list_1.append(item)
+
+    return MatchResult(new_list_1, new_list_2.objects, common)
 
 
 def build_treatment_lists(concepts, mappings):
