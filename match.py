@@ -166,6 +166,8 @@ class MatchResult(object):
 class ComparableMedicationList(object):
     """Bookkeeping class to handle the maintenance tasks of comparing different medication attributes
      and manage the addition and removal of items simultaneously to several lists."""
+    ComparableMedicationItem = namedtuple("ComparableMedicationItem", ["attr", "original"])
+
     def __init__(self, original_list, comparable):
         """'Comparable' should be a function or lambda that, given an item of a medication list,
         returns the value of interest."""
@@ -185,6 +187,9 @@ class ComparableMedicationList(object):
 
     def popitem(self, item):
         return self.pop(self.index(item))
+
+    def original_index(self, item):
+        return self._original.index(item)
 
     def __delitem__(self, key):
         del self._interesting_attribute[key]
@@ -207,7 +212,7 @@ class ComparableMedicationList(object):
 
     def iteritems(self):
         for i in xrange(len(self._interesting_attribute)):
-            yield (self._interesting_attribute[i], self._original[i])
+            yield self.ComparableMedicationItem(self._interesting_attribute[i], self._original[i])
         return
 
     def __getitem__(self, item):
@@ -419,15 +424,12 @@ def match_by_ingredients(list1, list2, min_match_threshold=0.3):
 
 
 def build_treatment_lists(concepts, mappings):
-    treats = []
-    for c in concepts:
-        this_treats = set([])
-        if c is not None:
-            for each_concept in c:
-                for each_treated_thing in mappings.treatment.get(each_concept, []):
-                    this_treats.add(each_treated_thing)
-        treats.append(this_treats)
-    return treats
+    this_treats = set([])
+    if concepts is not None:
+        for each_concept in concepts:
+            for each_treated_thing in mappings.treatment.get(each_concept, []):
+                this_treats.add(each_treated_thing)
+    return this_treats
 
 
 def match_by_treatment(list1, list2, mappings,
@@ -443,49 +445,58 @@ def match_by_treatment(list1, list2, mappings,
         return float(len_common) / float(len_1 + len_2 - len_common)
 
     logging.debug("Determining CUIs for %r", list1)
-    concepts_1 = medication_list_CUIs(list1)
-    logging.debug("Concepts for %r: %r", list1, concepts_1)
+    # Build a data structure to store the treatments for each medication
+    treat = namedtuple("treat", ["cuis", "treatments"])
+    concepts_and_treatments = lambda x: treat(x.CUIs, build_treatment_lists(x.CUIs, mappings))
+    original_1 = ComparableMedicationList(list1, concepts_and_treatments)
+    new_list_1 = []
+    new_list_2 = ComparableMedicationList(list2, concepts_and_treatments)
 
-    logging.debug("Determining CUIs for %r", list2)
-    concepts_2 = medication_list_CUIs(list2)
-    logging.debug("Concepts for %r: %r", list2, concepts_2)
+    # Handlers to unpack the attributes for performing checks
+    just_concepts = lambda x: [y.cuis for y in x.iterattributes()]
+    just_treatments = lambda x: [y.treatments for y in x.iterattributes()]
 
-    if (concepts_1 == [] or concepts_2 == []):
+    logging.debug("Concepts for %r: %r", list1, just_concepts(original_1))
+    logging.debug("Concepts for %r: %r", list2, just_concepts(new_list_2))
+
+    if (just_concepts(original_1) == [] or just_concepts(new_list_2) == []):
         # Without CUIs there's nothing to do here.
         return MatchResult(list1, list2, [])
 
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
-    my_list_1 = []
-    my_list_2_of_objects = list2[:]
+    #my_list_1 = []
+    #my_list_2_of_objects = list2[:]
     common = []
 
     # Build lists of potential treatments
-    treats_1 = build_treatment_lists(concepts_1, mappings)
-    logging.debug("Treatment list for medication list 1: %r", treats_1)
+    logging.debug("Treatment list for medication list 1: %r", just_treatments(original_1))
+    logging.debug("Treatment list for medication list 2: %r", just_treatments(new_list_2))
 
-    treats_2 = build_treatment_lists(concepts_2, mappings)
-    logging.debug("Treatment list for medication list 2: %r", treats_2)
+    scored_comparison = namedtuple("scored_comparison", ["match", "medication"])
 
-    for y in xrange(len(concepts_1)):
+    for treat1, med1 in original_1.iteritems():
         # Compare the "treatment sphere" of each medication in list 1 to the
         # "treatment sphere" of each medication in list 2
-        comparison = [(match_percentage(treats_1[y], treats_2[x]), x) for x in range(len(treats_2))]
+        comparison = [scored_comparison(
+            match_percentage(treat1, x.attr.treatments),
+            x.original)
+                      for x in new_list_2.iteritems()]
         comparison.sort(reverse=True)
         # The first item of comparison is now the highest-ranked match
-        if len(comparison) > 0 and comparison[0][0] >= match_acceptance_threshold:
+        if len(comparison) > 0 and comparison[0].match >= match_acceptance_threshold:
             # Renormalize match score
             logging.debug("Highest comparison tuple (accepted) for %d: %r", y,
                           comparison[0])
-            score = comparison[0][0] * highest_possible_match
-            matched_item = comparison[0][1]
-            common.append(Match(list1[y],
-                                my_list_2_of_objects[matched_item],
+            score = comparison[0].match * highest_possible_match
+            matched_item = comparison[0].medication
+            position = new_list_2.original_index(matched_item)
+
+            common.append(Match(med1,
+                                new_list_2.pop(position),
                                 score,
                                 MATCH_TREATMENT_INTENT))
-            del my_list_2_of_objects[matched_item]
-            del treats_2[matched_item]
         else:
-            my_list_1.append(list1[y])
+            new_list_1.append(med1)
 
-    return MatchResult(my_list_1, my_list_2_of_objects, common)
+    return MatchResult(new_list_1, new_list_2.objects, common)
