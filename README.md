@@ -1,10 +1,15 @@
 ###README.md
 
-#MedRec v0.04
+#MedRec v0.10
 
 This is Dr. Herskovic's medication reconciliation algorithm. It takes two lists
 of medications and returns three lists: a reconciled list, the part of list 1
 that could not be reconciled, and the part of list 2 that could not be reconciled.
+
+Version 0.10 is a major change. The code has been refactored extensively to make
+it easier to work on (it's still too complicated, but it's a step in the right
+direction). It also adds a new ability: to reconcile compound drugs against drugs
+containing their individual components.
 
 This implementation requires RXNorm, which is part of the UMLS. You can extract
 RXNorm from the UMLS to use with this program by using the included
@@ -15,14 +20,13 @@ this script. Invoke it as:
 
 As of the end of 2013, the UMLS is large enough that generating the RxNorm
 dictionaries crashes the Python DBM implementation used internally by the shelve
-module. I switched generation to build shelves "manually" (i.e. they can still be
-read correctly by the native shelve module) by using a different DBM provider,
-semidbm (a highly-performant pure Python implementation).
+module, which was the original way I implemented the stores.
 
-    pip install semidbm
-should be enough to set you up correctly.
+I've replaced the use of the shelve module with my own sqlite_dict, from a
+different program. I've used sqlite_dict for years and it's behaved predicatbly
+and stably, and requires only Python's built-in sqlite support.
 
-It also requires a treatment database in a pickled bz2 file. You may ignore this
+MedRec also requires a treatment database in a pickled bz2 file. You may ignore this
 file, and treatment intent reconciliation will be skipped. If you want to
 provide one, it should be a pickle dictionary of the form
 
@@ -79,6 +83,16 @@ med1 contains a single medication. If mechanism is not "identical", there will b
     * provenance:      Whatever provenance was specified in the input
     * normalized_dose: The dose in a normalized format for a day ("W X*Y*Z", W being dose of an individual unit, X being units, Y being the number of times per day (i.e. frequency), and Z is the number of units to be delivered simultaneously. So, for example, 2 500 mg Aspirin tid becomes 500 mg*3*2)
     * frequency:       The number of times per day the drug is administered.
+
+Alternatively, med1 can contain a series of medications (of the format described above) under a series of keys:
+    * compound1
+    * compound2
+    * ...
+    * compoundN
+
+This enables matching a drug against multiple other drugs (for example, Zestoretic should
+match Hydrochlorothiazide + Lisinopril), which was a known weakness in previous versions of
+the algorithm.
 
 Route is currently not available.
 
