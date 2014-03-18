@@ -455,6 +455,29 @@ class ParsedMedication(Medication):
         return not self._is_lt(other)
 
 
+class CompoundMedication(object):
+    def __init__(self, meds):
+        self._contained = meds
+        self._name = "+".join(m.name for m in self._contained)
+        self._dose = "/".join(m.dose for m in self._contained)
+
+    def as_dictionary(self):
+        counter = 1
+        result = {}
+        for m in self._contained:
+            result["contained%d" % counter] = m.as_dictionary()
+            counter += 1
+        return result
+
+    def __repr__(self):
+        contents = " & ".join(repr(x) for x in self._contained)
+        return "<CompoundMedication containing %s>" % contents
+
+    @property
+    def normalized_string(self):
+        return "+".join(m.normalized_string for m in self._contained)
+
+
 def find_missing_keys(dikt, reqd_fields):
     missing_fields = []
     for field in reqd_fields:

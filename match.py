@@ -11,6 +11,7 @@ from constants import (MATCH_BRAND_NAME, MATCH_INGREDIENTS,
                        MATCH_STRING, MATCH_TREATMENT_INTENT,
                        MATCH_COMPOUND,
                        MEDICATION_FIELDS, KNOWN_MATCHING_FIELDS)
+from medication import CompoundMedication
 
 
 class Match(object):
@@ -267,6 +268,9 @@ def match_by_rxcuis(list1, list2):
     original_1 = ComparableMedicationList(list1, lambda x: x.RxCUIs)
     new_list_1 = []
     new_list_2 = ComparableMedicationList(list2, lambda x: x.RxCUIs)
+
+    logging.debug("Testing %r against %r", original_1._interesting_attribute, new_list_2._interesting_attribute)
+
     # We keep a list of objects separate from a list of strings, so
     # we don't need to recompute the normalized strings over and over.
     common = []
@@ -296,14 +300,56 @@ def medication_list_CUIs(medication_list):
     return [x.CUIs for x in medication_list]
 
 
-def find_brand_name_matches(c1, concepts_of_c2):
+def find_potential_brand_name_matches(c1, concepts_of_c2):
     logging.debug("Testing %r against %r", c1, concepts_of_c2)
     potential_matches = [c1 in t for t in concepts_of_c2 if t is not None]
     logging.debug("Result: %r", potential_matches)
+    return potential_matches
+
+
+def find_brand_name_matches(c1, concepts_of_c2):
+    potential_matches = find_potential_brand_name_matches(c1, concepts_of_c2)
     matches = potential_matches.index(True) \
         if True in potential_matches \
         else None
     return matches
+
+
+def check_for_multiple_tradenames(med, concept, potentials, potential_tradenames):
+    matches = find_potential_brand_name_matches(concept, potential_tradenames)
+    #if True not in matches:
+    #    continue
+    # Split the dose elements
+    doses = med.dose.split('/')
+    match_score = 0.0
+    max_match_score = float(len(doses))
+    matching_compounds = []
+    to_pop_later = []
+    while True in matches and len(doses) > 0:
+        # Remove matches one by one
+        match_pos = matches.index(True)
+        matches[match_pos] = False
+        med2 = potentials[match_pos]
+        to_pop_later.append(match_pos)
+        dose_2 = med2.dose
+
+        if dose_2 in doses:
+            doses.pop(doses.index(dose_2))
+            match_score += 1.0
+        else:
+            match_score += 0.3
+
+        matching_compounds.append(med2)
+        # If the dosages are equal, we have a match
+    match_score = match_score / max_match_score
+
+    to_pop_later.sort(reverse=True)
+    for to_pop in to_pop_later:
+        potentials.pop(to_pop)
+
+    tradename_match = namedtuple("tradename_match", ["compounds", "score"])
+
+    return tradename_match(matching_compounds, match_score)
 
 
 def match_by_brand_name(list1, list2):
@@ -344,38 +390,45 @@ def match_by_brand_name(list1, list2):
     logging.debug("Length of concepts_1: %d", len(original_1))
 
     for attr, med1 in original_1.iteritems():
-        matches = None
-        dose_1 = med1.normalized_dose
         concepts_1 = attr.cuis
         if concepts_1 is not None:
             # Test to see if any concept in concepts_1 is one of the tradenames of c2
             for c1 in concepts_1:
-                # Find the index of the first medication in list 2 one of whose tradenames c1 matches
-                matches = find_brand_name_matches(c1, just_tradenames(new_list_2))
-                if matches is not None:
-                    med2 = new_list_2.pop(matches)
-                    dose_2 = med2.normalized_dose
-                    # If the dosages are equal, we have a match
-                    match_score = 1.0 if dose_1 == dose_2 else 0.5
-                    common.append(Match(med1, med2, match_score, MATCH_BRAND_NAME))
-                    break
-        if matches is None:
-            if med1.tradenames is not None:
-                # Test to see if any concept in tradenames_of_c1 is one of the concepts of c2
-                for t1 in med1.tradenames:
-                    # Find the index of the first medication in list 2 whose concept matches a tradename of a med in list 1
-                    matches = find_brand_name_matches(t1, just_concepts(new_list_2))
-                    if matches is not None:
-                        med2 = new_list_2.pop(matches)
-                        dose_2 = med2.normalized_dose
-                        # If the dosages are equal, we have a match
-                        match_score = 1.0 if dose_1 == dose_2 else 0.5
-                        common.append(Match(med1, med2, match_score, MATCH_BRAND_NAME))
-                        break
+                result = check_for_multiple_tradenames(med1, c1, new_list_2, just_tradenames(new_list_2))
+                # If there's only a single compound, treat as a regular match
+                if len(result.compounds) == 0:
+                    continue
 
-        if matches is None:
+                if len(result.compounds) == 1:
+                    common.append(Match(med1, result.compounds[0], result.score, MATCH_BRAND_NAME))
+                else:
+                    common.append(Match(med1, CompoundMedication(result.compounds), result.score, MATCH_BRAND_NAME))
+                break
+        if len(result.compounds) == 0:
             new_list_1.append(med1)
-    return MatchResult(new_list_1, new_list_2.objects, common)
+
+    temp_list_2 = new_list_2
+    new_list_2 = []
+    new_list_1 = ComparableMedicationList(new_list_1, concepts_and_tradenames)
+
+    for attr, med2 in temp_list_2.iteritems():
+        concepts_2 = attr.cuis
+        if concepts_2 is not None:
+            for c2 in concepts_2:
+                result = check_for_multiple_tradenames(med2, c2, new_list_1, just_tradenames(new_list_1))
+                # If there's only a single compound, treat as a regular match
+                if len(result.compounds) == 0:
+                    continue
+
+                if len(result.compounds) == 1:
+                    common.append(Match(med2, result.compounds[0], result.score, MATCH_BRAND_NAME))
+                else:
+                    common.append(Match(med2, CompoundMedication(result.compounds), result.score, MATCH_BRAND_NAME))
+                break
+        if len(result.compounds) == 0:
+            new_list_2.append(med2)
+
+    return MatchResult(new_list_1.objects, new_list_2, common)
 
 
 def match_by_ingredients(list1, list2, min_match_threshold=0.3):
@@ -454,7 +507,6 @@ def match_by_treatment(list1, list2, mappings,
 
     # Handlers to unpack the attributes for performing checks
     just_concepts = lambda x: [y.cuis for y in x.iterattributes()]
-    just_treatments = lambda x: [y.treatments for y in x.iterattributes()]
 
     logging.debug("Concepts for %r: %r", list1, just_concepts(original_1))
     logging.debug("Concepts for %r: %r", list2, just_concepts(new_list_2))
@@ -463,15 +515,7 @@ def match_by_treatment(list1, list2, mappings,
         # Without CUIs there's nothing to do here.
         return MatchResult(list1, list2, [])
 
-    # We keep a list of objects separate from a list of strings, so
-    # we don't need to recompute the normalized strings over and over.
-    #my_list_1 = []
-    #my_list_2_of_objects = list2[:]
     common = []
-
-    # Build lists of potential treatments
-    logging.debug("Treatment list for medication list 1: %r", just_treatments(original_1))
-    logging.debug("Treatment list for medication list 2: %r", just_treatments(new_list_2))
 
     scored_comparison = namedtuple("scored_comparison", ["match", "medication"])
 
